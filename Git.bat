@@ -1,0 +1,1 @@
+start "Git" "I:\2.Programy\GitPortable\git-bash.exe"
