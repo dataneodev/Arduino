@@ -15,11 +15,11 @@ void loop() {
   int state = digitalRead(PIN);
   if(state != lastState){
     lastState = state;
-    if(state == LOW){
-      Serial.println("Czujnik aktywny"); //Jednorazowe wysłanie tekstu 
+    if(state == HIGH){
+      Serial.println("Ruch WYKRYTY"); //Jednorazowe wysłanie tekstu 
     }
     else{
-      Serial.println("Czujnik nie aktywny"); //Jednorazowe wysłanie tekstu 
+      Serial.println("Brak ruchu"); //Jednorazowe wysłanie tekstu 
     }
   }
     
