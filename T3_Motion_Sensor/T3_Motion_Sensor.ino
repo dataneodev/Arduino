@@ -1,11 +1,11 @@
 
-int PIN = A1;
+int PIN = 7;
 int lastState = 0 ;
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600); //Uruchamiamy transmisję
-  Serial.println("Czujnik swiatła"); //Jednorazowe wysłanie tekstu 
+  Serial.println("Czujnik ruchu"); //Jednorazowe wysłanie tekstu 
   
   pinMode(PIN, INPUT);
 }

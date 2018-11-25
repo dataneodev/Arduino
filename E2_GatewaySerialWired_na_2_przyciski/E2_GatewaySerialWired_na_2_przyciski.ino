@@ -46,7 +46,7 @@
 //#define MY_DEFAULT_RX_LED_PIN  6  // Receive led pin
 //#define MY_DEFAULT_TX_LED_PIN  5  // the PCB, on board LED
 
-#include <SPI.h>
+
 #include <MySensors.h>  
 #include <Bounce2.h>
 
@@ -140,7 +140,3 @@ void receive(const MyMessage &message) {
      Serial.println(message.getBool());
    } 
 }
-
-
-
-

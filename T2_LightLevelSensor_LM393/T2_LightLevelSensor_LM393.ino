@@ -1,5 +1,6 @@
 
-int PIN = A1;
+int PIN = 8;
+int PIN_REALY = 23;
 int lastState = 0 ;
 
 void setup() {
@@ -8,6 +9,8 @@ void setup() {
   Serial.println("Czujnik swiatła"); //Jednorazowe wysłanie tekstu 
   
   pinMode(PIN, INPUT);
+  pinMode(PIN_REALY, OUTPUT);
+  
 }
 
 void loop() {
@@ -17,9 +20,12 @@ void loop() {
     lastState = state;
     if(state == LOW){
       Serial.println("Czujnik aktywny"); //Jednorazowe wysłanie tekstu 
+      digitalWrite(PIN_REALY, LOW);
     }
+    
     else{
       Serial.println("Czujnik nie aktywny"); //Jednorazowe wysłanie tekstu 
+      digitalWrite(PIN_REALY, HIGH);
     }
   }
     
