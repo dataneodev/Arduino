@@ -1,31 +1,31 @@
 /**
- * The MySensors Arduino library handles the wireless radio link and protocol
- * between your home built sensors/actuators and HA controller of choice.
- * The sensors forms a self healing radio network with optional repeaters. Each
- * repeater and gateway builds a routing tables in EEPROM which keeps track of the
- * network topology allowing messages to be routed to nodes.
- *
- * Created by Henrik Ekblad <henrik.ekblad@mysensors.org>
- * Copyright (C) 2013-2015 Sensnology AB
- * Full contributor list: https://github.com/mysensors/Arduino/graphs/contributors
- *
- * Documentation: http://www.mysensors.org
- * Support Forum: http://forum.mysensors.org
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * version 2 as published by the Free Software Foundation.
- *
+   The MySensors Arduino library handles the wireless radio link and protocol
+   between your home built sensors/actuators and HA controller of choice.
+   The sensors forms a self healing radio network with optional repeaters. Each
+   repeater and gateway builds a routing tables in EEPROM which keeps track of the
+   network topology allowing messages to be routed to nodes.
+
+   Created by Henrik Ekblad <henrik.ekblad@mysensors.org>
+   Copyright (C) 2013-2015 Sensnology AB
+   Full contributor list: https://github.com/mysensors/Arduino/graphs/contributors
+
+   Documentation: http://www.mysensors.org
+   Support Forum: http://forum.mysensors.org
+
+   This program is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public License
+   version 2 as published by the Free Software Foundation.
+
  *******************************
- *
- * REVISION HISTORY
- * Version 1.0 - Henrik Ekblad
- *
- * DESCRIPTION
- * Example sketch showing how to control physical relays.
- * This example will remember relay state after power failure.
- * http://www.mysensors.org/build/relay
- */
+
+   REVISION HISTORY
+   Version 1.0 - Henrik Ekblad
+
+   DESCRIPTION
+   Example sketch showing how to control physical relays.
+   This example will remember relay state after power failure.
+   http://www.mysensors.org/build/relay
+*/
 
 // Enable debug prints to serial monitor
 #define MY_DEBUG
@@ -74,166 +74,302 @@
 
 #include <MySensors.h>
 
-/* 
+/*
    dataneo @2018
-   Simple relay sketch
+   Simple relay sketch 1.0
 */
 
 #define BOUNCE_LOCK_OUT
 #include <Bounce2.h>
+#include <QList.h>
+
+enum STATE_METHOD {
+  SAVE_TO_EMPROM,
+  LOAD_FROM_CONTROLERS,
+  START_IN_HIGH,
+  START_IN_LOW,
+};
+
+enum RELAY_STATE {
+  RELAY_ON_HIGH,
+  RELAY_ON_LOW,
+};
 
 //Simple relay class
- class RelaySimple{
+class RelaySimple {
   public:
-    RelaySimple(int relay_pin_no):RelaySimple(relay_pin_no,0,true, true){}
-    RelaySimple(int relay_pin_no, int button_pin_no):RelaySimple(relay_pin_no, button_pin_no,true, true){}
-    RelaySimple(int relay_pin_no, int button_pin_no, bool save_state, bool relay_on_state){
-      Serial.print("RelaySimple: contructor");
+    RelaySimple() {
+      _relay_pin_no = 0;
+      _save_state = START_IN_HIGH;
+      _relay_on_state = RELAY_ON_HIGH;
+    };
+    RelaySimple(int relay_pin_no, STATE_METHOD save_state, RELAY_STATE relay_on_state) {
       _relay_pin_no = relay_pin_no;
-      _button_pin_no = button_pin_no;
       _save_state = save_state;
       _relay_on_state = relay_on_state;
     };
-
-    int relayPin(){ return _relay_pin_no; }
-    void initPin(){
-      Serial.print("RelaySimple: initPins");
+    int relayPin() {
+      return _relay_pin_no;
+    }
+    void initPin() {
       pinMode(_relay_pin_no, OUTPUT);
-      if(_button_pin_no != 0){
+      mMessage = MyMessage(_relay_pin_no, V_LIGHT);
+      if (_save_state == SAVE_TO_EMPROM) {
+        _relay_state = loadState(_relay_pin_no);
+        digitalWrite(_relay_pin_no, getGPIOState(_relay_state));
+        sendStateToController();
+      }
+      if (_save_state == LOAD_FROM_CONTROLERS) {
+        // request load state from controler
+        request(_relay_pin_no, V_LIGHT);
+      }
+      if (_save_state == START_IN_HIGH) {
+        _relay_state = true;
+        digitalWrite(_relay_pin_no, getGPIOState(_relay_state));
+        sendStateToController();
+      }
+      if (_save_state == START_IN_LOW) {
+        _relay_state = false;
+        sendStateToController();
+      }
+    }
+
+    void presentToControler() {
+      present(_relay_pin_no, S_LIGHT);
+    }
+
+    void setStateFromControler(bool relay_state) {
+      if (_relay_state == relay_state)
+        return;
+      _relay_state = relay_state;
+      digitalWrite(_relay_pin_no, getGPIOState(_relay_state));
+      if (_save_state)
+        saveState(_relay_pin_no, _relay_state);
+    }
+
+    void setButtonState() {
+      _relay_state = ! _relay_state;
+      digitalWrite(_relay_pin_no, getGPIOState(_relay_state));
+      if (_save_state)
+        saveState(_relay_pin_no, _relay_state);
+      sendStateToController();
+    }
+  private:
+    bool _relay_state; // current relay state on or off
+    int _relay_pin_no; // gpio pin for relay
+    MyMessage mMessage;
+    STATE_METHOD _save_state;
+    RELAY_STATE _relay_on_state;
+
+    int getGPIOState(bool relay_state) {
+      return (_relay_on_state == RELAY_ON_HIGH) ? relay_state : ! relay_state;
+    }
+    void sendStateToController() {
+      send(mMessage.set(_relay_state));
+    }
+};
+
+class ButtonSimple {
+  public:
+    ButtonSimple(){
+      _button_pin_no = 0;
+    }
+    ButtonSimple(int button_pin_no) {
+      _button_pin_no = button_pin_no;
+    }
+    int getButtonPinNo() {
+      return _button_pin_no;
+    }
+    bool checkButton() {
+      if (_button_pin_no == 0)
+        return false;
+      _debouncer.update();
+      if (_debouncer.fell())
+        return true;
+      return false;
+    }
+    void initPin() {
+      if (_button_pin_no != 0) {
         pinMode(_button_pin_no, INPUT_PULLUP);
         _debouncer = Bounce();
         _debouncer.attach(_button_pin_no);
         _debouncer.interval(10);
       }
-      mMessage = MyMessage(_relay_pin_no, V_LIGHT); 
-      if(_save_state){
-        _relay_state = loadState(_relay_pin_no);
-        digitalWrite(_relay_pin_no, getGPIOState(_relay_state)); 
-        // send load state to controller
-        sendStateToController();
-      } else {
-        // request load state from controler
-        request(_relay_pin_no, V_LIGHT);      
-      }
     }
-    
-    void presentToControler(){
-      Serial.print("RelaySimple: presentToControler");
-      present(_relay_pin_no, S_LIGHT);
-    }
-    
-    void setStateFromControler(bool relay_state){
-      Serial.print("RelaySimple: setStateFromControler");
-      if(_relay_state == relay_state)
-        return;
-      _relay_state = relay_state;
-      digitalWrite(_relay_pin_no, getGPIOState(_relay_state)); 
-      if(_save_state)
-        saveState(_relay_pin_no, _relay_state);
-    }
-    
-    void checkButton(){
-      if(_button_pin_no == 0)
-        return;
-      _debouncer.update();
-      if( _debouncer.fell() ) {  // Call code if button transitions from HIGH to LOW
-        _relay_state = ! _relay_state;
-        digitalWrite(_relay_pin_no, getGPIOState(_relay_state));
-        if(_save_state) 
-          saveState(_relay_pin_no, _relay_state);
-          sendStateToController();
-      }  
-    }
-  private: 
-    bool _relay_state; // current relay state on or off
-    int _relay_pin_no; // gpio pin for relay
-    int _button_pin_no; // gpio pin for relay button; 0 - for no button
-    bool _save_state; //true - save relay state to emprrom
-    bool _relay_on_state; // true -> (_relay_state = true - gpio = 1); false -> (relay_on = true - gpio = 0) 
-    Bounce _debouncer;  
-    MyMessage mMessage;
-    int getGPIOState(bool relay_state){
-       return _relay_on_state ? relay_state : ! relay_state;
-    }
-    void sendStateToController(){
-      send(mMessage.set(_relay_state)); 
-    }
+  private:
+    int _button_pin_no;
+    Bounce _debouncer;
 };
-    
-class RelayManager{
+
+class RelayButtonPair {
   public:
-    RelayManager(){
-      if_init = false;  
+    RelayButtonPair() {
+      _relay_pin_no = 0;
+      _button_pin_no = 0;
+    }
+    RelayButtonPair(int relay_pin_no, int button_pin_no) {
+      _relay_pin_no = relay_pin_no;
+      _button_pin_no = button_pin_no;
+    }
+    int relayPin() {
+      return _relay_pin_no;
+    }
+    int getButtonPinNo() {
+      return _button_pin_no;
+    }
+  private:
+    int _relay_pin_no;
+    int _button_pin_no;
+};
+
+class RelayManager {
+  public:
+    RelayManager() {
+      if_init = false;
     }
     //Simple Relay change status in RelayList
-    void setStateOnRelayListFromControler(int relay_pin_no, bool relay_state){
-      Serial.print("RelaySimple: setStateOnRelayListFromControler");
-      if(sizeof RelayList > 0 && if_init)
-        for (int i=0; i<sizeof RelayList/sizeof RelayList[0]; i++)
-          if(RelayList[i].relayPin() == relay_pin_no)
-            RelayList[i].setStateFromControler(relay_state);
+    void setStateOnRelayListFromControler(int relay_pin_no, bool relay_state) {
+      if (relayList.length() > 0 && if_init)
+        for (int i = 0; i < relayList.length(); i++)
+          if (relayList[i].relayPin() == relay_pin_no)
+            relayList[i].setStateFromControler(relay_state);
     }
-    void presentAllToControler(){
-      if(sizeof RelayList > 0)
-        for (int i=0; i<sizeof RelayList/sizeof RelayList[0]; i++)
-          RelayList[i].presentToControler();    
+    void presentAllToControler() {
+      if (relayList.length() > 0)
+        for (int i = 0; i < relayList.length(); i++)
+          relayList[i].presentToControler();
       initAllPins();
     }
-    void buttonCheckState(){
-    if(sizeof RelayList > 0 && if_init)
-        for (int i=0; i<sizeof RelayList/sizeof RelayList[0]; i++) 
-          RelayList[i].checkButton();    
+    void buttonCheckState() {
+      if (buttonList.length() > 0 && if_init)
+        for (int i = 0; i < buttonList.length(); i++)
+          if (buttonList[i].checkButton())
+            if (relayButtonPairList.length() > 0)
+              for (int j = 0; j < relayButtonPairList.length(); j++)
+                if (relayButtonPairList[j].getButtonPinNo() == buttonList[i].getButtonPinNo())
+                  if (relayList.length() > 0)
+                    for (int k = 0; k < relayList.length(); k++)
+                      if (relayList[k].relayPin() == relayButtonPairList[j].relayPin())
+                        relayList[k].setButtonState();
+    }
+
+    void addRelay(int relay_pin_no) {
+      addRelay(relay_pin_no, 0, SAVE_TO_EMPROM, RELAY_ON_HIGH);
+    }
+
+    void addRelay(int relay_pin_no, int button_pin_no) {
+      addRelay(relay_pin_no, button_pin_no, SAVE_TO_EMPROM, RELAY_ON_HIGH);
+    }
+
+    void addRelay(int relay_pin_no, int button_pin_no, STATE_METHOD save_state, RELAY_STATE relay_on_state) {
+      if(relayList.length()>= MAX_PIN || buttonList.length() >= MAX_PIN)
+        return;
+      
+      //check if relay exists
+      bool exist = false;
+      if (relayList.length() > 0)
+        for (int i = 0; i < relayList.length(); i++)
+          if (relayList[i].relayPin() == relay_pin_no)
+            exist = true;
+      if (!exist) 
+        relayList.push_back(RelaySimple(relay_pin_no, save_state, relay_on_state));
+
+      //button check
+      exist = false;
+      if (buttonList.length() > 0)
+        for (int i = 0; i < buttonList.length(); i++)
+          if (buttonList[i].getButtonPinNo() == button_pin_no)
+            exist = true;
+      if (!exist && button_pin_no != 0)
+        buttonList.push_back(ButtonSimple(button_pin_no));
+      
+      //pair exists
+      exist = false;
+      if (relayButtonPairList.length() > 0)
+        for (int i = 0; i < relayButtonPairList.length(); i++)
+          if (relayButtonPairList[i].relayPin() == relay_pin_no && 
+              relayButtonPairList[i].getButtonPinNo() == button_pin_no)
+            exist = true;
+      if (!exist)
+        relayButtonPairList.push_back(RelayButtonPair(relay_pin_no, button_pin_no));
     }
   private:
     bool if_init;
-    void initAllPins(){
-      if(sizeof RelayList > 0 && !if_init)
-        for (int i=0; i<sizeof RelayList/sizeof RelayList[0]; i++) 
-          RelayList[i].initPin();  
+    const byte MAX_PIN = 50;
+    QList<ButtonSimple> buttonList;
+    QList<RelaySimple> relayList;
+    QList<RelayButtonPair> relayButtonPairList;
+
+    void initAllPins() {
+      if (relayList.length() > 0 && !if_init)
+        for (int i = 0; i < relayList.length(); i++)
+          relayList[i].initPin();
+      if (buttonList.length() > 0 && !if_init)
+        for (int i = 0; i < buttonList.length(); i++)
+          buttonList[i].initPin();
       if_init = true;
     }
-    
-    /* Simple Relay definition list
-       Define your relay here
-       possible constructors
-       RelaySimple(int relay_pin_no)
-       RelaySimple(int relay_pin_no, int button_pin_no)
-       RelaySimple(int relay_pin_no, int button_pin_no, bool save_state, bool relay_start_state, bool relay_on_state)
-    */
-    RelaySimple RelayList[2] = {
-      RelaySimple(23, A8, false, true),
-      RelaySimple(A1, 0, false, true),
-    };
 };
 
 RelayManager myRelayController = RelayManager();
 
-void before(){ }
-void setup(){ }
+/*
+   Endo of Simple relay sketch
+*/
+
+void before()
+{
+  /* Simple Relay definition list
+     Define your relay here
+     myRelayController.addRelay(int relay_pin_no)
+     myRelayController.addRelay(int relay_pin_no, int button_pin_no)
+     myRelayController.addRelay(int relay_pin_no, int button_pin_no, STATE_METHOD save_state, RELAY_STATE relay_on_state)
+
+     relay_pin_no - gpio pin with relay connected
+     button_pin_no - gpio pin with button switch connected; use 0 - for no button
+     
+     STATE_METHOD is one of 
+      SAVE_TO_EMPROM
+      LOAD_FROM_CONTROLERS
+      START_IN_HIGH
+      START_IN_LOW
+    
+    RELAY_STATE is one of 
+      RELAY_ON_HIGH
+      RELAY_ON_LOW
+  */
+  myRelayController.addRelay(23, A8, START_IN_LOW, RELAY_ON_HIGH);
+  myRelayController.addRelay(23, A7);
+  myRelayController.addRelay(23, A6);
+  myRelayController.addRelay(52, 53, LOAD_FROM_CONTROLERS, RELAY_ON_HIGH);
+  myRelayController.addRelay(50, 51, LOAD_FROM_CONTROLERS, RELAY_ON_HIGH);
+  myRelayController.addRelay(48, 49, LOAD_FROM_CONTROLERS, RELAY_ON_HIGH);
+  myRelayController.addRelay(46, 47, LOAD_FROM_CONTROLERS, RELAY_ON_HIGH);
+}
+
+void setup() { }
 
 void presentation()
 {
-	// Send the sketch version information to the gateway and Controller
-	sendSketchInfo("SimpleRelay_dataneo", "1.0");
+  // Send the sketch version information to the gateway and Controller
+  sendSketchInfo("SimpleRelay_dataneo", "1.0");
 
- //Simple Relay presentAllToControler
-  myRelayController.presentAllToControler(); 
+  //Simple Relay presentAllToControler
+  myRelayController.presentAllToControler();
 }
 
 void loop()
 {
   //Simple Relay buttonCheckState
   myRelayController.buttonCheckState();
-  
+
   wait(1); // loop 1000 times per second
 }
 
 void receive(const MyMessage &message)
 {
-	// We only expect one type of message from controller. But we better check anyway.
-	if (message.type==V_STATUS) {
-    //Simple Relay foward status 
+  //Simple Relay recive message
+  if (message.type == V_STATUS) {
     myRelayController.setStateOnRelayListFromControler(message.sensor, message.getBool());
-	}
- 
+  }
 }
