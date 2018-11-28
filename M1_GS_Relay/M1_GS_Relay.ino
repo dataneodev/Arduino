@@ -103,12 +103,13 @@ class RelaySimple {
       _save_state = START_IN_HIGH;
       _relay_on_state = RELAY_ON_HIGH;
     };
-    RelaySimple(int relay_pin_no, STATE_METHOD save_state, RELAY_STATE relay_on_state) {
+    RelaySimple(byte relay_pin_no, STATE_METHOD save_state, RELAY_STATE relay_on_state, const char* relay_name) {
       _relay_pin_no = relay_pin_no;
       _save_state = save_state;
       _relay_on_state = relay_on_state;
+      _relay_name = relay_name;
     };
-    int relayPin() {
+    byte relayPin() {
       return _relay_pin_no;
     }
     void initPin() {
@@ -135,7 +136,7 @@ class RelaySimple {
     }
 
     void presentToControler() {
-      present(_relay_pin_no, S_LIGHT);
+      present(_relay_pin_no, S_LIGHT, _relay_name);
     }
 
     void setStateFromControler(bool relay_state) {
@@ -143,25 +144,26 @@ class RelaySimple {
         return;
       _relay_state = relay_state;
       digitalWrite(_relay_pin_no, getGPIOState(_relay_state));
-      if (_save_state)
+      if (_save_state == SAVE_TO_EMPROM)
         saveState(_relay_pin_no, _relay_state);
     }
 
     void setButtonState() {
       _relay_state = ! _relay_state;
       digitalWrite(_relay_pin_no, getGPIOState(_relay_state));
-      if (_save_state)
+      if (_save_state == SAVE_TO_EMPROM)
         saveState(_relay_pin_no, _relay_state);
       sendStateToController();
     }
   private:
     bool _relay_state; // current relay state on or off
-    int _relay_pin_no; // gpio pin for relay
+    byte _relay_pin_no; // gpio pin for relay
+    const char* _relay_name;
     MyMessage mMessage;
     STATE_METHOD _save_state;
     RELAY_STATE _relay_on_state;
 
-    int getGPIOState(bool relay_state) {
+    byte getGPIOState(bool relay_state) {
       return (_relay_on_state == RELAY_ON_HIGH) ? relay_state : ! relay_state;
     }
     void sendStateToController() {
@@ -174,10 +176,10 @@ class ButtonSimple {
     ButtonSimple(){
       _button_pin_no = 0;
     }
-    ButtonSimple(int button_pin_no) {
+    ButtonSimple(byte button_pin_no) {
       _button_pin_no = button_pin_no;
     }
-    int getButtonPinNo() {
+    byte getButtonPinNo() {
       return _button_pin_no;
     }
     bool checkButton() {
@@ -197,7 +199,7 @@ class ButtonSimple {
       }
     }
   private:
-    int _button_pin_no;
+    byte _button_pin_no;
     Bounce _debouncer;
 };
 
@@ -207,19 +209,19 @@ class RelayButtonPair {
       _relay_pin_no = 0;
       _button_pin_no = 0;
     }
-    RelayButtonPair(int relay_pin_no, int button_pin_no) {
+    RelayButtonPair(byte relay_pin_no, byte button_pin_no) {
       _relay_pin_no = relay_pin_no;
       _button_pin_no = button_pin_no;
     }
-    int relayPin() {
+    byte relayPin() {
       return _relay_pin_no;
     }
-    int getButtonPinNo() {
+    byte getButtonPinNo() {
       return _button_pin_no;
     }
   private:
-    int _relay_pin_no;
-    int _button_pin_no;
+    byte _relay_pin_no;
+    byte _button_pin_no;
 };
 
 class RelayManager {
@@ -230,54 +232,58 @@ class RelayManager {
     //Simple Relay change status in RelayList
     void setStateOnRelayListFromControler(int relay_pin_no, bool relay_state) {
       if (relayList.length() > 0 && if_init)
-        for (int i = 0; i < relayList.length(); i++)
+        for (byte i = 0; i < relayList.length(); i++)
           if (relayList[i].relayPin() == relay_pin_no)
             relayList[i].setStateFromControler(relay_state);
     }
     void presentAllToControler() {
       if (relayList.length() > 0)
-        for (int i = 0; i < relayList.length(); i++)
+        for (byte i = 0; i < relayList.length(); i++)
           relayList[i].presentToControler();
       initAllPins();
     }
     void buttonCheckState() {
       if (buttonList.length() > 0 && if_init)
-        for (int i = 0; i < buttonList.length(); i++)
+        for (byte i = 0; i < buttonList.length(); i++)
           if (buttonList[i].checkButton())
             if (relayButtonPairList.length() > 0)
-              for (int j = 0; j < relayButtonPairList.length(); j++)
+              for (byte j = 0; j < relayButtonPairList.length(); j++)
                 if (relayButtonPairList[j].getButtonPinNo() == buttonList[i].getButtonPinNo())
                   if (relayList.length() > 0)
-                    for (int k = 0; k < relayList.length(); k++)
+                    for (byte k = 0; k < relayList.length(); k++)
                       if (relayList[k].relayPin() == relayButtonPairList[j].relayPin())
                         relayList[k].setButtonState();
     }
 
-    void addRelay(int relay_pin_no) {
-      addRelay(relay_pin_no, 0, SAVE_TO_EMPROM, RELAY_ON_HIGH);
+    void addRelay(byte relay_pin_no) {
+      addRelay(relay_pin_no, 0, SAVE_TO_EMPROM, RELAY_ON_HIGH, '\0');
     }
 
-    void addRelay(int relay_pin_no, int button_pin_no) {
-      addRelay(relay_pin_no, button_pin_no, SAVE_TO_EMPROM, RELAY_ON_HIGH);
+    void addRelay(byte relay_pin_no, byte button_pin_no) {
+      addRelay(relay_pin_no, button_pin_no, SAVE_TO_EMPROM, RELAY_ON_HIGH, '\0');
     }
 
-    void addRelay(int relay_pin_no, int button_pin_no, STATE_METHOD save_state, RELAY_STATE relay_on_state) {
+    void addRelay(byte relay_pin_no, byte button_pin_no, STATE_METHOD save_state, RELAY_STATE relay_on_state) {
+      addRelay(relay_pin_no, button_pin_no, save_state, relay_on_state, '\0');
+    }
+
+    void addRelay(byte relay_pin_no, byte button_pin_no, STATE_METHOD save_state, RELAY_STATE relay_on_state, const char* relay_name) {
       if(relayList.length()>= MAX_PIN || buttonList.length() >= MAX_PIN)
         return;
       
       //check if relay exists
       bool exist = false;
       if (relayList.length() > 0)
-        for (int i = 0; i < relayList.length(); i++)
+        for (byte i = 0; i < relayList.length(); i++)
           if (relayList[i].relayPin() == relay_pin_no)
             exist = true;
       if (!exist) 
-        relayList.push_back(RelaySimple(relay_pin_no, save_state, relay_on_state));
+        relayList.push_back(RelaySimple(relay_pin_no, save_state, relay_on_state, relay_name));
 
       //button check
       exist = false;
       if (buttonList.length() > 0)
-        for (int i = 0; i < buttonList.length(); i++)
+        for (byte i = 0; i < buttonList.length(); i++)
           if (buttonList[i].getButtonPinNo() == button_pin_no)
             exist = true;
       if (!exist && button_pin_no != 0)
@@ -286,7 +292,7 @@ class RelayManager {
       //pair exists
       exist = false;
       if (relayButtonPairList.length() > 0)
-        for (int i = 0; i < relayButtonPairList.length(); i++)
+        for (byte i = 0; i < relayButtonPairList.length(); i++)
           if (relayButtonPairList[i].relayPin() == relay_pin_no && 
               relayButtonPairList[i].getButtonPinNo() == button_pin_no)
             exist = true;
@@ -295,17 +301,17 @@ class RelayManager {
     }
   private:
     bool if_init;
-    const byte MAX_PIN = 50;
+    const byte MAX_PIN = 70;
     QList<ButtonSimple> buttonList;
     QList<RelaySimple> relayList;
     QList<RelayButtonPair> relayButtonPairList;
 
     void initAllPins() {
       if (relayList.length() > 0 && !if_init)
-        for (int i = 0; i < relayList.length(); i++)
+        for (byte i = 0; i < relayList.length(); i++)
           relayList[i].initPin();
       if (buttonList.length() > 0 && !if_init)
-        for (int i = 0; i < buttonList.length(); i++)
+        for (byte i = 0; i < buttonList.length(); i++)
           buttonList[i].initPin();
       if_init = true;
     }
@@ -314,37 +320,38 @@ class RelayManager {
 RelayManager myRelayController = RelayManager();
 
 /*
-   Endo of Simple relay sketch
+   End of Simple relay sketch
 */
 
 void before()
 {
   /* Simple Relay definition list
      Define your relay here
-     myRelayController.addRelay(int relay_pin_no)
-     myRelayController.addRelay(int relay_pin_no, int button_pin_no)
-     myRelayController.addRelay(int relay_pin_no, int button_pin_no, STATE_METHOD save_state, RELAY_STATE relay_on_state)
+     myRelayController.addRelay(byte relay_pin_no)
+     myRelayController.addRelay(byte relay_pin_no, byte button_pin_no)
+     myRelayController.addRelay(byte relay_pin_no, byte button_pin_no, STATE_METHOD save_state, RELAY_STATE relay_on_state)
+     myRelayController.addRelay(byte relay_pin_no, byte button_pin_no, STATE_METHOD save_state, RELAY_STATE relay_on_state, const char* relay_name)
 
      relay_pin_no - gpio pin with relay connected
      button_pin_no - gpio pin with button switch connected; use 0 - for no button
      
      STATE_METHOD is one of 
-      SAVE_TO_EMPROM
+      SAVE_TO_EMPROM - default
       LOAD_FROM_CONTROLERS
       START_IN_HIGH
       START_IN_LOW
     
     RELAY_STATE is one of 
-      RELAY_ON_HIGH
-      RELAY_ON_LOW
+      RELAY_ON_HIGH - default
+      RELAY_ON_LOW 
   */
-  myRelayController.addRelay(23, A8, START_IN_LOW, RELAY_ON_HIGH);
+  myRelayController.addRelay(23, A8, LOAD_FROM_CONTROLERS, RELAY_ON_HIGH); // ch1
   myRelayController.addRelay(23, A7);
   myRelayController.addRelay(23, A6);
-  myRelayController.addRelay(52, 53, LOAD_FROM_CONTROLERS, RELAY_ON_HIGH);
-  myRelayController.addRelay(50, 51, LOAD_FROM_CONTROLERS, RELAY_ON_HIGH);
-  myRelayController.addRelay(48, 49, LOAD_FROM_CONTROLERS, RELAY_ON_HIGH);
-  myRelayController.addRelay(46, 47, LOAD_FROM_CONTROLERS, RELAY_ON_HIGH);
+  myRelayController.addRelay(38, A8, SAVE_TO_EMPROM, RELAY_ON_HIGH, "ch8"); //ch8
+  myRelayController.addRelay(40, A9, START_IN_HIGH, RELAY_ON_HIGH, "ch7"); //ch7
+  myRelayController.addRelay(44, A10, START_IN_LOW, RELAY_ON_HIGH, "ch6"); //ch6
+  myRelayController.addRelay(46, A11, START_IN_LOW, RELAY_ON_LOW, "ch5"); //ch5
 }
 
 void setup() { }
