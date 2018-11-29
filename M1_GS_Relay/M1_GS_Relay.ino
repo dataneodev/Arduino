@@ -195,7 +195,7 @@ class ButtonSimple {
         pinMode(_button_pin_no, INPUT_PULLUP);
         _debouncer = Bounce();
         _debouncer.attach(_button_pin_no);
-        _debouncer.interval(10);
+        _debouncer.interval(20);
       }
     }
   private:
@@ -369,8 +369,6 @@ void loop()
 {
   //Simple Relay buttonCheckState
   myRelayController.buttonCheckState();
-
-  wait(1); // loop 1000 times per second
 }
 
 void receive(const MyMessage &message)
