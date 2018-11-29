@@ -84,8 +84,8 @@
 #include <QList.h>
 
 enum STATE_METHOD {
-  SAVE_TO_EMPROM,
-  LOAD_FROM_CONTROLERS,
+  SAVE_TO_EEPROM,
+  LOAD_FROM_CONTROLLERS,
   START_IN_HIGH,
   START_IN_LOW,
 };
@@ -115,12 +115,12 @@ class RelaySimple {
     void initPin() {
       pinMode(_relay_pin_no, OUTPUT);
       mMessage = MyMessage(_relay_pin_no, V_LIGHT);
-      if (_save_state == SAVE_TO_EMPROM) {
+      if (_save_state == SAVE_TO_EEPROM) {
         _relay_state = loadState(_relay_pin_no);
         digitalWrite(_relay_pin_no, getGPIOState(_relay_state));
         sendStateToController();
       }
-      if (_save_state == LOAD_FROM_CONTROLERS) {
+      if (_save_state == LOAD_FROM_CONTROLLERS) {
         // request load state from controler
         request(_relay_pin_no, V_LIGHT);
       }
@@ -144,14 +144,14 @@ class RelaySimple {
         return;
       _relay_state = relay_state;
       digitalWrite(_relay_pin_no, getGPIOState(_relay_state));
-      if (_save_state == SAVE_TO_EMPROM)
+      if (_save_state == SAVE_TO_EEPROM)
         saveState(_relay_pin_no, _relay_state);
     }
 
     void setButtonState() {
       _relay_state = ! _relay_state;
       digitalWrite(_relay_pin_no, getGPIOState(_relay_state));
-      if (_save_state == SAVE_TO_EMPROM)
+      if (_save_state == SAVE_TO_EEPROM)
         saveState(_relay_pin_no, _relay_state);
       sendStateToController();
     }
@@ -256,11 +256,11 @@ class RelayManager {
     }
 
     void addRelay(byte relay_pin_no) {
-      addRelay(relay_pin_no, 0, SAVE_TO_EMPROM, RELAY_ON_HIGH, '\0');
+      addRelay(relay_pin_no, 0, SAVE_TO_EEPROM, RELAY_ON_HIGH, '\0');
     }
 
     void addRelay(byte relay_pin_no, byte button_pin_no) {
-      addRelay(relay_pin_no, button_pin_no, SAVE_TO_EMPROM, RELAY_ON_HIGH, '\0');
+      addRelay(relay_pin_no, button_pin_no, SAVE_TO_EEPROM, RELAY_ON_HIGH, '\0');
     }
 
     void addRelay(byte relay_pin_no, byte button_pin_no, STATE_METHOD save_state, RELAY_STATE relay_on_state) {
@@ -336,8 +336,8 @@ void before()
      button_pin_no - gpio pin with button switch connected; use 0 - for no button
      
      STATE_METHOD is one of 
-      SAVE_TO_EMPROM - default
-      LOAD_FROM_CONTROLERS
+      SAVE_TO_EEPROM - default
+      LOAD_FROM_CONTROLLERS
       START_IN_HIGH
       START_IN_LOW
     
@@ -345,10 +345,10 @@ void before()
       RELAY_ON_HIGH - default
       RELAY_ON_LOW 
   */
-  myRelayController.addRelay(23, A8, LOAD_FROM_CONTROLERS, RELAY_ON_HIGH); // ch1
+  myRelayController.addRelay(23, A8, LOAD_FROM_CONTROLLERS, RELAY_ON_HIGH); // ch1
   myRelayController.addRelay(23, A7);
   myRelayController.addRelay(23, A6);
-  myRelayController.addRelay(38, A8, SAVE_TO_EMPROM, RELAY_ON_HIGH, "ch8"); //ch8
+  myRelayController.addRelay(38, A8, SAVE_TO_EEPROM, RELAY_ON_HIGH, "ch8"); //ch8
   myRelayController.addRelay(40, A9, START_IN_HIGH, RELAY_ON_HIGH, "ch7"); //ch7
   myRelayController.addRelay(44, A10, START_IN_LOW, RELAY_ON_HIGH, "ch6"); //ch6
   myRelayController.addRelay(46, A11, START_IN_LOW, RELAY_ON_LOW, "ch5"); //ch5
@@ -376,7 +376,7 @@ void loop()
 void receive(const MyMessage &message)
 {
   //Simple Relay recive message
-  if (message.type == V_STATUS) {
+  if (message.type == V_LIGHT) 
     myRelayController.setStateOnRelayListFromControler(message.sensor, message.getBool());
-  }
+  
 }
