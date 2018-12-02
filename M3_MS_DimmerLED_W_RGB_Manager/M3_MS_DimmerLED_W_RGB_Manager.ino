@@ -75,8 +75,8 @@
 #include <MySensors.h>
 
 /*
-   dataneo @2018
-   Simple relay sketch 1.1
+   dataneo @2018 - M1_MS_RelayManager
+   MySensors Relay Manager 1.1
    see https://sites.google.com/site/dataneosoftware/arduino/mysensors-relay-manager
 */
 
@@ -176,7 +176,7 @@ class RelaySimple {
       return (_relay_on_state == RELAY_ON_HIGH) ? relay_state : ! relay_state;
     }
     void sendStateToController() {
-      send(mMessage.set(_relay_state));
+      send(mMessage.set(_relay_state ? "1" : "0"));
     }
 };
 

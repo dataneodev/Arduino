@@ -75,10 +75,11 @@
 #include <MySensors.h>
 
 /*
-   dataneo @2018
-   Simple relay sketch 1.0
+   dataneo @2018 - M1_MS_RelayManager
+   MySensors Relay Manager 1.1
+   see https://sites.google.com/site/dataneosoftware/arduino/mysensors-relay-manager
 */
-#define MY_NODE_ID 1
+
 #define BOUNCE_LOCK_OUT
 #include <Bounce2.h>
 #include <QList.h>
@@ -93,6 +94,12 @@ enum STATE_METHOD {
 enum RELAY_STATE {
   RELAY_ON_HIGH,
   RELAY_ON_LOW,
+};
+
+enum CONTROLLER_TYPE{
+  DOMOTICZ,
+  HOMEASSISTANT,
+  OTHER, // NOT TESTED
 };
 
 //Simple relay class
@@ -118,7 +125,7 @@ class RelaySimple {
       if (_save_state == SAVE_TO_EEPROM) {
         _relay_state = loadState(_relay_pin_no);
         digitalWrite(_relay_pin_no, getGPIOState(_relay_state));
-        sendStateToController(true);
+        sendStateToController();
       }
       if (_save_state == LOAD_FROM_CONTROLLERS) {
         // request load state from controler
@@ -127,11 +134,11 @@ class RelaySimple {
       if (_save_state == START_IN_HIGH) {
         _relay_state = true;
         digitalWrite(_relay_pin_no, getGPIOState(_relay_state));
-        sendStateToController(true);
+        sendStateToController();
       }
       if (_save_state == START_IN_LOW) {
         _relay_state = false;
-        sendStateToController(true);
+        sendStateToController();
       }
     }
 
@@ -139,14 +146,15 @@ class RelaySimple {
       present(_relay_pin_no, S_BINARY, _relay_name);
     }
 
-    void setStateFromControler(bool relay_state) {
+    void setStateFromControler(bool relay_state, CONTROLLER_TYPE controller) {
       if (_relay_state == relay_state)
         return;
       _relay_state = relay_state;
       digitalWrite(_relay_pin_no, getGPIOState(_relay_state));
       if (_save_state == SAVE_TO_EEPROM)
         saveState(_relay_pin_no, _relay_state);
-      sendStateToController(false);
+      if(controller == HOMEASSISTANT)
+        sendStateToController();
     }
 
     void setButtonState() {
@@ -154,7 +162,7 @@ class RelaySimple {
       digitalWrite(_relay_pin_no, getGPIOState(_relay_state));
       if (_save_state == SAVE_TO_EEPROM)
         saveState(_relay_pin_no, _relay_state);
-      sendStateToController(true);
+      sendStateToController();
     }
   private:
     bool _relay_state; // current relay state on or off
@@ -167,8 +175,8 @@ class RelaySimple {
     byte getGPIOState(bool relay_state) {
       return (_relay_on_state == RELAY_ON_HIGH) ? relay_state : ! relay_state;
     }
-    void sendStateToController(bool ack) {
-      send(mMessage.set(_relay_state?1:0, ack));
+    void sendStateToController() {
+      send(mMessage.set(_relay_state ? "1" : "0"));
     }
 };
 
@@ -227,15 +235,16 @@ class RelayButtonPair {
 
 class RelayManager {
   public:
-    RelayManager() {
+    RelayManager(CONTROLLER_TYPE controller) {
       if_init = false;
+      _controller = controller;
     }
     //Simple Relay change status in RelayList
     void setStateOnRelayListFromControler(int relay_pin_no, bool relay_state) {
       if (relayList.length() > 0 && if_init)
         for (byte i = 0; i < relayList.length(); i++)
           if (relayList[i].relayPin() == relay_pin_no)
-            relayList[i].setStateFromControler(relay_state);
+            relayList[i].setStateFromControler(relay_state, _controller);
     }
     void presentAllToControler() {
       if (relayList.length() > 0)
@@ -271,7 +280,9 @@ class RelayManager {
     void addRelay(byte relay_pin_no, byte button_pin_no, STATE_METHOD save_state, RELAY_STATE relay_on_state, const char* relay_name) {
       if(relayList.length()>= MAX_PIN || buttonList.length() >= MAX_PIN)
         return;
-      
+      if(_controller == HOMEASSISTANT && save_state == LOAD_FROM_CONTROLLERS)
+        save_state = START_IN_LOW;
+        
       //check if relay exists
       bool exist = false;
       if (relayList.length() > 0)
@@ -303,6 +314,7 @@ class RelayManager {
   private:
     bool if_init;
     const byte MAX_PIN = 70;
+    CONTROLLER_TYPE _controller;
     QList<ButtonSimple> buttonList;
     QList<RelaySimple> relayList;
     QList<RelayButtonPair> relayButtonPairList;
@@ -318,7 +330,7 @@ class RelayManager {
     }
 };
 
-RelayManager myRelayController = RelayManager();
+RelayManager myRelayController = RelayManager(HOMEASSISTANT);
 
 /*
    End of Simple relay sketch
@@ -338,7 +350,7 @@ void before()
      
      STATE_METHOD is one of 
       SAVE_TO_EEPROM - default
-      LOAD_FROM_CONTROLLERS
+      LOAD_FROM_CONTROLLERS - don't work on homeassistant
       START_IN_HIGH
       START_IN_LOW
     
@@ -346,7 +358,7 @@ void before()
       RELAY_ON_HIGH - default
       RELAY_ON_LOW 
   */
-  myRelayController.addRelay(23, A8, START_IN_HIGH, RELAY_ON_HIGH, "ch1"); // ch1
+  myRelayController.addRelay(23, A8, LOAD_FROM_CONTROLLERS, RELAY_ON_HIGH, "lampka"); // ch1
   myRelayController.addRelay(23, A7);
   myRelayController.addRelay(23, A6);
   myRelayController.addRelay(38, A8, SAVE_TO_EEPROM, RELAY_ON_HIGH, "ch8"); //ch8
@@ -374,8 +386,11 @@ void loop()
 
 void receive(const MyMessage &message)
 {
+  if (message.isAck()) 
+    return;
+
   //Simple Relay recive message
   if (message.type == V_STATUS) 
-    myRelayController.setStateOnRelayListFromControler(message.sensor, (bool)message.getInt());
-  
+    myRelayController.setStateOnRelayListFromControler(message.sensor, message.getBool());
+  wait(1, C_SET, V_STATUS);
 }
