@@ -332,36 +332,88 @@ class RelayManager {
 
 RelayManager myRelayController = RelayManager(HOMEASSISTANT);
 /*
-   End of M1_MS_RelayManager
+   End of Simple relay sketch
 */
 
-void before()
-{
-  /* M1_MS_RelayManager definition list
-     Define your relay here
-     myRelayController.addRelay(byte relay_pin_no)
-     myRelayController.addRelay(byte relay_pin_no, byte button_pin_no)
-     myRelayController.addRelay(byte relay_pin_no, byte button_pin_no, STATE_METHOD save_state, RELAY_STATE relay_on_state)
-     myRelayController.addRelay(byte relay_pin_no, byte button_pin_no, STATE_METHOD save_state, RELAY_STATE relay_on_state, const char* relay_name)
-
-     relay_pin_no - gpio pin with relay connected
-     button_pin_no - gpio pin with button switch connected; use 0 - for no button
-     
-     STATE_METHOD is one of 
-      SAVE_TO_EEPROM - default
-      LOAD_FROM_CONTROLLERS - don't work on homeassistant
-      START_IN_HIGH
-      START_IN_LOW
+/*
+   dataneo @2018 - M2_MS_Heartbeat
+   MySensors Heartbeat Manager 1.0
+   see https://sites.google.com/site/dataneosoftware/arduino/mysensors-heartbeat
+*/
+class HeartBeatManager {
+  public:
+    HeartBeatManager(){ HeartBeatManager(0);};
+    HeartBeatManager(byte alarmBuzzerPin) {
+      _lastSend = 0;
+      _lastRecive = 0;
+      _lastBuzzerAcive = 0;
+      _alarmBuzzerPin = alarmBuzzerPin;
+      if (_alarmBuzzerPin != 0)
+        pinMode(_alarmBuzzerPin, OUTPUT);
+    }
+    void HeartBeat() {
+      _currentTime = millis();
+      if (_currentTime < _lastSend) {
+        _lastRecive = 0;
+        _lastBuzzerAcive = 0;
+        SendHeart();
+        return;
+      }
+      BuzzerCheck();
+      if (_currentTime < _lastSend + _timeSendPeriod)  return;
+      SendHeart();
+    }
+    void ControllerReciveMsg() {
+      _currentTime = millis();
+      _lastRecive = _currentTime;
+    }
     
-    RELAY_STATE is one of 
-      RELAY_ON_HIGH - default
-      RELAY_ON_LOW 
-  */
+  private:
+    byte _alarmBuzzerPin;
+    unsigned long _currentTime;
+    unsigned long _lastSend;
+    unsigned long _lastRecive;
+    unsigned long _lastBuzzerAcive;
+    const unsigned short _timeSendPeriod = 30 * 1000; // miliseconds
+    const unsigned short _timeReciveTimeout = 10 * 1000; // miliseconds
+    const unsigned short _toneLength = 500;
+    const unsigned short _toneBreak = 500;
+    const unsigned short _toneHz = 4000;
+    
+    void SendHeart(){
+      _lastSend = _currentTime;
+      sendHeartbeat();
+      if (_alarmBuzzerPin != 0)
+        requestTime();  
+    }
+    void BuzzerCheck() {
+      if (_alarmBuzzerPin != 0 &&
+          _lastSend != 0 &&
+          _lastRecive < _lastSend &&
+          ((_currentTime - _lastSend > _timeReciveTimeout) || (_currentTime - _lastRecive > _timeSendPeriod +_timeReciveTimeout)) &&
+          _lastBuzzerAcive + _toneLength + _toneBreak < _currentTime) {
+            _lastBuzzerAcive = _currentTime;
+            tone(_alarmBuzzerPin, _toneHz, _toneLength);
+      }
+    }
+};
+
+HeartBeatManager myHeartBeatManager = HeartBeatManager(13);
+
+void receiveTime(uint32_t ts) {
+  myHeartBeatManager.ControllerReciveMsg();
+}
+/*
+   End of MySensors Heartbeat Manager
+*/
+
+void before() {
+  //M1_MS_RelayManager
   myRelayController.addRelay(23, A8, LOAD_FROM_CONTROLLERS, RELAY_ON_HIGH, "lampka"); // ch1
   myRelayController.addRelay(23, A7);
   myRelayController.addRelay(23, A6);
-  myRelayController.addRelay(38, A8, SAVE_TO_EEPROM, RELAY_ON_HIGH, "ch8"); //ch8
-  myRelayController.addRelay(40, A9, START_IN_HIGH, RELAY_ON_HIGH, "ch7"); //ch7
+  myRelayController.addRelay(38, A8, START_IN_LOW, RELAY_ON_HIGH, "ch8"); //ch8
+  myRelayController.addRelay(40, A9, START_IN_LOW, RELAY_ON_HIGH, "ch7"); //ch7
   myRelayController.addRelay(44, A10, START_IN_LOW, RELAY_ON_HIGH, "ch6"); //ch6
   myRelayController.addRelay(46, A11, START_IN_LOW, RELAY_ON_LOW, "ch5"); //ch5
 }
@@ -371,20 +423,21 @@ void setup() { }
 void presentation()
 {
   // Send the sketch version information to the gateway and Controller
-  sendSketchInfo("SimpleRelay_dataneo", "1.0");
-
+  sendSketchInfo("A1_MS_Test", "1.0");
   myRelayController.presentAllToControler(); //M1_MS_RelayManager
 }
 
 void loop()
 {
   myRelayController.buttonCheckState(); //M1_MS_RelayManager
+  myHeartBeatManager.HeartBeat(); // Heartbeat Manager
   wait(1, C_SET, V_STATUS);
 }
 
 void receive(const MyMessage &message)
 {
-
+  myHeartBeatManager.ControllerReciveMsg();// Heartbeat Manager
+  
   //M1_MS_RelayManager
   if (message.type == V_STATUS && ! message.isAck()) 
     myRelayController.setStateOnRelayListFromControler(message.sensor, message.getBool());
