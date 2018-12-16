@@ -75,129 +75,120 @@
 #include <MySensors.h>
 
 /*
-   dataneo @2018 - M4_MS_SwitchSensorManager
-   MySensors Switch Sensor Manager 1.0
-   Mechanical switch manager with debouncer
-   see https://sites.google.com/site/dataneosoftware/arduino/switch-sensor-manager
+   dataneo @2018 - M5_MS_MotionSensorManager
+   MySensors Motion Sensor Manager 1.0
+   see https://sites.google.com/site/dataneosoftware/arduino/motion-sensor-manager
 */
-#define BOUNCE_LOCK_OUT
-#include <Bounce2.h>
 #include <QList.h>
 
-enum SWITCH_STATE {
-  SWITCH_NORMAL_OPEN,
-  SWITCH_NORMAL_CLOSE,
+enum MOTION_STATE {
+  MOTION_NORMAL_OPEN,
+  MOTION_NORMAL_CLOSE,
 };
 
-//Switch Sensor Manager
-class SwitchSimple {
+//Motion Sensor Manager
+class MotionSimple {
   public:
-    SwitchSimple() {
-      _switch_pin_no = 0;
-      _switch_value = 0;
-      _switch_state = SWITCH_NORMAL_OPEN;
+    MotionSimple() {
+      _motion_pin_no = 0;
+      _motion_value = 0;
+      _motion_state = MOTION_NORMAL_OPEN;
     };
-    SwitchSimple(byte switch_pin_no, SWITCH_STATE switchState, const char* switch_name) {
-      _switch_pin_no = switch_pin_no;
-      _switch_value = 0;
-      _switch_state = switchState;
-      _switch_name = switch_name;
+    MotionSimple(byte motion_pin_no, MOTION_STATE motion_state, const char* motion_name) {
+      _motion_pin_no = motion_pin_no;
+      _motion_value = 0;
+      _motion_state = motion_state;
+      _motion_name = motion_name;
     };
-    byte switchPin() {
-      return _switch_pin_no;
+    byte motionPin() {
+      return _motion_pin_no;
     }
-    bool checkSwitch(bool forceSendToController = false) {
-      _debouncer.update();
-      bool readValue = _debouncer.read();
-      if(readValue != _switch_value || forceSendToController){
-        _switch_value = readValue;
+    bool checkmotion(bool forceSendToController = false) {
+      if(_motion_pin_no == 0) return false;
+      bool readValue = digitalRead(_motion_pin_no) == HIGH ? true : false;
+      if(readValue != _motion_value || forceSendToController){
+        _motion_value = readValue;
         sendStateToController();
       }
       return readValue;
     }
     void initPin() {
-      pinMode(_switch_pin_no, INPUT_PULLUP);
-      //digitalWrite(_switch_pin_no,HIGH);
-      mMessage = MyMessage(_switch_pin_no, V_TRIPPED);
-      _debouncer = Bounce();
-      _debouncer.attach(_switch_pin_no);
-      _debouncer.interval(20);
-      checkSwitch(true);
+      if(_motion_pin_no == 0) return;
+      pinMode(_motion_pin_no, INPUT);
+      mMessage = MyMessage(_motion_pin_no, V_TRIPPED);
+      checkmotion(true);
     }
     void presentToControler() {
-      present(_switch_pin_no, S_DOOR, _switch_name);
+      if(_motion_pin_no == 0) return;
+      present(_motion_pin_no, S_MOTION, _motion_name);
     }
   private:
     MyMessage mMessage;
-    Bounce _debouncer;  
-    SWITCH_STATE _switch_state;
-    bool _switch_value;
-    byte _switch_pin_no; // gpio pin for switch
-    const char* _switch_name;  
+    MOTION_STATE _motion_state;
+    bool _motion_value;
+    byte _motion_pin_no; 
+    const char* _motion_name;  
 
     void sendStateToController() {
-      bool state = _switch_value;
-      if(_switch_state == SWITCH_NORMAL_OPEN) 
+      bool state = _motion_value;
+      if(_motion_state == MOTION_NORMAL_OPEN) 
         state = !state;
       send(mMessage.set(state ? "1" : "0"));
     }
 };
 
-class SwitchManager {
+class MotionManager {
   public:
-    SwitchManager() {
+    MotionManager() {
       if_init = false;
     }
     void presentAllToControler() {
-      if (switchList.length() > 0)
-        for (byte i = 0; i < switchList.length(); i++)
-          switchList[i].presentToControler();
+      if (motionList.length() > 0)
+        for (byte i = 0; i < motionList.length(); i++)
+          motionList[i].presentToControler();
       initAllPins();
     }
-    void switchCheckState() {
-      if (switchList.length() > 0 && if_init)
-        for (byte i = 0; i < switchList.length(); i++)
-          switchList[i].checkSwitch(false);
+    void motionCheckState() {
+      if (motionList.length() > 0 && if_init)
+        for (byte i = 0; i < motionList.length(); i++)
+          motionList[i].checkmotion(false);
     }
-    void addSwitch(byte switch_pin_no) {
-      addSwitch(switch_pin_no, SWITCH_NORMAL_CLOSE, '\0');
+    void addMotion(byte motion_pin_no) {
+      addMotion(motion_pin_no, MOTION_NORMAL_CLOSE, '\0');
     }
-    void addSwitch(byte switch_pin_no, SWITCH_STATE switch_state) {
-      addSwitch(switch_pin_no, SWITCH_NORMAL_CLOSE, '\0');
-    }    
-    void addSwitch(byte switch_pin_no, SWITCH_STATE switch_state, const char* switch_name) {
-      if(switchList.length()>= MAX_PIN) return;        
-      //check if switch exists
+    void addMotion(byte motion_pin_no, MOTION_STATE motion_state) {
+      addMotion(motion_pin_no, MOTION_NORMAL_CLOSE, '\0');
+    }
+    void addMotion(byte motion_pin_no, MOTION_STATE motion_state, const char* motion_name) {
+      if(motionList.length()>= MAX_PIN) return;        
+      //check if motion exists
       bool exist = false;
-      if (switchList.length() > 0)
-        for (byte i = 0; i < switchList.length(); i++)
-          if (switchList[i].switchPin() == switch_pin_no)
+      if (motionList.length() > 0)
+        for (byte i = 0; i < motionList.length(); i++)
+          if (motionList[i].motionPin() == motion_pin_no)
             exist = true;
       if (!exist) 
-        switchList.push_back(SwitchSimple(switch_pin_no, switch_state, switch_name));
+        motionList.push_back(MotionSimple(motion_pin_no, motion_state, motion_name));
     }
   private:
     bool if_init;
     const byte MAX_PIN = 70;
-    QList<SwitchSimple> switchList;
-
+    QList<MotionSimple> motionList;
     void initAllPins() {
-      if (switchList.length() > 0 && !if_init)
-        for (byte i = 0; i < switchList.length(); i++)
-          switchList[i].initPin();
+      if (motionList.length() > 0 && !if_init)
+        for (byte i = 0; i < motionList.length(); i++)
+          motionList[i].initPin();
       if_init = true;
     }
 };
 
-SwitchManager mySwitchManager = SwitchManager();
-/*
-   End of M4_MS_SwitchSensorManager
-*/
+MotionManager myMotionManager = MotionManager();
+/*  End of M5_MS_MotionSensorManager */
 
 void before()
 {
-  /* M4_MS_SwitchSensorManager */
-  mySwitchManager.addSwitch(A0, SWITCH_NORMAL_CLOSE, "drzwi kuchnia");  // M4_MS_SwitchSensorManager
+  /* M5_MS_MotionSensorManager */
+  myMotionManager.addMotion(7, MOTION_NORMAL_CLOSE, "Czujnik ruchu salon");  // M5_MS_MotionSensorManager
 
 }
 
@@ -206,14 +197,14 @@ void setup() { }
 void presentation()
 {
   // Send the sketch version information to the gateway and Controller
-  sendSketchInfo("Switch Sensor Manager", "1.0");
+  sendSketchInfo("Motion Sensor Manager", "1.0");
 
-  mySwitchManager.presentAllToControler(); //M4_MS_SwitchSensorManager
+  myMotionManager.presentAllToControler(); //M5_MS_MotionSensorManager
 }
 
 void loop()
 {
-  mySwitchManager.switchCheckState(); //M4_MS_SwitchSensorManager
+  myMotionManager.motionCheckState(); //M5_MS_MotionSensorManager
   wait(1, C_SET, V_STATUS);
 }
 
