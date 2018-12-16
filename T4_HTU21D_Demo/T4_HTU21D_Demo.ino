@@ -45,7 +45,7 @@ HTU21D myHTU21D(HTU21D_RES_RH12_TEMP14);
 
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println();
   
   while (myHTU21D.begin() != true)

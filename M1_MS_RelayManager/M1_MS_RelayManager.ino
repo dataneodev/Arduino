@@ -384,7 +384,6 @@ void loop()
 
 void receive(const MyMessage &message)
 {
-
   //M1_MS_RelayManager
   if (message.type == V_STATUS && ! message.isAck()) 
     myRelayController.setStateOnRelayListFromControler(message.sensor, message.getBool());

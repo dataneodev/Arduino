@@ -116,10 +116,10 @@ class HeartBeatManager {
     unsigned long _lastRecive;
     unsigned long _lastBuzzerAcive;
     const unsigned short _timeSendPeriod = 30 * 1000; // miliseconds
-    const unsigned short _timeReciveTimeout = 10 * 1000; // miliseconds
-    const unsigned short _toneLength = 500; // length of buzzer active
-    const unsigned short _toneBreak = 500; // length of buzzer break
-    const unsigned short _toneHz = 4000; // buzzer
+    const unsigned short _timeReciveTimeout = 10 * 1000; //timeout miliseconds
+    const unsigned short _toneLength = 500; // time of buzzer active miliseconds
+    const unsigned short _toneBreak = 500; // time of buzzer break miliseconds
+    const unsigned short _toneHz = 4000; // buzzer hz
 
     void SendHeart() {
       _lastSend = _currentTime;
