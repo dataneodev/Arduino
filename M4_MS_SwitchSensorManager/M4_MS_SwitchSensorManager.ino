@@ -80,7 +80,6 @@
    Mechanical switch manager with debouncer
    see https://sites.google.com/site/dataneosoftware/arduino/switch-sensor-manager
 */
-#define BOUNCE_LOCK_OUT
 #include <Bounce2.h>
 #include <QList.h>
 
@@ -121,7 +120,7 @@ class SwitchSimple {
       mMessage = MyMessage(_switch_pin_no, V_TRIPPED);
       _debouncer = Bounce();
       _debouncer.attach(_switch_pin_no);
-      _debouncer.interval(20);
+      _debouncer.interval(5);
       checkSwitch(true);
     }
     void presentToControler() {
@@ -214,7 +213,6 @@ void presentation()
 void loop()
 {
   mySwitchManager.switchCheckState(); //M4_MS_SwitchSensorManager
-  wait(1, C_SET, V_STATUS);
 }
 
 void receive(const MyMessage &message){ 

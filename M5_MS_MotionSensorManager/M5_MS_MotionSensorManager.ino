@@ -77,7 +77,7 @@
 /*
    dataneo @2018 - M5_MS_MotionSensorManager
    MySensors Motion Sensor Manager 1.0
-   see https://sites.google.com/site/dataneosoftware/arduino/motion-sensor-manager
+   see https://sites.google.com/site/dataneosoftware/arduino/mysensors-motion-sensor-manager
 */
 #include <QList.h>
 
@@ -93,12 +93,14 @@ class MotionSimple {
       _motion_pin_no = 0;
       _motion_value = 0;
       _motion_state = MOTION_NORMAL_OPEN;
+      _sensor = S_MOTION;
     };
-    MotionSimple(byte motion_pin_no, MOTION_STATE motion_state, const char* motion_name) {
+    MotionSimple(byte motion_pin_no, MOTION_STATE motion_state, const char* motion_name, mysensors_sensor_t sensor_type) {
       _motion_pin_no = motion_pin_no;
       _motion_value = 0;
       _motion_state = motion_state;
       _motion_name = motion_name;
+      _sensor = sensor_type;
     };
     byte motionPin() {
       return _motion_pin_no;
@@ -120,11 +122,12 @@ class MotionSimple {
     }
     void presentToControler() {
       if(_motion_pin_no == 0) return;
-      present(_motion_pin_no, S_MOTION, _motion_name);
+      present(_motion_pin_no, _sensor, _motion_name);
     }
   private:
     MyMessage mMessage;
     MOTION_STATE _motion_state;
+    mysensors_sensor_t _sensor;
     bool _motion_value;
     byte _motion_pin_no; 
     const char* _motion_name;  
@@ -154,12 +157,12 @@ class MotionManager {
           motionList[i].checkmotion(false);
     }
     void addMotion(byte motion_pin_no) {
-      addMotion(motion_pin_no, MOTION_NORMAL_CLOSE, '\0');
+      addMotion(motion_pin_no, MOTION_NORMAL_CLOSE, '\0', S_MOTION);
     }
     void addMotion(byte motion_pin_no, MOTION_STATE motion_state) {
-      addMotion(motion_pin_no, MOTION_NORMAL_CLOSE, '\0');
+      addMotion(motion_pin_no, MOTION_NORMAL_CLOSE, '\0', S_MOTION);
     }
-    void addMotion(byte motion_pin_no, MOTION_STATE motion_state, const char* motion_name) {
+    void addMotion(byte motion_pin_no, MOTION_STATE motion_state, const char* motion_name, mysensors_sensor_t _sensor = S_MOTION) {
       if(motionList.length()>= MAX_PIN) return;        
       //check if motion exists
       bool exist = false;
@@ -168,7 +171,7 @@ class MotionManager {
           if (motionList[i].motionPin() == motion_pin_no)
             exist = true;
       if (!exist) 
-        motionList.push_back(MotionSimple(motion_pin_no, motion_state, motion_name));
+        motionList.push_back(MotionSimple(motion_pin_no, motion_state, motion_name, _sensor));
     }
   private:
     bool if_init;
@@ -189,6 +192,7 @@ void before()
 {
   /* M5_MS_MotionSensorManager */
   myMotionManager.addMotion(7, MOTION_NORMAL_CLOSE, "Czujnik ruchu salon");  // M5_MS_MotionSensorManager
+  myMotionManager.addMotion(8, MOTION_NORMAL_CLOSE, "Czujnik zalania kuchnia", S_WATER_LEAK);  // M5_MS_MotionSensorManager use only sensors type with V_TRIPPED : S_DOOR, S_MOTION, S_SMOKE, S_SPRINKLER, S_WATER_LEAK, S_SOUND, S_VIBRATION, S_MOISTURE
 
 }
 
@@ -197,7 +201,7 @@ void setup() { }
 void presentation()
 {
   // Send the sketch version information to the gateway and Controller
-  sendSketchInfo("Motion Sensor Manager", "1.0");
+  sendSketchInfo("Motion Sensor Manager", "1.1");
 
   myMotionManager.presentAllToControler(); //M5_MS_MotionSensorManager
 }
@@ -205,7 +209,6 @@ void presentation()
 void loop()
 {
   myMotionManager.motionCheckState(); //M5_MS_MotionSensorManager
-  wait(1, C_SET, V_STATUS);
 }
 
 void receive(const MyMessage &message){ 

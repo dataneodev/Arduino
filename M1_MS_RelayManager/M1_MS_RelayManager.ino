@@ -80,7 +80,6 @@
    see https://sites.google.com/site/dataneosoftware/arduino/mysensors-relay-manager
 */
 
-#define BOUNCE_LOCK_OUT
 #include <Bounce2.h>
 #include <QList.h>
 
@@ -204,7 +203,7 @@ class ButtonSimple {
         pinMode(_button_pin_no, INPUT_PULLUP);
         _debouncer = Bounce();
         _debouncer.attach(_button_pin_no);
-        _debouncer.interval(20);
+        _debouncer.interval(5);
       }
     }
   private:
