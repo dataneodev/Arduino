@@ -76,7 +76,7 @@
 
 /*
    dataneo @2018 - M5_MS_MotionSensorManager
-   MySensors Motion Sensor Manager 1.0
+   MySensors Motion Sensor Manager 1.1
    see https://sites.google.com/site/dataneosoftware/arduino/mysensors-motion-sensor-manager
 */
 #include <QList.h>
