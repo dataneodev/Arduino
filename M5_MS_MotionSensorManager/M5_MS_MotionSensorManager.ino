@@ -82,8 +82,8 @@
 #include <QList.h>
 
 enum MOTION_STATE {
-  NORMAL_OPEN,
-  NORMAL_CLOSE,
+  SENSOR_ON_LOW,
+  SENSOR_ON_HIGH,
 };
 
 //Motion Sensor Manager
@@ -92,7 +92,7 @@ class MotionSimple {
     MotionSimple() {
       _motion_pin_no = 0;
       _motion_value = 0;
-      _motion_state = NORMAL_OPEN;
+      _motion_state = SENSOR_ON_LOW;
       _sensor = S_MOTION;
     };
     MotionSimple(byte motion_pin_no, MOTION_STATE motion_state, const char* motion_name, mysensors_sensor_t sensor_type) {
@@ -134,7 +134,7 @@ class MotionSimple {
 
     void sendStateToController() {
       bool state = _motion_value;
-      if(_motion_state == NORMAL_OPEN) 
+      if(_motion_state == SENSOR_ON_LOW) 
         state = !state;
       send(mMessage.set(state ? "1" : "0"));
     }
@@ -157,10 +157,10 @@ class MotionManager {
           motionList[i].checkmotion(false);
     }
     void addMotion(byte motion_pin_no) {
-      addMotion(motion_pin_no, NORMAL_CLOSE, '\0', S_MOTION);
+      addMotion(motion_pin_no, SENSOR_ON_HIGH, '\0', S_MOTION);
     }
     void addMotion(byte motion_pin_no, MOTION_STATE motion_state) {
-      addMotion(motion_pin_no, NORMAL_CLOSE, '\0', S_MOTION);
+      addMotion(motion_pin_no, SENSOR_ON_HIGH, '\0', S_MOTION);
     }
     void addMotion(byte motion_pin_no, MOTION_STATE motion_state, const char* motion_name, mysensors_sensor_t _sensor = S_MOTION) {
       if(motionList.length()>= MAX_PIN) return;        
@@ -191,8 +191,8 @@ MotionManager myMotionManager = MotionManager();
 void before()
 {
   /* M5_MS_MotionSensorManager */
-  myMotionManager.addMotion(7, NORMAL_CLOSE, "Czujnik ruchu salon");  // M5_MS_MotionSensorManager
-  myMotionManager.addMotion(8, NORMAL_CLOSE, "Czujnik zalania kuchnia", S_WATER_LEAK);  // M5_MS_MotionSensorManager use only sensors type with V_TRIPPED : S_DOOR, S_MOTION, S_SMOKE, S_SPRINKLER, S_WATER_LEAK, S_SOUND, S_VIBRATION, S_MOISTURE
+  myMotionManager.addMotion(7, SENSOR_ON_HIGH, "Czujnik ruchu salon");  // M5_MS_MotionSensorManager
+  myMotionManager.addMotion(8, SENSOR_ON_HIGH, "Czujnik zalania kuchnia", S_WATER_LEAK);  // M5_MS_MotionSensorManager use only sensors type with V_TRIPPED : S_DOOR, S_MOTION, S_SMOKE, S_SPRINKLER, S_WATER_LEAK, S_SOUND, S_VIBRATION, S_MOISTURE
 
 }
 
