@@ -84,8 +84,8 @@
 #include <QList.h>
 
 enum SWITCH_STATE {
-  SWITCH_NORMAL_OPEN,
-  SWITCH_NORMAL_CLOSE,
+  NORMAL_OPEN,
+  NORMAL_CLOSE,
 };
 
 //Switch Sensor Manager
@@ -94,7 +94,7 @@ class SwitchSimple {
     SwitchSimple() {
       _switch_pin_no = 0;
       _switch_value = 0;
-      _switch_state = SWITCH_NORMAL_OPEN;
+      _switch_state = NORMAL_OPEN;
     };
     SwitchSimple(byte switch_pin_no, SWITCH_STATE switchState, const char* switch_name) {
       _switch_pin_no = switch_pin_no;
@@ -136,7 +136,7 @@ class SwitchSimple {
 
     void sendStateToController() {
       bool state = _switch_value;
-      if(_switch_state == SWITCH_NORMAL_OPEN) 
+      if(_switch_state == NORMAL_OPEN) 
         state = !state;
       send(mMessage.set(state ? "1" : "0"));
     }
@@ -159,10 +159,10 @@ class SwitchManager {
           switchList[i].checkSwitch(false);
     }
     void addSwitch(byte switch_pin_no) {
-      addSwitch(switch_pin_no, SWITCH_NORMAL_CLOSE, '\0');
+      addSwitch(switch_pin_no, NORMAL_CLOSE, '\0');
     }
     void addSwitch(byte switch_pin_no, SWITCH_STATE switch_state) {
-      addSwitch(switch_pin_no, SWITCH_NORMAL_CLOSE, '\0');
+      addSwitch(switch_pin_no, NORMAL_CLOSE, '\0');
     }    
     void addSwitch(byte switch_pin_no, SWITCH_STATE switch_state, const char* switch_name) {
       if(switchList.length()>= MAX_PIN) return;        
@@ -196,7 +196,7 @@ SwitchManager mySwitchManager = SwitchManager();
 void before()
 {
   /* M4_MS_SwitchSensorManager */
-  mySwitchManager.addSwitch(A0, SWITCH_NORMAL_CLOSE, "drzwi kuchnia");  // M4_MS_SwitchSensorManager
+  mySwitchManager.addSwitch(A0, NORMAL_CLOSE, "drzwi kuchnia");  // M4_MS_SwitchSensorManager
 
 }
 
