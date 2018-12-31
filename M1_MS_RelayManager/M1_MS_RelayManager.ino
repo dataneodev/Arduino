@@ -370,7 +370,7 @@ void setup() { }
 void presentation()
 {
   // Send the sketch version information to the gateway and Controller
-  sendSketchInfo("SimpleRelay_dataneo", "1.0");
+  sendSketchInfo("MySensorsRelayManager", "1.1");
 
   myRelayController.presentAllToControler(); //M1_MS_RelayManager
 }
