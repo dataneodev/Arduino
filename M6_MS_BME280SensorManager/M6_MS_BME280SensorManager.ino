@@ -132,11 +132,12 @@ class BME280Simple {
       bme280Obj.parameter.humidOversampling = 0b101;
       bme280Obj.parameter.tempOversampling = 0b101;
       bme280Obj.parameter.pressOversampling = 0b101;
-      if (bme280Obj.init() != 0x60) {
+      if (TCA9548ADeviceAdress > 0)
+        tcaSelect(TCA9548ADeviceAdress, TCA9548APortNo);
+      if (bme280Obj.init() != 0x60) 
         initCorrect = false;
-      } else {
+      else 
         initCorrect = true;
-      }
       readSensor(true);
     }
     void presentToControler() {
