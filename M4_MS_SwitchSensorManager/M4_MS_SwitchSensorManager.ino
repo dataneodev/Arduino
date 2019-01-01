@@ -117,7 +117,6 @@ class SwitchSimple {
     void initPin() {
       pinMode(_switch_pin_no, INPUT_PULLUP);
       //digitalWrite(_switch_pin_no,HIGH);
-      mMessage = MyMessage(_switch_pin_no, V_TRIPPED);
       _debouncer = Bounce();
       _debouncer.attach(_switch_pin_no);
       _debouncer.interval(5);
@@ -127,7 +126,6 @@ class SwitchSimple {
       present(_switch_pin_no, S_DOOR, _switch_name);
     }
   private:
-    MyMessage mMessage;
     Bounce _debouncer;  
     SWITCH_STATE _switch_state;
     bool _switch_value;
@@ -138,6 +136,7 @@ class SwitchSimple {
       bool state = _switch_value;
       if(_switch_state == NORMAL_OPEN) 
         state = !state;
+      MyMessage mMessage(_switch_pin_no, V_TRIPPED);
       send(mMessage.set(state ? "1" : "0"));
     }
 };

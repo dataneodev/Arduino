@@ -120,7 +120,6 @@ class RelaySimple {
     }
     void initPin() {
       pinMode(_relay_pin_no, OUTPUT);
-      mMessage = MyMessage(_relay_pin_no, V_STATUS);
       if (_save_state == SAVE_TO_EEPROM) {
         _relay_state = loadState(_relay_pin_no);
         digitalWrite(_relay_pin_no, getGPIOState(_relay_state));
@@ -167,7 +166,7 @@ class RelaySimple {
     bool _relay_state; // current relay state on or off
     byte _relay_pin_no; // gpio pin for relay
     const char* _relay_name;
-    MyMessage mMessage;
+    
     STATE_METHOD _save_state;
     RELAY_STATE _relay_on_state;
 
@@ -175,6 +174,7 @@ class RelaySimple {
       return (_relay_on_state == RELAY_ON_HIGH) ? relay_state : ! relay_state;
     }
     void sendStateToController() {
+      MyMessage mMessage(_relay_pin_no, V_STATUS);
       send(mMessage.set(_relay_state ? "1" : "0"));
     }
 };

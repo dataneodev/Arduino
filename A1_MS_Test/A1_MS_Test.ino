@@ -120,7 +120,6 @@ class RelaySimple {
     }
     void initPin() {
       pinMode(_relay_pin_no, OUTPUT);
-      mMessage = MyMessage(_relay_pin_no, V_STATUS);
       if (_save_state == SAVE_TO_EEPROM) {
         _relay_state = loadState(_relay_pin_no);
         digitalWrite(_relay_pin_no, getGPIOState(_relay_state));
@@ -167,7 +166,6 @@ class RelaySimple {
     bool _relay_state; // current relay state on or off
     byte _relay_pin_no; // gpio pin for relay
     const char* _relay_name;
-    MyMessage mMessage;
     STATE_METHOD _save_state;
     RELAY_STATE _relay_on_state;
 
@@ -175,6 +173,7 @@ class RelaySimple {
       return (_relay_on_state == RELAY_ON_HIGH) ? relay_state : ! relay_state;
     }
     void sendStateToController() {
+      MyMessage mMessage(_relay_pin_no, V_STATUS);
       send(mMessage.set(_relay_state ? "1" : "0"));
     }
 };
@@ -524,14 +523,14 @@ SwitchManager mySwitchManager = SwitchManager();
 
 /*
    dataneo @2018 - M5_MS_MotionSensorManager
-   MySensors Motion Sensor Manager 1.1
+   MySensors Motion Sensor Manager 1.2
    see https://sites.google.com/site/dataneosoftware/arduino/mysensors-motion-sensor-manager
 */
 #include <QList.h>
 
 enum MOTION_STATE {
-  MOTION_NORMAL_OPEN,
-  MOTION_NORMAL_CLOSE,
+  SENSOR_ON_LOW,
+  SENSOR_ON_HIGH,
 };
 
 //Motion Sensor Manager
@@ -540,8 +539,9 @@ class MotionSimple {
     MotionSimple() {
       _motion_pin_no = 0;
       _motion_value = 0;
-      _motion_state = MOTION_NORMAL_OPEN;
+      _motion_state = SENSOR_ON_HIGH;
       _sensor = S_MOTION;
+      _armed = true;
     };
     MotionSimple(byte motion_pin_no, MOTION_STATE motion_state, const char* motion_name, mysensors_sensor_t sensor_type) {
       _motion_pin_no = motion_pin_no;
@@ -549,49 +549,60 @@ class MotionSimple {
       _motion_state = motion_state;
       _motion_name = motion_name;
       _sensor = sensor_type;
+      _armed = true;
     };
     byte motionPin() {
       return _motion_pin_no;
     }
     bool checkmotion(bool forceSendToController = false) {
-      if(_motion_pin_no == 0) return false;
-      bool readValue = digitalRead(_motion_pin_no) == HIGH ? true : false;
-      if(readValue != _motion_value || forceSendToController){
+      if (_motion_pin_no == 0) return false;
+      bool readValue = _armed ? (digitalRead(_motion_pin_no) == HIGH ? true : false) : false;
+      if (readValue != _motion_value || forceSendToController) {
         _motion_value = readValue;
         sendStateToController();
       }
       return readValue;
     }
     void initPin() {
-      if(_motion_pin_no == 0) return;
+      if (_motion_pin_no == 0) return;
       pinMode(_motion_pin_no, INPUT);
       mMessage = MyMessage(_motion_pin_no, V_TRIPPED);
+      mMessageArmed = MyMessage(_motion_pin_no, V_ARMED);
       checkmotion(true);
     }
     void presentToControler() {
-      if(_motion_pin_no == 0) return;
+      if (_motion_pin_no == 0) return;
       present(_motion_pin_no, _sensor, _motion_name);
+    }
+    void setStateFromControler(bool state, CONTROLLER_TYPE controller) {
+      _armed = state;
+      if (controller == HOMEASSISTANT)
+        sendStateToController();
     }
   private:
     MyMessage mMessage;
+    MyMessage mMessageArmed;
     MOTION_STATE _motion_state;
     mysensors_sensor_t _sensor;
     bool _motion_value;
-    byte _motion_pin_no; 
-    const char* _motion_name;  
+    byte _motion_pin_no;
+    bool _armed;
+    const char* _motion_name;
 
     void sendStateToController() {
       bool state = _motion_value;
-      if(_motion_state == MOTION_NORMAL_OPEN) 
+      if (_motion_state == SENSOR_ON_LOW)
         state = !state;
       send(mMessage.set(state ? "1" : "0"));
+      send(mMessageArmed.set(_armed ? "1" : "0"));
     }
 };
 
 class MotionManager {
   public:
-    MotionManager() {
+    MotionManager(CONTROLLER_TYPE controller) {
       if_init = false;
+      _controller = controller;
     }
     void presentAllToControler() {
       if (motionList.length() > 0)
@@ -605,25 +616,32 @@ class MotionManager {
           motionList[i].checkmotion(false);
     }
     void addMotion(byte motion_pin_no) {
-      addMotion(motion_pin_no, MOTION_NORMAL_CLOSE, '\0', S_MOTION);
+      addMotion(motion_pin_no, SENSOR_ON_HIGH, '\0', S_MOTION);
     }
     void addMotion(byte motion_pin_no, MOTION_STATE motion_state) {
-      addMotion(motion_pin_no, MOTION_NORMAL_CLOSE, '\0', S_MOTION);
+      addMotion(motion_pin_no, SENSOR_ON_HIGH, '\0', S_MOTION);
     }
     void addMotion(byte motion_pin_no, MOTION_STATE motion_state, const char* motion_name, mysensors_sensor_t _sensor = S_MOTION) {
-      if(motionList.length()>= MAX_PIN) return;        
+      if (motionList.length() >= MAX_PIN) return;
       //check if motion exists
       bool exist = false;
       if (motionList.length() > 0)
         for (byte i = 0; i < motionList.length(); i++)
           if (motionList[i].motionPin() == motion_pin_no)
             exist = true;
-      if (!exist) 
+      if (!exist)
         motionList.push_back(MotionSimple(motion_pin_no, motion_state, motion_name, _sensor));
+    }
+    void setStatetFromControler(int motion_pin_no, bool state) {
+      if (motionList.length() > 0 && if_init)
+        for (byte i = 0; i < motionList.length(); i++)
+          if (motionList[i].motionPin() == motion_pin_no)
+            motionList[i].setStateFromControler(state, _controller);
     }
   private:
     bool if_init;
     const byte MAX_PIN = 70;
+    CONTROLLER_TYPE _controller;
     QList<MotionSimple> motionList;
     void initAllPins() {
       if (motionList.length() > 0 && !if_init)
@@ -633,8 +651,347 @@ class MotionManager {
     }
 };
 
-MotionManager myMotionManager = MotionManager();
+MotionManager myMotionManager = MotionManager(HOMEASSISTANT);
 /*  End of M5_MS_MotionSensorManager */
+
+/*
+   dataneo @2018 - M6_MS_BME280SensorManager
+   MySensors BME280 Sensor Manager 1.0
+   see https://sites.google.com/site/dataneosoftware/arduino/mysensors-bme280-sensor-manager
+*/
+#include <Wire.h>
+#include <BlueDot_BME280.h>
+#include <QList.h>
+
+class BME280Simple {
+  public:
+    BME280Simple() {
+      bme280DeviceAdress = 0x76;
+      TCA9548ADeviceAdress = 0;
+      TCA9548APortNo = 0;
+      initCorrect = false;
+    };
+    BME280Simple(uint8_t bme280Adress, uint8_t TCA9548AAdress, uint8_t TCA9548APort, const char* bmp280_name) {
+      bme280DeviceAdress = bme280Adress;
+      TCA9548ADeviceAdress = TCA9548AAdress;
+      TCA9548APortNo = TCA9548APort;
+      _bmp280_name = bmp280_name;
+      initCorrect = false;
+    };
+    void readSensor(bool forceSendToController = false) {
+      float tempVar;
+      if (TCA9548ADeviceAdress > 0)
+        tcaSelect(TCA9548ADeviceAdress, TCA9548APortNo);
+      //temp
+      tempVar = initCorrect ? bme280Obj.readTempC() : 0;
+      if (tempVar != _temperature || forceSendToController) {
+        _temperature = tempVar;
+        sendStateToController(S_TEMP);
+      }
+      //humi
+      tempVar = initCorrect ? bme280Obj.readHumidity() : 0;
+      if (tempVar != _humidity || forceSendToController) {
+        _humidity = tempVar;
+        sendStateToController(S_HUM);
+      }
+      //press
+      tempVar = initCorrect ? bme280Obj.readPressure() : 0;
+      if (tempVar != _pressure || forceSendToController) {
+        _pressure = tempVar;
+        sendStateToController(S_BARO);
+      }
+    }
+    void initSensor() {
+      msgHumidity = MyMessage(getChildID(S_HUM), V_HUM);
+      msgTemperature = MyMessage(getChildID(S_TEMP), V_TEMP);
+      msgPressure = MyMessage(getChildID(S_BARO), V_PRESSURE);
+      //msgForecast = MyMessage(getChildID(S_BARO), V_FORECAST);
+      bme280Obj.parameter.communication = 0;
+      bme280Obj.parameter.I2CAddress = bme280DeviceAdress;
+      bme280Obj.parameter.sensorMode = 0b11;
+      bme280Obj.parameter.IIRfilter = 0b100;
+      bme280Obj.parameter.humidOversampling = 0b101;
+      bme280Obj.parameter.tempOversampling = 0b101;
+      bme280Obj.parameter.pressOversampling = 0b101;
+      if (TCA9548ADeviceAdress > 0)
+        tcaSelect(TCA9548ADeviceAdress, TCA9548APortNo);
+      if (bme280Obj.init() != 0x60) 
+        initCorrect = false;
+      else 
+        initCorrect = true;
+      readSensor(true);
+    }
+    void presentToControler() {
+      present(getChildID(S_TEMP), S_TEMP, _bmp280_name);
+      present(getChildID(S_HUM), S_HUM, _bmp280_name);
+      present(getChildID(S_BARO), S_BARO, _bmp280_name);
+    }
+    uint8_t getTCA9548ADeviceAdress() {
+      return TCA9548ADeviceAdress;
+    }
+    uint8_t getTCA9548APortNo() {
+      return TCA9548APortNo;
+    }
+    uint8_t getBme280DeviceAdress() {
+      return bme280DeviceAdress;
+    }
+  private:
+    MyMessage msgHumidity;
+    MyMessage msgTemperature;
+    MyMessage msgPressure;
+    //MyMessage msgForecast;
+    BlueDot_BME280 bme280Obj;
+    uint8_t TCA9548ADeviceAdress; // from 0x70 to 0x77 - use 0 for disable TCA9548A
+    uint8_t TCA9548APortNo; // from 0 to 7
+    uint8_t bme280DeviceAdress; // 0x76 or 0x77
+    float _temperature;
+    float _humidity;
+    float _pressure;
+    const char* _bmp280_name;
+    bool initCorrect;
+    void sendStateToController(mysensors_sensor_t sensor) {
+      if (sensor == S_HUM)
+        send(msgHumidity.set(_humidity, 1));
+      if (sensor == S_TEMP)
+        send(msgTemperature.set(_temperature, 1));
+      if (sensor == S_BARO){
+        send(msgPressure.set(_pressure, 1));
+       // send(msgForecast.set("sunny"));  
+      }
+        
+    };
+
+    uint8_t getChildID(mysensors_sensor_t sensor) {
+      uint8_t id = 70 + (bme280DeviceAdress - 0x76)*3; // start from 70 to 134
+      if (TCA9548ADeviceAdress > 0){
+        id = 76;
+        id = id + (TCA9548ADeviceAdress - 0x70) * 24 + TCA9548APortNo * 3;  
+      }
+      if (sensor == S_HUM) id = id + 1;
+      if (sensor == S_BARO) id = id + 2;
+      return id;
+    };
+    void tcaSelect(uint8_t TCA9548A, uint8_t i) {
+      if (i > 7) return;
+      Wire.beginTransmission(TCA9548A);
+      Wire.write(1 << i);
+      Wire.endTransmission();
+    }
+};
+
+class BME280Manager {
+  public:
+    BME280Manager(uint8_t scanIntervalInSeconds) {
+      if_init = false;
+      scanInterval = scanIntervalInSeconds;
+      lastScan = 0;
+    }
+    void presentAllToControler() {
+      if (bmp280List.length() > 0)
+        for (byte i = 0; i < bmp280List.length(); i++)
+          bmp280List[i].presentToControler();
+      initAllSensors();
+    }
+    void sensorsCheck() {
+      unsigned long timeNow = millis();
+      if(lastScan > timeNow){ // overload
+        lastScan = timeNow;
+        return;
+      }
+      if(timeNow < lastScan + scanInterval*1000)
+        return;
+      lastScan = timeNow;
+      if (bmp280List.length() > 0 && if_init)
+      for (byte i = 0; i < bmp280List.length(); i++)
+        bmp280List[i].readSensor(false);
+    }
+    void addSensor() {
+      addSensor(0x76, 0, 0, '\0');
+    }
+    void addSensor(uint8_t bme280Adress, uint8_t TCA9548AAdress, uint8_t TCA9548APort, const char* bmp280_name) {
+      if (bmp280List.length() >= MAX_SENSORS) return;
+      if(bme280Adress != 0x76 && bme280Adress != 0x77) return;
+      if(TCA9548AAdress > 0 && (TCA9548AAdress < 0x70 || TCA9548AAdress > 0x77)) return;
+      if(TCA9548APort < 0 || TCA9548APort > 7) return;
+      //check if sensor exists
+      bool exist = false;
+      if (bmp280List.length() > 0)
+        for (byte i = 0; i < bmp280List.length(); i++)
+          if (bmp280List[i].getBme280DeviceAdress() == bme280Adress &&
+              bmp280List[i].getTCA9548ADeviceAdress() == TCA9548AAdress &&
+              bmp280List[i].getTCA9548APortNo() == TCA9548APort)
+            exist = true;
+      if (!exist)
+        bmp280List.push_back(BME280Simple(bme280Adress, TCA9548AAdress, TCA9548APort, bmp280_name));
+    }
+  private:
+    bool if_init;
+    uint8_t scanInterval; // in seconds
+    unsigned long lastScan;
+    const byte MAX_SENSORS = 32;
+    QList<BME280Simple> bmp280List;
+    void initAllSensors() {
+      if (bmp280List.length() > 0 && !if_init)
+        for (byte i = 0; i < bmp280List.length(); i++)
+          bmp280List[i].initSensor();
+      if_init = true;
+    }
+};
+
+BME280Manager myBME280Manager = BME280Manager(30); // set scan interval in seconds
+/*  End of M6_MS_BME280SensorManager */
+
+/*
+   dataneo @2019 - M7_MS_BH1750SensorManager
+   MySensors BH1750 Sensor Manager 1.0
+   see https://sites.google.com/site/dataneosoftware/arduino/mysensors-bh1750-sensor-manager
+*/
+#include <Wire.h>
+#include <ErriezBH1750.h>
+#include <QList.h>
+
+class BH1750Simple {
+  public:
+    BH1750Simple() {
+      BH1750DeviceAdress = 0x23;
+      TCA9548ADeviceAdress = 0;
+      TCA9548APortNo = 0;
+      initCorrect = false;
+    };
+    BH1750Simple(uint8_t BH1750Adress, uint8_t TCA9548AAdress, uint8_t TCA9548APort, const char* bh1750_name) {
+      BH1750DeviceAdress = BH1750Adress;
+      TCA9548ADeviceAdress = TCA9548AAdress;
+      TCA9548APortNo = TCA9548APort;
+      _bh1750_name = bh1750_name;
+      initCorrect = false;
+    };
+    void readSensor(bool forceSendToController = false) {
+      float tempVar;
+      if (TCA9548ADeviceAdress > 0)
+        tcaSelect(TCA9548ADeviceAdress, TCA9548APortNo);
+      tempVar = initCorrect ? bh1750Obj.read() * 0.5 : 0;
+      if (tempVar != _lux || forceSendToController) {
+        _lux = tempVar;
+        sendStateToController();
+      }
+    }
+    void initSensor() {
+      if (TCA9548ADeviceAdress > 0)
+        tcaSelect(TCA9548ADeviceAdress, TCA9548APortNo);
+      if (BH1750DeviceAdress == 0x23)
+        bh1750Obj = BH1750(LOW);
+      else
+        bh1750Obj = BH1750(HIGH);
+      bh1750Obj.begin(ModeContinuous, ResolutionHigh);
+      bh1750Obj.startConversion();
+      bh1750Obj.isConversionCompleted();
+      initCorrect = true;
+      readSensor(true);
+    }
+    void presentToControler() {
+      present(getChildID(), S_LIGHT_LEVEL, _bh1750_name);
+    }
+    uint8_t getTCA9548ADeviceAdress() {
+      return TCA9548ADeviceAdress;
+    }
+    uint8_t getTCA9548APortNo() {
+      return TCA9548APortNo;
+    }
+    uint8_t getbh1750DeviceAdress() {
+      return BH1750DeviceAdress;
+    }
+  private:
+    uint8_t TCA9548ADeviceAdress; // from 0x70 to 0x77 - use 0 for disable TCA9548A
+    uint8_t TCA9548APortNo; // from 0 to 7
+    uint8_t BH1750DeviceAdress; // 0x23 or 0x5C
+    BH1750 bh1750Obj;
+    float _lux;
+    const char* _bh1750_name;
+    bool initCorrect;
+    void sendStateToController() {
+      MyMessage msgLighLevel(getChildID(), V_LEVEL);
+      send(msgLighLevel.set(_lux, 1));
+    };
+
+    uint8_t getChildID() {
+      byte f = BH1750DeviceAdress == 0x23 ? 0 : 1;
+      uint8_t id = 135 + f; // start from 135 to 134
+      if (TCA9548ADeviceAdress > 0) {
+        id = 137;
+        id = id + (TCA9548ADeviceAdress - 0x70) * 8 + TCA9548APortNo;
+      }
+      return id;
+    };
+    void tcaSelect(uint8_t TCA9548A, uint8_t i) {
+      if (i > 7) return;
+      Wire.beginTransmission(TCA9548A);
+      Wire.write(1 << i);
+      Wire.endTransmission();
+    }
+};
+
+class BH1750Manager {
+  public:
+    BH1750Manager(uint8_t scanIntervalInSeconds) {
+      if_init = false;
+      scanInterval = scanIntervalInSeconds;
+      lastScan = 0;
+    }
+    void presentAllToControler() {
+      if (BH1750List.length() > 0)
+        for (byte i = 0; i < BH1750List.length(); i++)
+          BH1750List[i].presentToControler();
+      initAllSensors();
+    }
+    void sensorsCheck() {
+      unsigned long timeNow = millis();
+      if (lastScan > timeNow) { // overload
+        lastScan = timeNow;
+        return;
+      }
+      if (timeNow < lastScan + scanInterval * 1000)
+        return;
+      lastScan = timeNow;
+      if (BH1750List.length() > 0 && if_init)
+        for (byte i = 0; i < BH1750List.length(); i++)
+          BH1750List[i].readSensor(false);
+    }
+    void addSensor() {
+      addSensor(0x23, 0, 0, '\0');
+    }
+    void addSensor(uint8_t BH1750Adress, uint8_t TCA9548AAdress, uint8_t TCA9548APort, const char* bh1750_name) {
+      if (BH1750List.length() >= MAX_SENSORS) return;
+      if (BH1750Adress != 0x23 && BH1750Adress != 0x5C) return;
+      if (TCA9548AAdress > 0 && (TCA9548AAdress < 0x70 || TCA9548AAdress > 0x77)) return;
+      if (TCA9548APort < 0 || TCA9548APort > 7) return;
+      //check if sensor exists
+      bool exist = false;
+      if (BH1750List.length() > 0)
+        for (byte i = 0; i < BH1750List.length(); i++)
+          if (BH1750List[i].getbh1750DeviceAdress() == BH1750Adress &&
+              BH1750List[i].getTCA9548ADeviceAdress() == TCA9548AAdress &&
+              BH1750List[i].getTCA9548APortNo() == TCA9548APort)
+            exist = true;
+      if (!exist)
+        BH1750List.push_back(BH1750Simple(BH1750Adress, TCA9548AAdress, TCA9548APort, bh1750_name));
+    }
+  private:
+    bool if_init;
+    uint8_t scanInterval; // in seconds
+    unsigned long lastScan;
+    const byte MAX_SENSORS = 32;
+    QList<BH1750Simple> BH1750List;
+    void initAllSensors() {
+      Wire.begin();
+      if (BH1750List.length() > 0 && !if_init)
+        for (byte i = 0; i < BH1750List.length(); i++)
+          BH1750List[i].initSensor();
+      if_init = true;
+    }
+};
+
+BH1750Manager myBH1750Manager(30); // set scan interval in seconds
+/*  End of M7_MS_BH1750SensorManager */
 
 void before() {
   //M1_MS_RelayManager
@@ -644,8 +1001,12 @@ void before() {
 
   mySwitchManager.addSwitch(A0, SWITCH_NORMAL_CLOSE, "drzwi kuchnia");  // M4_MS_SwitchSensorManager
   
-  myMotionManager.addMotion(7, MOTION_NORMAL_CLOSE, "Czujnik ruchu salon", S_MOTION);  // M5_MS_MotionSensorManager
-  myMotionManager.addMotion(8, MOTION_NORMAL_CLOSE, "Czujnik swiatła", S_MOTION);  // M5_MS_MotionSensorManager
+  myMotionManager.addMotion(7, SENSOR_ON_HIGH, "Czujnik ruchu salon", S_MOTION);  // M5_MS_MotionSensorManager
+
+  myBME280Manager.addSensor(0x76, 0, 0, "Kuchnia");  // M6_MS_BME280SensorManager
+
+  /* M7_MS_BH1750SensorManager */
+  myBH1750Manager.addSensor(0x23, 0, 0, "Czujnik poziomu oświetlenia");  // M7_MS_BH1750SensorManager
 }
 
 void setup() { }
@@ -657,6 +1018,8 @@ void presentation()
   myRelayController.presentAllToControler(); //M1_MS_RelayManager
   mySwitchManager.presentAllToControler(); //M4_MS_SwitchSensorManager
   myMotionManager.presentAllToControler(); //M5_MS_MotionSensorManager
+  myBME280Manager.presentAllToControler(); //M6_MS_BME280SensorManager
+  myBH1750Manager.presentAllToControler(); //M7_MS_BH1750SensorManager
 }
 
 void loop()
@@ -665,14 +1028,20 @@ void loop()
   mySwitchManager.switchCheckState(); //M4_MS_SwitchSensorManager
   myMotionManager.motionCheckState(); //M5_MS_MotionSensorManager
   myHeartBeatManager.HeartBeat(); // Heartbeat Manager
+  myBME280Manager.sensorsCheck(); //M6_MS_BME280SensorManager
+  myBH1750Manager.sensorsCheck(); //M7_MS_BH1750SensorManager
   //wait(1, C_SET, V_STATUS);
 }
 
 void receive(const MyMessage &message)
 {
   myHeartBeatManager.ControllerReciveMsg();// Heartbeat Manager
-  
+
+  if (message.type == V_ARMED && ! message.isAck()){
+    myMotionManager.setStatetFromControler(message.sensor, message.getBool());  
+  }
   //M1_MS_RelayManager
-  if (message.type == V_STATUS && ! message.isAck()) 
+  if (message.type == V_STATUS && ! message.isAck()){
     myRelayController.setStateOnRelayListFromControler(message.sensor, message.getBool());
+  }    
 }

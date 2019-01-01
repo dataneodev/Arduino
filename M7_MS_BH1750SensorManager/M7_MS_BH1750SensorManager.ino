@@ -15,8 +15,6 @@
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License
    version 2 as published by the Free Software Foundation.
-
-
 */
 
 // Enable debug prints to serial monitor
@@ -67,72 +65,54 @@
 #include <MySensors.h>
 
 /*
-   dataneo @2018 - M6_MS_BME280SensorManager
-   MySensors BME280 Sensor Manager 1.0
-   see https://sites.google.com/site/dataneosoftware/arduino/mysensors-bme280-sensor-manager
+   dataneo @2019 - M7_MS_BH1750SensorManager
+   MySensors BH1750 Sensor Manager 1.0
+   see https://sites.google.com/site/dataneosoftware/arduino/mysensors-bh1750-sensor-manager
 */
 #include <Wire.h>
-#include <BlueDot_BME280.h>
+#include <ErriezBH1750.h>
 #include <QList.h>
 
-class BME280Simple {
+class BH1750Simple {
   public:
-    BME280Simple() {
-      bme280DeviceAdress = 0x76;
+    BH1750Simple() {
+      BH1750DeviceAdress = 0x23;
       TCA9548ADeviceAdress = 0;
       TCA9548APortNo = 0;
       initCorrect = false;
     };
-    BME280Simple(uint8_t bme280Adress, uint8_t TCA9548AAdress, uint8_t TCA9548APort, const char* bmp280_name) {
-      bme280DeviceAdress = bme280Adress;
+    BH1750Simple(uint8_t BH1750Adress, uint8_t TCA9548AAdress, uint8_t TCA9548APort, const char* bh1750_name) {
+      BH1750DeviceAdress = BH1750Adress;
       TCA9548ADeviceAdress = TCA9548AAdress;
       TCA9548APortNo = TCA9548APort;
-      _bmp280_name = bmp280_name;
+      _bh1750_name = bh1750_name;
       initCorrect = false;
     };
     void readSensor(bool forceSendToController = false) {
       float tempVar;
       if (TCA9548ADeviceAdress > 0)
         tcaSelect(TCA9548ADeviceAdress, TCA9548APortNo);
-      //temp
-      tempVar = initCorrect ? bme280Obj.readTempC() : 0;
-      if (tempVar != _temperature || forceSendToController) {
-        _temperature = tempVar;
-        sendStateToController(S_TEMP);
-      }
-      //humi
-      tempVar = initCorrect ? bme280Obj.readHumidity() : 0;
-      if (tempVar != _humidity || forceSendToController) {
-        _humidity = tempVar;
-        sendStateToController(S_HUM);
-      }
-      //press
-      tempVar = initCorrect ? bme280Obj.readPressure() : 0;
-      if (tempVar != _pressure || forceSendToController) {
-        _pressure = tempVar;
-        sendStateToController(S_BARO);
+      tempVar = initCorrect ? bh1750Obj.read() * 0.5 : 0;
+      if (tempVar != _lux || forceSendToController) {
+        _lux = tempVar;
+        sendStateToController();
       }
     }
     void initSensor() {
-      bme280Obj.parameter.communication = 0;
-      bme280Obj.parameter.I2CAddress = bme280DeviceAdress;
-      bme280Obj.parameter.sensorMode = 0b11;
-      bme280Obj.parameter.IIRfilter = 0b100;
-      bme280Obj.parameter.humidOversampling = 0b101;
-      bme280Obj.parameter.tempOversampling = 0b101;
-      bme280Obj.parameter.pressOversampling = 0b101;
       if (TCA9548ADeviceAdress > 0)
         tcaSelect(TCA9548ADeviceAdress, TCA9548APortNo);
-      if (bme280Obj.init() != 0x60)
-        initCorrect = false;
+      if (BH1750DeviceAdress == 0x23)
+        bh1750Obj = BH1750(LOW);
       else
-        initCorrect = true;
+        bh1750Obj = BH1750(HIGH);
+      bh1750Obj.begin(ModeContinuous, ResolutionHigh);
+      bh1750Obj.startConversion();
+      bh1750Obj.isConversionCompleted();
+      initCorrect = true;
       readSensor(true);
     }
     void presentToControler() {
-      present(getChildID(S_TEMP), S_TEMP, _bmp280_name);
-      present(getChildID(S_HUM), S_HUM, _bmp280_name);
-      present(getChildID(S_BARO), S_BARO, _bmp280_name);
+      present(getChildID(), S_LIGHT_LEVEL, _bh1750_name);
     }
     uint8_t getTCA9548ADeviceAdress() {
       return TCA9548ADeviceAdress;
@@ -140,44 +120,29 @@ class BME280Simple {
     uint8_t getTCA9548APortNo() {
       return TCA9548APortNo;
     }
-    uint8_t getBme280DeviceAdress() {
-      return bme280DeviceAdress;
+    uint8_t getbh1750DeviceAdress() {
+      return BH1750DeviceAdress;
     }
   private:
-
-    BlueDot_BME280 bme280Obj;
     uint8_t TCA9548ADeviceAdress; // from 0x70 to 0x77 - use 0 for disable TCA9548A
     uint8_t TCA9548APortNo; // from 0 to 7
-    uint8_t bme280DeviceAdress; // 0x76 or 0x77
-    float _temperature;
-    float _humidity;
-    float _pressure;
-    const char* _bmp280_name;
+    uint8_t BH1750DeviceAdress; // 0x23 or 0x5C
+    BH1750 bh1750Obj;
+    float _lux;
+    const char* _bh1750_name;
     bool initCorrect;
-    void sendStateToController(mysensors_sensor_t sensor) {
-      MyMessage msgHumidity(getChildID(S_HUM), V_HUM);
-      MyMessage msgTemperature(getChildID(S_TEMP), V_TEMP);
-      MyMessage msgPressure(getChildID(S_BARO), V_PRESSURE);
-      //MyMessage msgForecast(getChildID(S_BARO), V_FORECAST);
-      if (sensor == S_HUM)
-        send(msgHumidity.set(_humidity, 1));
-      if (sensor == S_TEMP)
-        send(msgTemperature.set(_temperature, 1));
-      if (sensor == S_BARO) {
-        send(msgPressure.set(_pressure, 1));
-        //send(msgForecast.set("unknown"));
-      }
-
+    void sendStateToController() {
+      MyMessage msgLighLevel(getChildID(), V_LEVEL);
+      send(msgLighLevel.set(_lux, 1));
     };
 
-    uint8_t getChildID(mysensors_sensor_t sensor) {
-      uint8_t id = 70 + (bme280DeviceAdress - 0x76) * 3; // start from 70 to 134
+    uint8_t getChildID() {
+      byte f = BH1750DeviceAdress == 0x23 ? 0 : 1;
+      uint8_t id = 135 + f; // start from 135 to 134
       if (TCA9548ADeviceAdress > 0) {
-        id = 76;
-        id = id + (TCA9548ADeviceAdress - 0x70) * 24 + TCA9548APortNo * 3;
+        id = 137;
+        id = id + (TCA9548ADeviceAdress - 0x70) * 8 + TCA9548APortNo;
       }
-      if (sensor == S_HUM) id = id + 1;
-      if (sensor == S_BARO) id = id + 2;
       return id;
     };
     void tcaSelect(uint8_t TCA9548A, uint8_t i) {
@@ -188,17 +153,17 @@ class BME280Simple {
     }
 };
 
-class BME280Manager {
+class BH1750Manager {
   public:
-    BME280Manager(uint8_t scanIntervalInSeconds) {
+    BH1750Manager(uint8_t scanIntervalInSeconds) {
       if_init = false;
       scanInterval = scanIntervalInSeconds;
       lastScan = 0;
     }
     void presentAllToControler() {
-      if (bmp280List.length() > 0)
-        for (byte i = 0; i < bmp280List.length(); i++)
-          bmp280List[i].presentToControler();
+      if (BH1750List.length() > 0)
+        for (byte i = 0; i < BH1750List.length(); i++)
+          BH1750List[i].presentToControler();
       initAllSensors();
     }
     void sensorsCheck() {
@@ -210,50 +175,51 @@ class BME280Manager {
       if (timeNow < lastScan + scanInterval * 1000)
         return;
       lastScan = timeNow;
-      if (bmp280List.length() > 0 && if_init)
-        for (byte i = 0; i < bmp280List.length(); i++)
-          bmp280List[i].readSensor();
+      if (BH1750List.length() > 0 && if_init)
+        for (byte i = 0; i < BH1750List.length(); i++)
+          BH1750List[i].readSensor();
     }
     void addSensor() {
-      addSensor(0x76, 0, 0, '\0');
+      addSensor(0x23, 0, 0, '\0');
     }
-    void addSensor(uint8_t bme280Adress, uint8_t TCA9548AAdress, uint8_t TCA9548APort, const char* bmp280_name) {
-      if (bmp280List.length() >= MAX_SENSORS) return;
-      if (bme280Adress != 0x76 && bme280Adress != 0x77) return;
+    void addSensor(uint8_t BH1750Adress, uint8_t TCA9548AAdress, uint8_t TCA9548APort, const char* bh1750_name) {
+      if (BH1750List.length() >= MAX_SENSORS) return;
+      if (BH1750Adress != 0x23 && BH1750Adress != 0x5C) return;
       if (TCA9548AAdress > 0 && (TCA9548AAdress < 0x70 || TCA9548AAdress > 0x77)) return;
       if (TCA9548APort < 0 || TCA9548APort > 7) return;
       //check if sensor exists
       bool exist = false;
-      if (bmp280List.length() > 0)
-        for (byte i = 0; i < bmp280List.length(); i++)
-          if (bmp280List[i].getBme280DeviceAdress() == bme280Adress &&
-              bmp280List[i].getTCA9548ADeviceAdress() == TCA9548AAdress &&
-              bmp280List[i].getTCA9548APortNo() == TCA9548APort)
+      if (BH1750List.length() > 0)
+        for (byte i = 0; i < BH1750List.length(); i++)
+          if (BH1750List[i].getbh1750DeviceAdress() == BH1750Adress &&
+              BH1750List[i].getTCA9548ADeviceAdress() == TCA9548AAdress &&
+              BH1750List[i].getTCA9548APortNo() == TCA9548APort)
             exist = true;
       if (!exist)
-        bmp280List.push_back(BME280Simple(bme280Adress, TCA9548AAdress, TCA9548APort, bmp280_name));
+        BH1750List.push_back(BH1750Simple(BH1750Adress, TCA9548AAdress, TCA9548APort, bh1750_name));
     }
   private:
     bool if_init;
     uint8_t scanInterval; // in seconds
     unsigned long lastScan;
     const byte MAX_SENSORS = 32;
-    QList<BME280Simple> bmp280List;
+    QList<BH1750Simple> BH1750List;
     void initAllSensors() {
       Wire.begin();
-      if (bmp280List.length() > 0 && !if_init)
-        for (byte i = 0; i < bmp280List.length(); i++)
-          bmp280List[i].initSensor();
+      if (BH1750List.length() > 0 && !if_init)
+        for (byte i = 0; i < BH1750List.length(); i++)
+          BH1750List[i].initSensor();
       if_init = true;
     }
 };
-BME280Manager myBME280Manager = BME280Manager(30); // set scan interval in seconds
-/*  End of M6_MS_BME280SensorManager */
+
+BH1750Manager myBH1750Manager(30); // set scan interval in seconds
+/*  End of M7_MS_BH1750SensorManager */
 
 void before()
 {
-  /* M6_MS_BME280SensorManager */
-  myBME280Manager.addSensor(0x76, 0, 0, "Kuchnia");  // M6_MS_BME280SensorManager
+  /* M7_MS_BH1750SensorManager */
+  myBH1750Manager.addSensor(0x23, 0, 0, "Czujnik poziomu oświetlenia");  // M7_MS_BH1750SensorManager
 }
 
 void setup() { }
@@ -261,14 +227,14 @@ void setup() { }
 void presentation()
 {
   // Send the sketch version information to the gateway and Controller
-  sendSketchInfo("BME280 Sensor Manager", "1.0");
+  sendSketchInfo("BH1750 Sensor Manager", "1.0");
 
-  myBME280Manager.presentAllToControler(); //M6_MS_BME280SensorManager
+  myBH1750Manager.presentAllToControler(); //M7_MS_BH1750SensorManager
 }
 
 void loop()
 {
-  myBME280Manager.sensorsCheck(); //M6_MS_BME280SensorManager
+  myBH1750Manager.sensorsCheck(); //M7_MS_BH1750SensorManager
 }
 
 void receive(const MyMessage &message) { }
