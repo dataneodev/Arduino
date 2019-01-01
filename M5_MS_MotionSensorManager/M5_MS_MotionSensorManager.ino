@@ -211,7 +211,4 @@ void loop()
   myMotionManager.motionCheckState(); //M5_MS_MotionSensorManager
 }
 
-void receive(const MyMessage &message){ 
-if (message.type == V_STATUS && ! message.isAck())
-  return;
-}
+void receive(const MyMessage &message){ }

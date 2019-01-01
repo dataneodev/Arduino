@@ -215,7 +215,4 @@ void loop()
   mySwitchManager.switchCheckState(); //M4_MS_SwitchSensorManager
 }
 
-void receive(const MyMessage &message){ 
-if (message.type == V_STATUS && ! message.isAck())
-  return;
-}
+void receive(const MyMessage &message){ }
