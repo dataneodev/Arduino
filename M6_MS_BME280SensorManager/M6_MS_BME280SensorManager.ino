@@ -20,7 +20,7 @@
 */
 
 // Enable debug prints to serial monitor
-#define MY_DEBUG
+//#define MY_DEBUG
 
 // Enable and select radio type attached
 //#define MY_RADIO_NRF24
@@ -158,16 +158,15 @@ class BME280Simple {
       MyMessage msgHumidity(getChildID(S_HUM), V_HUM);
       MyMessage msgTemperature(getChildID(S_TEMP), V_TEMP);
       MyMessage msgPressure(getChildID(S_BARO), V_PRESSURE);
-      //MyMessage msgForecast(getChildID(S_BARO), V_FORECAST);
+      MyMessage msgForecast(getChildID(S_BARO), V_FORECAST);
       if (sensor == S_HUM)
         send(msgHumidity.set(_humidity, 1));
       if (sensor == S_TEMP)
         send(msgTemperature.set(_temperature, 1));
       if (sensor == S_BARO) {
         send(msgPressure.set(_pressure, 1));
-        //send(msgForecast.set("unknown"));
+        send(msgForecast.set("unknown"));
       }
-
     };
 
     uint8_t getChildID(mysensors_sensor_t sensor) {
