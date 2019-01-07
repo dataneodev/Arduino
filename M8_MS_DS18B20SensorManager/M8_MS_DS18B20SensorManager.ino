@@ -220,7 +220,7 @@ class DS18B20Manager {
     void sendStateToController(uint8_t id) {
       MyMessage msgTemperature(DS18B20List[id].ControlerID, V_TEMP);
       MyMessage msgId(DS18B20List[id].ControlerID, V_ID);
-      send(msgTemperature.set(DS18B20List[id].temperature, 2));
+      send(msgTemperature.set(DS18B20List[id].temperature, 1));
       char hex[17];
       getAdress(DS18B20List[id].DS18B20Adress, hex);
       send(msgId.set(hex));

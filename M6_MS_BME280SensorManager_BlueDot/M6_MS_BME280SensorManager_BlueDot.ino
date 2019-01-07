@@ -72,8 +72,7 @@
    see https://sites.google.com/site/dataneosoftware/arduino/mysensors-bme280-sensor-manager
 */
 #include <Wire.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_BME280.h>
+#include <BlueDot_BME280.h>
 #include <QList.h>
 
 class BME280Simple {
@@ -95,10 +94,8 @@ class BME280Simple {
       float tempVar;
       if (TCA9548ADeviceAdress > 0)
         tcaSelect(TCA9548ADeviceAdress, TCA9548APortNo);
-
-      bme280Obj.takeForcedMeasurement();
       //temp
-      tempVar = initCorrect ? bme280Obj.readTemperature() : 0;
+      tempVar = initCorrect ? bme280Obj.readTempC() : 0;
       if (tempVar != _temperature || forceSendToController) {
         _temperature = tempVar;
         sendStateToController(S_TEMP);
@@ -110,24 +107,26 @@ class BME280Simple {
         sendStateToController(S_HUM);
       }
       //press
-      tempVar = initCorrect ? bme280Obj.readPressure() / 100.0F : 0;
+      tempVar = initCorrect ? bme280Obj.readPressure() : 0;
       if (tempVar != _pressure || forceSendToController) {
         _pressure = tempVar;
         sendStateToController(S_BARO);
       }
     }
     void initSensor() {
+      bme280Obj.parameter.communication = 0;
+      bme280Obj.parameter.I2CAddress = bme280DeviceAdress;
+      bme280Obj.parameter.sensorMode = 0b01;
+      bme280Obj.parameter.IIRfilter = 0b001;
+      bme280Obj.parameter.humidOversampling = 0b001;
+      bme280Obj.parameter.tempOversampling = 0b001;
+      bme280Obj.parameter.pressOversampling = 0b001;
       if (TCA9548ADeviceAdress > 0)
         tcaSelect(TCA9548ADeviceAdress, TCA9548APortNo);
-      if (!bme280Obj.begin(bme280DeviceAdress))
+      if (bme280Obj.init() != 0x60)
         initCorrect = false;
       else
         initCorrect = true;
-      bme280Obj.setSampling(Adafruit_BME280::MODE_FORCED,
-                            Adafruit_BME280::SAMPLING_X1, // temperature
-                            Adafruit_BME280::SAMPLING_X1, // pressure
-                            Adafruit_BME280::SAMPLING_X1, // humidity
-                            Adafruit_BME280::FILTER_OFF   );
       readSensor(true);
     }
     void presentToControler() {
@@ -145,7 +144,8 @@ class BME280Simple {
       return bme280DeviceAdress;
     }
   private:
-    Adafruit_BME280 bme280Obj;
+
+    BlueDot_BME280 bme280Obj;
     uint8_t TCA9548ADeviceAdress; // from 0x70 to 0x77 - use 0 for disable TCA9548A
     uint8_t TCA9548APortNo; // from 0 to 7
     uint8_t bme280DeviceAdress; // 0x76 or 0x77
@@ -160,9 +160,9 @@ class BME280Simple {
       MyMessage msgPressure(getChildID(S_BARO), V_PRESSURE);
       MyMessage msgForecast(getChildID(S_BARO), V_FORECAST);
       if (sensor == S_HUM)
-        send(msgHumidity.set(_humidity, 1));
+        send(msgHumidity.set(_humidity, 2));
       if (sensor == S_TEMP)
-        send(msgTemperature.set(_temperature, 1));
+        send(msgTemperature.set(_temperature, 2));
       if (sensor == S_BARO) {
         send(msgPressure.set(_pressure, 1));
         send(msgForecast.set("unknown"));

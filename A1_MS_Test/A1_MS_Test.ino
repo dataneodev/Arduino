@@ -95,7 +95,7 @@ enum RELAY_STATE {
   RELAY_ON_LOW,
 };
 
-enum CONTROLLER_TYPE{
+enum CONTROLLER_TYPE {
   DOMOTICZ,
   HOMEASSISTANT,
   OTHER, // NOT TESTED
@@ -151,7 +151,7 @@ class RelaySimple {
       digitalWrite(_relay_pin_no, getGPIOState(_relay_state));
       if (_save_state == SAVE_TO_EEPROM)
         saveState(_relay_pin_no, _relay_state);
-      if(controller == HOMEASSISTANT)
+      if (controller == HOMEASSISTANT)
         sendStateToController();
     }
 
@@ -180,7 +180,7 @@ class RelaySimple {
 
 class ButtonSimple {
   public:
-    ButtonSimple(){
+    ButtonSimple() {
       _button_pin_no = 0;
     }
     ButtonSimple(byte button_pin_no) {
@@ -276,18 +276,18 @@ class RelayManager {
     }
 
     void addRelay(byte relay_pin_no, byte button_pin_no, STATE_METHOD save_state, RELAY_STATE relay_on_state, const char* relay_name) {
-      if(relayList.length()>= MAX_PIN || buttonList.length() >= MAX_PIN)
+      if (relayList.length() >= MAX_PIN || buttonList.length() >= MAX_PIN)
         return;
-      if(_controller == HOMEASSISTANT && save_state == LOAD_FROM_CONTROLLERS)
+      if (_controller == HOMEASSISTANT && save_state == LOAD_FROM_CONTROLLERS)
         save_state = START_IN_LOW;
-        
+
       //check if relay exists
       bool exist = false;
       if (relayList.length() > 0)
         for (byte i = 0; i < relayList.length(); i++)
           if (relayList[i].relayPin() == relay_pin_no)
             exist = true;
-      if (!exist) 
+      if (!exist)
         relayList.push_back(RelaySimple(relay_pin_no, save_state, relay_on_state, relay_name));
 
       //button check
@@ -298,12 +298,12 @@ class RelayManager {
             exist = true;
       if (!exist && button_pin_no != 0)
         buttonList.push_back(ButtonSimple(button_pin_no));
-      
+
       //pair exists
       exist = false;
       if (relayButtonPairList.length() > 0)
         for (byte i = 0; i < relayButtonPairList.length(); i++)
-          if (relayButtonPairList[i].relayPin() == relay_pin_no && 
+          if (relayButtonPairList[i].relayPin() == relay_pin_no &&
               relayButtonPairList[i].getButtonPinNo() == button_pin_no)
             exist = true;
       if (!exist)
@@ -340,7 +340,9 @@ RelayManager myRelayController = RelayManager(HOMEASSISTANT);
 */
 class HeartBeatManager {
   public:
-    HeartBeatManager(){ HeartBeatManager(0);};
+    HeartBeatManager() {
+      HeartBeatManager(0);
+    };
     HeartBeatManager(byte alarmBuzzerPin) {
       _lastSend = 0;
       _lastRecive = 0;
@@ -365,7 +367,7 @@ class HeartBeatManager {
       _currentTime = millis();
       _lastRecive = _currentTime;
     }
-    
+
   private:
     byte _alarmBuzzerPin;
     unsigned long _currentTime;
@@ -377,21 +379,21 @@ class HeartBeatManager {
     const unsigned short _toneLength = 500;
     const unsigned short _toneBreak = 500;
     const unsigned short _toneHz = 4000;
-    
-    void SendHeart(){
+
+    void SendHeart() {
       _lastSend = _currentTime;
       sendHeartbeat();
       if (_alarmBuzzerPin != 0)
-        requestTime();  
+        requestTime();
     }
     void BuzzerCheck() {
       if (_alarmBuzzerPin != 0 &&
           _lastSend != 0 &&
           _lastRecive < _lastSend &&
-          ((_currentTime - _lastSend > _timeReciveTimeout) || (_currentTime - _lastRecive > _timeSendPeriod +_timeReciveTimeout)) &&
+          ((_currentTime - _lastSend > _timeReciveTimeout) || (_currentTime - _lastRecive > _timeSendPeriod + _timeReciveTimeout)) &&
           _lastBuzzerAcive + _toneLength + _toneBreak < _currentTime) {
-            _lastBuzzerAcive = _currentTime;
-            tone(_alarmBuzzerPin, _toneHz, _toneLength);
+        _lastBuzzerAcive = _currentTime;
+        tone(_alarmBuzzerPin, _toneHz, _toneLength);
       }
     }
 };
@@ -436,7 +438,7 @@ class SwitchSimple {
     bool checkSwitch(bool forceSendToController = false) {
       _debouncer.update();
       bool readValue = _debouncer.read();
-      if(readValue != _switch_value || forceSendToController){
+      if (readValue != _switch_value || forceSendToController) {
         _switch_value = readValue;
         sendStateToController();
       }
@@ -456,15 +458,15 @@ class SwitchSimple {
     }
   private:
     MyMessage mMessage;
-    Bounce _debouncer;  
+    Bounce _debouncer;
     SWITCH_STATE _switch_state;
     bool _switch_value;
     byte _switch_pin_no; // gpio pin for switch
-    const char* _switch_name;  
+    const char* _switch_name;
 
     void sendStateToController() {
       bool state = _switch_value;
-      if(_switch_state == SWITCH_NORMAL_OPEN) 
+      if (_switch_state == SWITCH_NORMAL_OPEN)
         state = !state;
       send(mMessage.set(state ? "1" : "0"));
     }
@@ -491,16 +493,16 @@ class SwitchManager {
     }
     void addSwitch(byte switch_pin_no, SWITCH_STATE switch_state) {
       addSwitch(switch_pin_no, SWITCH_NORMAL_CLOSE, '\0');
-    }    
+    }
     void addSwitch(byte switch_pin_no, SWITCH_STATE switch_state, const char* switch_name) {
-      if(switchList.length()>= MAX_PIN) return;        
+      if (switchList.length() >= MAX_PIN) return;
       //check if switch exists
       bool exist = false;
       if (switchList.length() > 0)
         for (byte i = 0; i < switchList.length(); i++)
           if (switchList[i].switchPin() == switch_pin_no)
             exist = true;
-      if (!exist) 
+      if (!exist)
         switchList.push_back(SwitchSimple(switch_pin_no, switch_state, switch_name));
     }
   private:
@@ -660,7 +662,8 @@ MotionManager myMotionManager = MotionManager(HOMEASSISTANT);
    see https://sites.google.com/site/dataneosoftware/arduino/mysensors-bme280-sensor-manager
 */
 #include <Wire.h>
-#include <BlueDot_BME280.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
 #include <QList.h>
 
 class BME280Simple {
@@ -682,8 +685,10 @@ class BME280Simple {
       float tempVar;
       if (TCA9548ADeviceAdress > 0)
         tcaSelect(TCA9548ADeviceAdress, TCA9548APortNo);
+
+      bme280Obj.takeForcedMeasurement();
       //temp
-      tempVar = initCorrect ? bme280Obj.readTempC() : 0;
+      tempVar = initCorrect ? bme280Obj.readTemperature() : 0;
       if (tempVar != _temperature || forceSendToController) {
         _temperature = tempVar;
         sendStateToController(S_TEMP);
@@ -695,30 +700,24 @@ class BME280Simple {
         sendStateToController(S_HUM);
       }
       //press
-      tempVar = initCorrect ? bme280Obj.readPressure() : 0;
+      tempVar = initCorrect ? bme280Obj.readPressure() / 100.0F : 0;
       if (tempVar != _pressure || forceSendToController) {
         _pressure = tempVar;
         sendStateToController(S_BARO);
       }
     }
     void initSensor() {
-      msgHumidity = MyMessage(getChildID(S_HUM), V_HUM);
-      msgTemperature = MyMessage(getChildID(S_TEMP), V_TEMP);
-      msgPressure = MyMessage(getChildID(S_BARO), V_PRESSURE);
-      //msgForecast = MyMessage(getChildID(S_BARO), V_FORECAST);
-      bme280Obj.parameter.communication = 0;
-      bme280Obj.parameter.I2CAddress = bme280DeviceAdress;
-      bme280Obj.parameter.sensorMode = 0b11;
-      bme280Obj.parameter.IIRfilter = 0b100;
-      bme280Obj.parameter.humidOversampling = 0b101;
-      bme280Obj.parameter.tempOversampling = 0b101;
-      bme280Obj.parameter.pressOversampling = 0b101;
       if (TCA9548ADeviceAdress > 0)
         tcaSelect(TCA9548ADeviceAdress, TCA9548APortNo);
-      if (bme280Obj.init() != 0x60) 
+      if (!bme280Obj.begin(bme280DeviceAdress))
         initCorrect = false;
-      else 
+      else
         initCorrect = true;
+      bme280Obj.setSampling(Adafruit_BME280::MODE_FORCED,
+                            Adafruit_BME280::SAMPLING_X1, // temperature
+                            Adafruit_BME280::SAMPLING_X1, // pressure
+                            Adafruit_BME280::SAMPLING_X1, // humidity
+                            Adafruit_BME280::FILTER_OFF   );
       readSensor(true);
     }
     void presentToControler() {
@@ -736,11 +735,7 @@ class BME280Simple {
       return bme280DeviceAdress;
     }
   private:
-    MyMessage msgHumidity;
-    MyMessage msgTemperature;
-    MyMessage msgPressure;
-    //MyMessage msgForecast;
-    BlueDot_BME280 bme280Obj;
+    Adafruit_BME280 bme280Obj;
     uint8_t TCA9548ADeviceAdress; // from 0x70 to 0x77 - use 0 for disable TCA9548A
     uint8_t TCA9548APortNo; // from 0 to 7
     uint8_t bme280DeviceAdress; // 0x76 or 0x77
@@ -750,22 +745,25 @@ class BME280Simple {
     const char* _bmp280_name;
     bool initCorrect;
     void sendStateToController(mysensors_sensor_t sensor) {
+      MyMessage msgHumidity(getChildID(S_HUM), V_HUM);
+      MyMessage msgTemperature(getChildID(S_TEMP), V_TEMP);
+      MyMessage msgPressure(getChildID(S_BARO), V_PRESSURE);
+      MyMessage msgForecast(getChildID(S_BARO), V_FORECAST);
       if (sensor == S_HUM)
         send(msgHumidity.set(_humidity, 1));
       if (sensor == S_TEMP)
         send(msgTemperature.set(_temperature, 1));
-      if (sensor == S_BARO){
-        send(msgPressure.set(_pressure, 1));
-       // send(msgForecast.set("sunny"));  
+      if (sensor == S_BARO) {
+        send(msgPressure.set(_pressure, 0));
+        send(msgForecast.set("unknown"));
       }
-        
     };
 
     uint8_t getChildID(mysensors_sensor_t sensor) {
-      uint8_t id = 70 + (bme280DeviceAdress - 0x76)*3; // start from 70 to 134
-      if (TCA9548ADeviceAdress > 0){
+      uint8_t id = 70 + (bme280DeviceAdress - 0x76) * 3; // start from 70 to 134
+      if (TCA9548ADeviceAdress > 0) {
         id = 76;
-        id = id + (TCA9548ADeviceAdress - 0x70) * 24 + TCA9548APortNo * 3;  
+        id = id + (TCA9548ADeviceAdress - 0x70) * 24 + TCA9548APortNo * 3;
       }
       if (sensor == S_HUM) id = id + 1;
       if (sensor == S_BARO) id = id + 2;
@@ -794,25 +792,25 @@ class BME280Manager {
     }
     void sensorsCheck() {
       unsigned long timeNow = millis();
-      if(lastScan > timeNow){ // overload
+      if (lastScan > timeNow) { // overload
         lastScan = timeNow;
         return;
       }
-      if(timeNow < lastScan + scanInterval*1000)
+      if (timeNow < lastScan + scanInterval * 1000)
         return;
       lastScan = timeNow;
       if (bmp280List.length() > 0 && if_init)
-      for (byte i = 0; i < bmp280List.length(); i++)
-        bmp280List[i].readSensor(false);
+        for (byte i = 0; i < bmp280List.length(); i++)
+          bmp280List[i].readSensor();
     }
     void addSensor() {
       addSensor(0x76, 0, 0, '\0');
     }
     void addSensor(uint8_t bme280Adress, uint8_t TCA9548AAdress, uint8_t TCA9548APort, const char* bmp280_name) {
       if (bmp280List.length() >= MAX_SENSORS) return;
-      if(bme280Adress != 0x76 && bme280Adress != 0x77) return;
-      if(TCA9548AAdress > 0 && (TCA9548AAdress < 0x70 || TCA9548AAdress > 0x77)) return;
-      if(TCA9548APort < 0 || TCA9548APort > 7) return;
+      if (bme280Adress != 0x76 && bme280Adress != 0x77) return;
+      if (TCA9548AAdress > 0 && (TCA9548AAdress < 0x70 || TCA9548AAdress > 0x77)) return;
+      if (TCA9548APort < 0 || TCA9548APort > 7) return;
       //check if sensor exists
       bool exist = false;
       if (bmp280List.length() > 0)
@@ -831,13 +829,13 @@ class BME280Manager {
     const byte MAX_SENSORS = 32;
     QList<BME280Simple> bmp280List;
     void initAllSensors() {
+      Wire.begin();
       if (bmp280List.length() > 0 && !if_init)
         for (byte i = 0; i < bmp280List.length(); i++)
           bmp280List[i].initSensor();
       if_init = true;
     }
 };
-
 BME280Manager myBME280Manager = BME280Manager(30); // set scan interval in seconds
 /*  End of M6_MS_BME280SensorManager */
 
@@ -910,7 +908,9 @@ class BH1750Simple {
     bool initCorrect;
     void sendStateToController() {
       MyMessage msgLighLevel(getChildID(), V_LEVEL);
-      send(msgLighLevel.set(_lux, 1));
+      MyMessage msgLigh(getChildID(), V_LIGHT_LEVEL );
+      send(msgLighLevel.set(_lux, 0));
+      send(msgLigh.set(0));
     };
 
     uint8_t getChildID() {
@@ -1149,7 +1149,7 @@ class DS18B20Manager {
     void sendStateToController(uint8_t id) {
       MyMessage msgTemperature(DS18B20List[id].ControlerID, V_TEMP);
       MyMessage msgId(DS18B20List[id].ControlerID, V_ID);
-      send(msgTemperature.set(DS18B20List[id].temperature, 2));
+      send(msgTemperature.set(DS18B20List[id].temperature, 1));
       char hex[17];
       getAdress(DS18B20List[id].DS18B20Adress, hex);
       send(msgId.set(hex));
@@ -1186,14 +1186,14 @@ void before() {
   myRelayController.addRelay(23, A6);
 
   mySwitchManager.addSwitch(A0, SWITCH_NORMAL_CLOSE, "drzwi kuchnia");  // M4_MS_SwitchSensorManager
-  
+
   myMotionManager.addMotion(7, SENSOR_ON_HIGH, "Czujnik ruchu salon", S_MOTION);  // M5_MS_MotionSensorManager
 
   myBME280Manager.addSensor(0x76, 0, 0, "Kuchnia");  // M6_MS_BME280SensorManager
 
   /* M7_MS_BH1750SensorManager */
   myBH1750Manager.addSensor(0x23, 0, 0, "Czujnik poziomu oświetlenia");  // M7_MS_BH1750SensorManager
-  
+
   /* M8_MS_DS18B20SensorManager */
   uint8_t adress[8] = {0x28, 0xEE, 0xAF, 0x47, 0x1A, 0x16, 0x01, 0x26} ;
   myDS18B20Manager.addSensor(adress, "Kuchnia");  // M8_MS_DS18B20SensorManager
@@ -1228,11 +1228,11 @@ void receive(const MyMessage &message)
 {
   myHeartBeatManager.ControllerReciveMsg();// Heartbeat Manager
 
-  if (message.type == V_ARMED && ! message.isAck()){
-    myMotionManager.setStatetFromControler(message.sensor, message.getBool());  
+  if (message.type == V_ARMED && ! message.isAck()) {
+    myMotionManager.setStatetFromControler(message.sensor, message.getBool());
   }
   //M1_MS_RelayManager
-  if (message.type == V_STATUS && ! message.isAck()){
+  if (message.type == V_STATUS && ! message.isAck()) {
     myRelayController.setStateOnRelayListFromControler(message.sensor, message.getBool());
-  }    
+  }
 }
