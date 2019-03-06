@@ -66,7 +66,7 @@
 
 /*
    dataneo @2019 - M8_MS_DS18B20SensorManager
-   MySensors DS18B20 Sensor Manager 1.0
+   MySensors DS18B20 Sensor Manager 1.1
    see https://sites.google.com/site/dataneosoftware/arduino/mysensors-ds18b20-sensor-manager
 */
 #include <OneWire.h>
@@ -75,10 +75,7 @@
 
 class DS18B20Manager {
   public:
-    const uint8_t MAX_SENSORS = 64;
-    const uint8_t START_ID = 134;
-
-    DS18B20Manager(uint8_t pin, unsigned short scanIntervalInSeconds, uint16_t _conversionWait) {
+    DS18B20Manager(uint8_t pin, unsigned short scanIntervalInSeconds, uint16_t _conversionWait, bool _sensorIdMessage = false) {
       if_init = false;
       scanInterval = min(scanIntervalInSeconds, 300);
       conversionWait = max(_conversionWait, 750);
@@ -88,6 +85,7 @@ class DS18B20Manager {
       lastScanInit = 0;
       lastTempRequest = 0;
       requestTemp = false;
+      sensorIdMessage = _sensorIdMessage;
     }
 
     void presentAllToControler() {
@@ -118,7 +116,7 @@ class DS18B20Manager {
             sendStateToController(lastIdTempRequest);
           }
         }
-        // next
+        // next temp request
         if (lastIdTempRequest < DS18B20List.length() - 1) {
           uint8_t nextID = getNextID(lastIdTempRequest);
           if (nextID == 0)
@@ -132,11 +130,13 @@ class DS18B20Manager {
         }
       }
 
-      //next scan;
+      //request temp from begining;
       if (!requestTemp && ((timeNow > lastScanInit + scanInterval * 1000) || firstRead)) {
         lastScanInit = timeNow;
         lastTempRequest = timeNow;
         lastIdTempRequest = getNextID(-1);
+        if (lastIdTempRequest == 0)
+          return;
         requestTemp = true;
         DS18B20List[lastIdTempRequest].requestTemp = true;
         dallas->requestTemperaturesByAddress(DS18B20List[lastIdTempRequest].DS18B20Adress);
@@ -144,16 +144,15 @@ class DS18B20Manager {
     }
 
     void addSensor(const uint8_t DS18B20Adress[8], const char* DS18B20_name) {
-      if (DS18B20List.length() >= MAX_SENSORS) return;
       bool exist = false;
       if (DS18B20List.length() > 0)
         for (byte i = 0; i < DS18B20List.length(); i++)
           if (compareAdress(DS18B20List[i].DS18B20Adress, DS18B20Adress)) {
             exist = true;
-            char hex[17];
-            getAdress(DS18B20Adress, hex);
-            Serial.print(F("The sensor with the given address already exists: "));
-            Serial.println(hex);
+            //            char hex[17];
+            //            getAdress(DS18B20Adress, hex);
+            //            Serial.print(F("The sensor with the given address already exists: "));
+            //            Serial.println(hex);
           }
       if (!exist) {
         DS18B20Single DS18B20;
@@ -176,9 +175,13 @@ class DS18B20Manager {
     unsigned long lastTempRequest;
     uint8_t lastIdTempRequest;
     bool requestTemp;
+    const uint8_t START_ID = 134;
     uint8_t lastID = START_ID;
+    bool sensorIdMessage;
     OneWire* oneWire;
     DallasTemperature* dallas;
+    MyMessage msgTemperature = MyMessage(1, V_TEMP);
+    MyMessage msgId = MyMessage(1, V_ID);
 
     struct dS18B20Single {
       uint8_t DS18B20Adress[8];
@@ -208,22 +211,25 @@ class DS18B20Manager {
         if (dallas->isConnected(DS18B20List[i].DS18B20Adress))
           DS18B20List[i].init = true;
         else {
-          char hex[17];
-          getAdress(DS18B20List[i].DS18B20Adress, hex);
-          Serial.print(F("The sensor with the given address was not found on the bus: "));
-          Serial.println(hex);
+          DS18B20List[i].init = false;
+          //          char hex[17];
+          //          getAdress(DS18B20List[i].DS18B20Adress, hex);
+          //          Serial.print(F("The sensor with the given address was not found on the bus: "));
+          //          Serial.println(hex);
         }
       if_init = true;
       sensorsCheck(true);
     }
 
     void sendStateToController(uint8_t id) {
-      MyMessage msgTemperature(DS18B20List[id].ControlerID, V_TEMP);
-      MyMessage msgId(DS18B20List[id].ControlerID, V_ID);
+      msgTemperature.setSensor(DS18B20List[id].ControlerID);
       send(msgTemperature.set(DS18B20List[id].temperature, 1));
-      char hex[17];
-      getAdress(DS18B20List[id].DS18B20Adress, hex);
-      send(msgId.set(hex));
+      if (sensorIdMessage) {
+        msgId.setSensor(DS18B20List[id].ControlerID);;
+        char hex[17];
+        getAdress(DS18B20List[id].DS18B20Adress, hex);
+        send(msgId.set(hex));
+      }
     };
 
     bool compareAdress(uint8_t ad1[8], uint8_t ad2[8]) {
@@ -263,7 +269,7 @@ void setup() { }
 void presentation()
 {
   // Send the sketch version information to the gateway and Controller
-  sendSketchInfo("DS18B20 Sensor Manager", "1.0");
+  sendSketchInfo("DS18B20 Sensor Manager", "1.1");
 
   myDS18B20Manager.presentAllToControler(); //M8_MS_DS18B20SensorManager
 }

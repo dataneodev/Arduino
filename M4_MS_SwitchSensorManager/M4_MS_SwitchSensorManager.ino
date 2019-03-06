@@ -76,7 +76,7 @@
 
 /*
    dataneo @2018 - M4_MS_SwitchSensorManager
-   MySensors Switch Sensor Manager 1.0
+   MySensors Switch Sensor Manager 1.1
    Mechanical switch manager with debouncer
    see https://sites.google.com/site/dataneosoftware/arduino/switch-sensor-manager
 */
@@ -108,7 +108,7 @@ class SwitchSimple {
     bool checkSwitch(bool forceSendToController = false) {
       _debouncer.update();
       bool readValue = _debouncer.read();
-      if(readValue != _switch_value || forceSendToController){
+      if (readValue != _switch_value || forceSendToController) {
         _switch_value = readValue;
         sendStateToController();
       }
@@ -116,7 +116,6 @@ class SwitchSimple {
     }
     void initPin() {
       pinMode(_switch_pin_no, INPUT_PULLUP);
-      //digitalWrite(_switch_pin_no,HIGH);
       _debouncer = Bounce();
       _debouncer.attach(_switch_pin_no);
       _debouncer.interval(5);
@@ -126,20 +125,22 @@ class SwitchSimple {
       present(_switch_pin_no, S_DOOR, _switch_name);
     }
   private:
-    Bounce _debouncer;  
+    Bounce _debouncer;
     SWITCH_STATE _switch_state;
     bool _switch_value;
     byte _switch_pin_no; // gpio pin for switch
-    const char* _switch_name;  
+    const char* _switch_name;
+    static MyMessage mMessage;
 
     void sendStateToController() {
       bool state = _switch_value;
-      if(_switch_state == NORMAL_OPEN) 
-        state = !state;
-      MyMessage mMessage(_switch_pin_no, V_TRIPPED);
+      if (_switch_state == NORMAL_OPEN)
+        state = !state; 
+      mMessage.setSensor(_switch_pin_no);
       send(mMessage.set(state ? "1" : "0"));
     }
 };
+MyMessage SwitchSimple::mMessage = MyMessage(1, V_TRIPPED);
 
 class SwitchManager {
   public:
@@ -162,21 +163,19 @@ class SwitchManager {
     }
     void addSwitch(byte switch_pin_no, SWITCH_STATE switch_state) {
       addSwitch(switch_pin_no, NORMAL_CLOSE, '\0');
-    }    
+    }
     void addSwitch(byte switch_pin_no, SWITCH_STATE switch_state, const char* switch_name) {
-      if(switchList.length()>= MAX_PIN) return;        
       //check if switch exists
       bool exist = false;
       if (switchList.length() > 0)
         for (byte i = 0; i < switchList.length(); i++)
           if (switchList[i].switchPin() == switch_pin_no)
             exist = true;
-      if (!exist) 
+      if (!exist)
         switchList.push_back(SwitchSimple(switch_pin_no, switch_state, switch_name));
     }
   private:
     bool if_init;
-    const byte MAX_PIN = 70;
     QList<SwitchSimple> switchList;
 
     void initAllPins() {
@@ -186,7 +185,6 @@ class SwitchManager {
       if_init = true;
     }
 };
-
 SwitchManager mySwitchManager = SwitchManager();
 /*
    End of M4_MS_SwitchSensorManager
@@ -196,7 +194,6 @@ void before()
 {
   /* M4_MS_SwitchSensorManager */
   mySwitchManager.addSwitch(A0, NORMAL_CLOSE, "drzwi kuchnia");  // M4_MS_SwitchSensorManager
-
 }
 
 void setup() { }
@@ -214,4 +211,4 @@ void loop()
   mySwitchManager.switchCheckState(); //M4_MS_SwitchSensorManager
 }
 
-void receive(const MyMessage &message){ }
+void receive(const MyMessage &message) { }

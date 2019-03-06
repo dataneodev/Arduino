@@ -86,7 +86,7 @@ enum MOTION_STATE {
   SENSOR_ON_HIGH,
 };
 
-enum CONTROLLER_TYPEM {
+enum CONTROLLER_TYPE {
   DOMOTICZ,
   HOMEASSISTANT,
   OTHER, // NOT TESTED
@@ -102,12 +102,13 @@ class MotionSimple {
       _sensor = S_MOTION;
       _armed = true;
     };
-    MotionSimple(byte motion_pin_no, MOTION_STATE motion_state, const char* motion_name, mysensors_sensor_t sensor_type) {
+    MotionSimple(byte motion_pin_no, MOTION_STATE motion_state, const char* motion_name, mysensors_sensor_t sensor_type, bool armedEnable = false) {
       _motion_pin_no = motion_pin_no;
       _motion_value = 0;
       _motion_state = motion_state;
       _motion_name = motion_name;
       _sensor = sensor_type;
+      _armedEnable = armedEnable;
       _armed = true;
     };
     byte motionPin() {
@@ -132,33 +133,43 @@ class MotionSimple {
       present(_motion_pin_no, _sensor, _motion_name);
     }
 
-    void setStateFromControler(bool state, CONTROLLER_TYPEM controller) {
+    void setStateFromControler(bool state, CONTROLLER_TYPE controller) {
       _armed = state;
-      if (controller == HOMEASSISTANT)
-        sendStateToController();
+      sendStateToController();
+    }
+    bool IsArmedEnabled() {
+      return _armedEnable;
     }
   private:
     MOTION_STATE _motion_state;
     mysensors_sensor_t _sensor;
     bool _motion_value;
     byte _motion_pin_no;
+    bool _armedEnable;
     bool _armed;
     const char* _motion_name;
+    static MyMessage mMessage;
+    static MyMessage mMessageArmed;
 
     void sendStateToController() {
       bool state = _motion_value;
       if (_motion_state == SENSOR_ON_LOW)
         state = !state;
-      MyMessage mMessage(_motion_pin_no, V_TRIPPED);
-      MyMessage mMessageArmed(_motion_pin_no, V_ARMED);
+      mMessage.setSensor(_motion_pin_no);
       send(mMessage.set(state ? "1" : "0"));
-      send(mMessageArmed.set(_armed ? "1" : "0"));
+      if (_armedEnable) {
+        mMessageArmed.setSensor(_motion_pin_no);
+        send(mMessageArmed.set(_armed ? "1" : "0"));
+      }
     }
 };
 
+MyMessage MotionSimple::mMessage = MyMessage(1, V_TRIPPED);
+MyMessage MotionSimple::mMessageArmed = MyMessage(1, V_ARMED);
+
 class MotionManager {
   public:
-    MotionManager(CONTROLLER_TYPEM controller) {
+    MotionManager(CONTROLLER_TYPE controller) {
       if_init = false;
       _controller = controller;
     }
@@ -180,26 +191,29 @@ class MotionManager {
       addMotion(motion_pin_no, SENSOR_ON_HIGH, '\0', S_MOTION);
     }
     void addMotion(byte motion_pin_no, MOTION_STATE motion_state, const char* motion_name, mysensors_sensor_t _sensor = S_MOTION) {
-      if (motionList.length() >= MAX_PIN) return;
       //check if motion exists
+      bool armed = false;
+      if (_controller == HOMEASSISTANT)
+        armed = true;
       bool exist = false;
       if (motionList.length() > 0)
         for (byte i = 0; i < motionList.length(); i++)
           if (motionList[i].motionPin() == motion_pin_no)
             exist = true;
       if (!exist)
-        motionList.push_back(MotionSimple(motion_pin_no, motion_state, motion_name, _sensor));
+        motionList.push_back(MotionSimple(motion_pin_no, motion_state, motion_name, _sensor, armed));
     }
-    void setStatetFromControler(int motion_pin_no, bool state) {
+    void setStatetFromControler(const MyMessage &message) {
+      if (message.type != V_ARMED || message.isAck())
+        return;
       if (motionList.length() > 0 && if_init)
         for (byte i = 0; i < motionList.length(); i++)
-          if (motionList[i].motionPin() == motion_pin_no)
-            motionList[i].setStateFromControler(state, _controller);
+          if (motionList[i].motionPin() == message.sensor && motionList[i].IsArmedEnabled())
+            motionList[i].setStateFromControler(message.getBool(), _controller);
     }
   private:
     bool if_init;
-    const byte MAX_PIN = 70;
-    CONTROLLER_TYPEM _controller;
+    CONTROLLER_TYPE _controller;
     QList<MotionSimple> motionList;
     void initAllPins() {
       if (motionList.length() > 0 && !if_init)
@@ -217,7 +231,6 @@ void before()
   /* M5_MS_MotionSensorManager */
   myMotionManager.addMotion(7, SENSOR_ON_HIGH, "Czujnik ruchu salon");  // M5_MS_MotionSensorManager
   myMotionManager.addMotion(8, SENSOR_ON_HIGH, "Czujnik zalania kuchnia", S_WATER_LEAK);  // M5_MS_MotionSensorManager use only sensors type with V_TRIPPED : S_DOOR, S_MOTION, S_SMOKE, S_SPRINKLER, S_WATER_LEAK, S_SOUND, S_VIBRATION, S_MOISTURE
-
 }
 
 void setup() { }
@@ -237,7 +250,5 @@ void loop()
 
 void receive(const MyMessage &message)
 {
-  //M5_MS_MotionSensorManager
-  if (message.type == V_ARMED && ! message.isAck())
-    myMotionManager.setStatetFromControler(message.sensor, message.getBool());
+  myMotionManager.setStatetFromControler(message); //M5_MS_MotionSensorManager
 }

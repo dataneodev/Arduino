@@ -227,7 +227,6 @@ class PZEM016Manager {
     }
   private:
     // const
-    const uint8_t MAX_SENSORS = 64;
     const uint8_t START_ID = 164;
     // variable
     QList<PZEM016Device> PZEM016DeviceList;
@@ -237,7 +236,6 @@ class PZEM016Manager {
     MyMessage powerMessagekPf =  MyMessage(1, V_POWER_FACTOR);
     MyMessage powerMessageVoltage =  MyMessage(1, V_VOLTAGE);
     MyMessage powerMessageCurrent =  MyMessage(1, V_CURRENT);
-    MyMessage logMessage =  MyMessage(1, V_VAR1);
 
     HardwareSerial* _serial;
     uint8_t _pzem016Check; // in seconds
@@ -334,10 +332,6 @@ class PZEM016Manager {
         powerMessagekPf.setSensor(device.getChildID());
         send(powerMessagekPf.set(device._lastPowerFactor, 2));
       }
-    }
-
-    void sendLogMessage(PZEM016Device &device, const char logMsg) {
-
     }
 };
 uint8_t PZEM016Manager::_txRxChangePin = 0;

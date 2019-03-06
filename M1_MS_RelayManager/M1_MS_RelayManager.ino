@@ -76,7 +76,7 @@
 
 /*
    dataneo @2018 - M1_MS_RelayManager
-   MySensors Relay Manager 1.1
+   MySensors Relay Manager 1.2
    see https://sites.google.com/site/dataneosoftware/arduino/mysensors-relay-manager
 */
 
@@ -95,7 +95,7 @@ enum RELAY_STATE {
   RELAY_ON_LOW,
 };
 
-enum CONTROLLER_TYPE{
+enum CONTROLLER_TYPE {
   DOMOTICZ,
   HOMEASSISTANT,
   OTHER, // NOT TESTED
@@ -151,7 +151,7 @@ class RelaySimple {
       digitalWrite(_relay_pin_no, getGPIOState(_relay_state));
       if (_save_state == SAVE_TO_EEPROM)
         saveState(_relay_pin_no, _relay_state);
-      if(controller == HOMEASSISTANT)
+      if (controller == HOMEASSISTANT)
         sendStateToController();
     }
 
@@ -166,7 +166,8 @@ class RelaySimple {
     bool _relay_state; // current relay state on or off
     byte _relay_pin_no; // gpio pin for relay
     const char* _relay_name;
-    
+    static MyMessage mMessage;
+
     STATE_METHOD _save_state;
     RELAY_STATE _relay_on_state;
 
@@ -174,14 +175,15 @@ class RelaySimple {
       return (_relay_on_state == RELAY_ON_HIGH) ? relay_state : ! relay_state;
     }
     void sendStateToController() {
-      MyMessage mMessage(_relay_pin_no, V_STATUS);
+      mMessage.setSensor(_relay_pin_no);
       send(mMessage.set(_relay_state ? "1" : "0"));
     }
 };
+MyMessage RelaySimple::mMessage = MyMessage(1, V_STATUS);
 
 class ButtonSimple {
   public:
-    ButtonSimple(){
+    ButtonSimple() {
       _button_pin_no = 0;
     }
     ButtonSimple(byte button_pin_no) {
@@ -239,11 +241,13 @@ class RelayManager {
       _controller = controller;
     }
     //Simple Relay change status in RelayList
-    void setStateOnRelayListFromControler(int relay_pin_no, bool relay_state) {
+    void setStateOnRelayListFromControler(const MyMessage &message) {
+      if (message.type != V_STATUS || message.isAck())
+        return;
       if (relayList.length() > 0 && if_init)
         for (byte i = 0; i < relayList.length(); i++)
-          if (relayList[i].relayPin() == relay_pin_no)
-            relayList[i].setStateFromControler(relay_state, _controller);
+          if (relayList[i].relayPin() == message.sensor)
+            relayList[i].setStateFromControler(message.getBool(), _controller);
     }
     void presentAllToControler() {
       if (relayList.length() > 0)
@@ -277,18 +281,16 @@ class RelayManager {
     }
 
     void addRelay(byte relay_pin_no, byte button_pin_no, STATE_METHOD save_state, RELAY_STATE relay_on_state, const char* relay_name) {
-      if(relayList.length()>= MAX_PIN || buttonList.length() >= MAX_PIN)
-        return;
-      if(_controller == HOMEASSISTANT && save_state == LOAD_FROM_CONTROLLERS)
+      if (_controller == HOMEASSISTANT && save_state == LOAD_FROM_CONTROLLERS)
         save_state = START_IN_LOW;
-        
+
       //check if relay exists
       bool exist = false;
       if (relayList.length() > 0)
         for (byte i = 0; i < relayList.length(); i++)
           if (relayList[i].relayPin() == relay_pin_no)
             exist = true;
-      if (!exist) 
+      if (!exist)
         relayList.push_back(RelaySimple(relay_pin_no, save_state, relay_on_state, relay_name));
 
       //button check
@@ -299,12 +301,12 @@ class RelayManager {
             exist = true;
       if (!exist && button_pin_no != 0)
         buttonList.push_back(ButtonSimple(button_pin_no));
-      
+
       //pair exists
       exist = false;
       if (relayButtonPairList.length() > 0)
         for (byte i = 0; i < relayButtonPairList.length(); i++)
-          if (relayButtonPairList[i].relayPin() == relay_pin_no && 
+          if (relayButtonPairList[i].relayPin() == relay_pin_no &&
               relayButtonPairList[i].getButtonPinNo() == button_pin_no)
             exist = true;
       if (!exist)
@@ -312,7 +314,6 @@ class RelayManager {
     }
   private:
     bool if_init;
-    const byte MAX_PIN = 70;
     CONTROLLER_TYPE _controller;
     QList<ButtonSimple> buttonList;
     QList<RelaySimple> relayList;
@@ -345,16 +346,16 @@ void before()
 
      relay_pin_no - gpio pin with relay connected
      button_pin_no - gpio pin with button switch connected; use 0 - for no button
-     
-     STATE_METHOD is one of 
+
+     STATE_METHOD is one of
       SAVE_TO_EEPROM - default
       LOAD_FROM_CONTROLLERS - don't work on homeassistant
       START_IN_HIGH
       START_IN_LOW
-    
-    RELAY_STATE is one of 
+
+    RELAY_STATE is one of
       RELAY_ON_HIGH - default
-      RELAY_ON_LOW 
+      RELAY_ON_LOW
   */
   myRelayController.addRelay(23, A8, LOAD_FROM_CONTROLLERS, RELAY_ON_HIGH, "lampka"); // ch1
   myRelayController.addRelay(23, A7);
@@ -370,7 +371,7 @@ void setup() { }
 void presentation()
 {
   // Send the sketch version information to the gateway and Controller
-  sendSketchInfo("MySensorsRelayManager", "1.1");
+  sendSketchInfo("MySensorsRelayManager", "1.2");
 
   myRelayController.presentAllToControler(); //M1_MS_RelayManager
 }
@@ -383,7 +384,5 @@ void loop()
 
 void receive(const MyMessage &message)
 {
-  //M1_MS_RelayManager
-  if (message.type == V_STATUS && ! message.isAck()) 
-    myRelayController.setStateOnRelayListFromControler(message.sensor, message.getBool());
+  myRelayController.setStateOnRelayListFromControler(message); //M1_MS_RelayManager
 }

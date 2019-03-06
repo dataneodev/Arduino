@@ -84,7 +84,8 @@ class BME280Simple {
       TCA9548APortNo = 0;
       initCorrect = false;
     };
-    BME280Simple(uint8_t bme280Adress, uint8_t TCA9548AAdress, uint8_t TCA9548APort, const char* bmp280_name) {
+    BME280Simple(uint8_t _childID, uint8_t bme280Adress, uint8_t TCA9548AAdress, uint8_t TCA9548APort, const char* bmp280_name) {
+      childID = _childID;
       bme280DeviceAdress = bme280Adress;
       TCA9548ADeviceAdress = TCA9548AAdress;
       TCA9548APortNo = TCA9548APort;
@@ -92,6 +93,8 @@ class BME280Simple {
       initCorrect = false;
     };
     void readSensor(bool forceSendToController = false) {
+      if (!initCorrect)
+        return;
       float tempVar;
       if (TCA9548ADeviceAdress > 0)
         tcaSelect(TCA9548ADeviceAdress, TCA9548APortNo);
@@ -119,10 +122,11 @@ class BME280Simple {
     void initSensor() {
       if (TCA9548ADeviceAdress > 0)
         tcaSelect(TCA9548ADeviceAdress, TCA9548APortNo);
-      if (!bme280Obj.begin(bme280DeviceAdress))
+      if (!bme280Obj.begin(bme280DeviceAdress)) {
         initCorrect = false;
-      else
-        initCorrect = true;
+        return;
+      }
+      initCorrect = true;
       bme280Obj.setSampling(Adafruit_BME280::MODE_FORCED,
                             Adafruit_BME280::SAMPLING_X1, // temperature
                             Adafruit_BME280::SAMPLING_X1, // pressure
@@ -153,12 +157,18 @@ class BME280Simple {
     float _humidity;
     float _pressure;
     const char* _bmp280_name;
+    uint8_t childID;
     bool initCorrect;
+    static MyMessage msgHumidity;
+    static MyMessage msgTemperature;
+    static MyMessage msgPressure;
+    static MyMessage msgForecast;
+
     void sendStateToController(mysensors_sensor_t sensor) {
-      MyMessage msgHumidity(getChildID(S_HUM), V_HUM);
-      MyMessage msgTemperature(getChildID(S_TEMP), V_TEMP);
-      MyMessage msgPressure(getChildID(S_BARO), V_PRESSURE);
-      MyMessage msgForecast(getChildID(S_BARO), V_FORECAST);
+      msgHumidity.setSensor(getChildID(S_HUM));
+      msgTemperature.setSensor(getChildID(S_TEMP));
+      msgPressure.setSensor(getChildID(S_BARO));
+      msgForecast.setSensor(getChildID(S_BARO));
       if (sensor == S_HUM)
         send(msgHumidity.set(_humidity, 1));
       if (sensor == S_TEMP)
@@ -170,22 +180,23 @@ class BME280Simple {
     };
 
     uint8_t getChildID(mysensors_sensor_t sensor) {
-      uint8_t id = 70 + (bme280DeviceAdress - 0x76) * 3; // start from 70 to 134
-      if (TCA9548ADeviceAdress > 0) {
-        id = 76;
-        id = id + (TCA9548ADeviceAdress - 0x70) * 24 + TCA9548APortNo * 3;
-      }
+      uint8_t id = childID;
       if (sensor == S_HUM) id = id + 1;
       if (sensor == S_BARO) id = id + 2;
       return id;
     };
-    void tcaSelect(uint8_t TCA9548A, uint8_t i) {
+    static void tcaSelect(uint8_t TCA9548A, uint8_t i) {
       if (i > 7) return;
       Wire.beginTransmission(TCA9548A);
       Wire.write(1 << i);
       Wire.endTransmission();
     }
 };
+
+MyMessage BME280Simple::msgHumidity = MyMessage(1, V_HUM);
+MyMessage BME280Simple::msgTemperature = MyMessage(1, V_TEMP);
+MyMessage BME280Simple::msgPressure = MyMessage(1, V_PRESSURE);
+MyMessage BME280Simple::msgForecast = MyMessage(1, V_FORECAST);
 
 class BME280Manager {
   public:
@@ -216,8 +227,10 @@ class BME280Manager {
     void addSensor() {
       addSensor(0x76, 0, 0, '\0');
     }
+    void addEmpty() {
+      lastId = lastId + 3;
+    }
     void addSensor(uint8_t bme280Adress, uint8_t TCA9548AAdress, uint8_t TCA9548APort, const char* bmp280_name) {
-      if (bmp280List.length() >= MAX_SENSORS) return;
       if (bme280Adress != 0x76 && bme280Adress != 0x77) return;
       if (TCA9548AAdress > 0 && (TCA9548AAdress < 0x70 || TCA9548AAdress > 0x77)) return;
       if (TCA9548APort < 0 || TCA9548APort > 7) return;
@@ -229,14 +242,17 @@ class BME280Manager {
               bmp280List[i].getTCA9548ADeviceAdress() == TCA9548AAdress &&
               bmp280List[i].getTCA9548APortNo() == TCA9548APort)
             exist = true;
-      if (!exist)
-        bmp280List.push_back(BME280Simple(bme280Adress, TCA9548AAdress, TCA9548APort, bmp280_name));
+      if (!exist) {
+        bmp280List.push_back(BME280Simple(lastId, bme280Adress, TCA9548AAdress, TCA9548APort, bmp280_name));
+        lastId = lastId + 3;
+      }
     }
   private:
     bool if_init;
     uint8_t scanInterval; // in seconds
     unsigned long lastScan;
-    const byte MAX_SENSORS = 32;
+    const uint8_t START_ID = 112;
+    uint8_t lastId = START_ID;
     QList<BME280Simple> bmp280List;
     void initAllSensors() {
       Wire.begin();
@@ -246,6 +262,7 @@ class BME280Manager {
       if_init = true;
     }
 };
+
 BME280Manager myBME280Manager = BME280Manager(30); // set scan interval in seconds
 /*  End of M6_MS_BME280SensorManager */
 

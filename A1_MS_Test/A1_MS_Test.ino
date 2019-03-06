@@ -682,6 +682,8 @@ class BME280Simple {
       initCorrect = false;
     };
     void readSensor(bool forceSendToController = false) {
+      if(!initCorrect)
+        return;
       float tempVar;
       if (TCA9548ADeviceAdress > 0)
         tcaSelect(TCA9548ADeviceAdress, TCA9548APortNo);
@@ -709,8 +711,11 @@ class BME280Simple {
     void initSensor() {
       if (TCA9548ADeviceAdress > 0)
         tcaSelect(TCA9548ADeviceAdress, TCA9548APortNo);
-      if (!bme280Obj.begin(bme280DeviceAdress))
+      if (!bme280Obj.begin(bme280DeviceAdress)){
         initCorrect = false;
+        return;  
+      }
+        
       else
         initCorrect = true;
       bme280Obj.setSampling(Adafruit_BME280::MODE_FORCED,
@@ -754,7 +759,7 @@ class BME280Simple {
       if (sensor == S_TEMP)
         send(msgTemperature.set(_temperature, 1));
       if (sensor == S_BARO) {
-        send(msgPressure.set(_pressure, 0));
+        send(msgPressure.set(_pressure, 1));
         send(msgForecast.set("unknown"));
       }
     };
@@ -1080,7 +1085,7 @@ class DS18B20Manager {
           if (compareAdress(DS18B20List[i].DS18B20Adress, DS18B20Adress)) {
             exist = true;
             char hex[17];
-            getAdress(DS18B20Adress, hex);
+            //getAdress(DS18B20Adress, hex);
             Serial.print(F("The sensor with the given address already exists: "));
             Serial.println(hex);
           }
@@ -1155,7 +1160,7 @@ class DS18B20Manager {
       send(msgId.set(hex));
     };
 
-    bool compareAdress(uint8_t ad1[8], uint8_t ad2[8]) {
+    bool compareAdress(const uint8_t ad1[8], const uint8_t ad2[8]) {
       bool result = true;
       for (uint8_t i = 0; i < 8; i++)
         if (ad1[i] != ad2[i])
@@ -1388,7 +1393,7 @@ void presentation()
   myRelayController.presentAllToControler(); //M1_MS_RelayManager
   mySwitchManager.presentAllToControler(); //M4_MS_SwitchSensorManager
   myMotionManager.presentAllToControler(); //M5_MS_MotionSensorManager
-  //myBME280Manager.presentAllToControler(); //M6_MS_BME280SensorManager
+  myBME280Manager.presentAllToControler(); //M6_MS_BME280SensorManager
   myBH1750Manager.presentAllToControler(); //M7_MS_BH1750SensorManager
   myDS18B20Manager.presentAllToControler(); //M8_MS_DS18B20SensorManager
   myHTU21DManager.presentAllToControler(); //M9_MS_HTU21DSensorManager
@@ -1400,7 +1405,7 @@ void loop()
   mySwitchManager.switchCheckState(); //M4_MS_SwitchSensorManager
   myMotionManager.motionCheckState(); //M5_MS_MotionSensorManager
   myHeartBeatManager.HeartBeat(); // Heartbeat Manager
-  //myBME280Manager.sensorsCheck(); //M6_MS_BME280SensorManager
+  myBME280Manager.sensorsCheck(); //M6_MS_BME280SensorManager
   myBH1750Manager.sensorsCheck(); //M7_MS_BH1750SensorManager
   myDS18B20Manager.sensorsCheck(); //M8_MS_DS18B20SensorManager
   myHTU21DManager.sensorsCheck(); //M9_MS_HTU21DSensorManager

@@ -66,7 +66,7 @@
 
 /*
    dataneo @2019 - M7_MS_BH1750SensorManager
-   MySensors BH1750 Sensor Manager 1.0
+   MySensors BH1750 Sensor Manager 1.1
    see https://sites.google.com/site/dataneosoftware/arduino/mysensors-bh1750-sensor-manager
 */
 #include <Wire.h>
@@ -79,16 +79,20 @@ class BH1750Simple {
       BH1750DeviceAdress = 0x23;
       TCA9548ADeviceAdress = 0;
       TCA9548APortNo = 0;
+      _childID = 0;
       initCorrect = false;
     };
-    BH1750Simple(uint8_t BH1750Adress, uint8_t TCA9548AAdress, uint8_t TCA9548APort, const char* bh1750_name) {
+    BH1750Simple(uint8_t childID, uint8_t BH1750Adress, uint8_t TCA9548AAdress, uint8_t TCA9548APort, const char* bh1750_name = "") {
       BH1750DeviceAdress = BH1750Adress;
       TCA9548ADeviceAdress = TCA9548AAdress;
       TCA9548APortNo = TCA9548APort;
       _bh1750_name = bh1750_name;
+      _childID = childID;
       initCorrect = false;
     };
     void readSensor(bool forceSendToController = false) {
+      if(!initCorrect)
+        return;
       float tempVar;
       if (TCA9548ADeviceAdress > 0)
         tcaSelect(TCA9548ADeviceAdress, TCA9548APortNo);
@@ -107,7 +111,6 @@ class BH1750Simple {
         bh1750Obj = BH1750(HIGH);
       bh1750Obj.begin(ModeContinuous, ResolutionHigh);
       bh1750Obj.startConversion();
-      bh1750Obj.isConversionCompleted();
       initCorrect = true;
       readSensor(true);
     }
@@ -123,7 +126,14 @@ class BH1750Simple {
     uint8_t getbh1750DeviceAdress() {
       return BH1750DeviceAdress;
     }
+    uint8_t getChildID() {
+      return _childID;
+    }
+    const char* getName() {
+      return _bh1750_name;
+    }
   private:
+    uint8_t _childID;
     uint8_t TCA9548ADeviceAdress; // from 0x70 to 0x77 - use 0 for disable TCA9548A
     uint8_t TCA9548APortNo; // from 0 to 7
     uint8_t BH1750DeviceAdress; // 0x23 or 0x5C
@@ -131,21 +141,14 @@ class BH1750Simple {
     float _lux;
     const char* _bh1750_name;
     bool initCorrect;
+    static MyMessage msgLighLevel;
+    
     void sendStateToController() {
-      MyMessage msgLighLevel(getChildID(), V_LEVEL);
+      msgLighLevel.setSensor(_childID);
       send(msgLighLevel.set(_lux, 1));
     };
-
-    uint8_t getChildID() {
-      byte f = BH1750DeviceAdress == 0x23 ? 0 : 1;
-      uint8_t id = 135 + f; // start from 135 to 134
-      if (TCA9548ADeviceAdress > 0) {
-        id = 137;
-        id = id + (TCA9548ADeviceAdress - 0x70) * 8 + TCA9548APortNo;
-      }
-      return id;
-    };
-    void tcaSelect(uint8_t TCA9548A, uint8_t i) {
+   
+    void static tcaSelect(uint8_t TCA9548A, uint8_t i) {
       if (i > 7) return;
       Wire.beginTransmission(TCA9548A);
       Wire.write(1 << i);
@@ -153,12 +156,15 @@ class BH1750Simple {
     }
 };
 
+MyMessage BH1750Simple::msgLighLevel = MyMessage(1, V_LEVEL);
+
 class BH1750Manager {
   public:
     BH1750Manager(uint8_t scanIntervalInSeconds) {
       if_init = false;
       scanInterval = scanIntervalInSeconds;
       lastScan = 0;
+      lastID = START_ID;
     }
     void presentAllToControler() {
       if (BH1750List.length() > 0)
@@ -182,8 +188,10 @@ class BH1750Manager {
     void addSensor() {
       addSensor(0x23, 0, 0, '\0');
     }
+    void addEmpty() {
+      lastID++;
+    }
     void addSensor(uint8_t BH1750Adress, uint8_t TCA9548AAdress, uint8_t TCA9548APort, const char* bh1750_name) {
-      if (BH1750List.length() >= MAX_SENSORS) return;
       if (BH1750Adress != 0x23 && BH1750Adress != 0x5C) return;
       if (TCA9548AAdress > 0 && (TCA9548AAdress < 0x70 || TCA9548AAdress > 0x77)) return;
       if (TCA9548APort < 0 || TCA9548APort > 7) return;
@@ -195,14 +203,17 @@ class BH1750Manager {
               BH1750List[i].getTCA9548ADeviceAdress() == TCA9548AAdress &&
               BH1750List[i].getTCA9548APortNo() == TCA9548APort)
             exist = true;
-      if (!exist)
-        BH1750List.push_back(BH1750Simple(BH1750Adress, TCA9548AAdress, TCA9548APort, bh1750_name));
+      if (!exist){
+        BH1750List.push_back(BH1750Simple(lastID, BH1750Adress, TCA9548AAdress, TCA9548APort, bh1750_name));
+        lastID++;
+      }
     }
   private:
     bool if_init;
     uint8_t scanInterval; // in seconds
     unsigned long lastScan;
-    const byte MAX_SENSORS = 32;
+    const uint8_t START_ID = 134;
+    uint8_t lastID;
     QList<BH1750Simple> BH1750List;
     void initAllSensors() {
       Wire.begin();
@@ -227,7 +238,7 @@ void setup() { }
 void presentation()
 {
   // Send the sketch version information to the gateway and Controller
-  sendSketchInfo("BH1750 Sensor Manager", "1.0");
+  sendSketchInfo("BH1750 Sensor Manager", "1.1");
 
   myBH1750Manager.presentAllToControler(); //M7_MS_BH1750SensorManager
 }
