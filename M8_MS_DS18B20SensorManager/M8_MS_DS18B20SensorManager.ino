@@ -96,8 +96,10 @@ class DS18B20Manager {
     }
 
     void sensorsCheck(bool firstRead = false) {
-      if (!if_init)
+      if (!if_init){
         return;
+      }
+
       unsigned long timeNow = millis();
       if (lastScanInit > timeNow || lastTempRequest > timeNow) { // time overload
         lastScanInit = timeNow;
@@ -135,29 +137,29 @@ class DS18B20Manager {
         lastScanInit = timeNow;
         lastTempRequest = timeNow;
         lastIdTempRequest = getNextID(-1);
-        if (lastIdTempRequest == 0)
-          return;
         requestTemp = true;
         DS18B20List[lastIdTempRequest].requestTemp = true;
         dallas->requestTemperaturesByAddress(DS18B20List[lastIdTempRequest].DS18B20Adress);
       }
     }
 
-    void addSensor(const uint8_t DS18B20Adress[8], const char* DS18B20_name) {
+    void addSensor(uint8_t * DS18B20Adress, const char* DS18B20_name) {
       bool exist = false;
       if (DS18B20List.length() > 0)
         for (byte i = 0; i < DS18B20List.length(); i++)
           if (compareAdress(DS18B20List[i].DS18B20Adress, DS18B20Adress)) {
             exist = true;
-            //            char hex[17];
-            //            getAdress(DS18B20Adress, hex);
-            //            Serial.print(F("The sensor with the given address already exists: "));
-            //            Serial.println(hex);
+            char hex[17];
+            getAdress(DS18B20Adress, hex);
+            logMsg("The sensor with the given address already exists: ");
+            logMsg(hex);
           }
       if (!exist) {
         DS18B20Single DS18B20;
-        for (uint8_t i = 0; i < 8; i++)
-          DS18B20.DS18B20Adress[i] = DS18B20Adress[i];
+        for (uint8_t i = 0; i < 8; i++){
+          DS18B20.DS18B20Adress[i] = *(DS18B20Adress + i);
+        }
+          
         DS18B20.DS18B20name = DS18B20_name;
         lastID++;
         DS18B20.ControlerID = lastID;
@@ -206,16 +208,15 @@ class DS18B20Manager {
       dallas->begin();
       dallas->setResolution(12);
       dallas->setWaitForConversion(false);
-
       for (byte i = 0; i < DS18B20List.length(); i++)
         if (dallas->isConnected(DS18B20List[i].DS18B20Adress))
           DS18B20List[i].init = true;
         else {
           DS18B20List[i].init = false;
-          //          char hex[17];
-          //          getAdress(DS18B20List[i].DS18B20Adress, hex);
-          //          Serial.print(F("The sensor with the given address was not found on the bus: "));
-          //          Serial.println(hex);
+          char hex[17];
+          getAdress(DS18B20List[i].DS18B20Adress, hex);
+          logMsg("The sensor with the given address was not found on the bus: ");
+          logMsg(hex);
         }
       if_init = true;
       sensorsCheck(true);
@@ -251,17 +252,32 @@ class DS18B20Manager {
         sprintf(&stringadress[2 * i], "%02X", adress[i]);
       stringadress[16] = '\0';
     }
+
+    void logMsg(char* msg){
+      //Serial.println(msg);  
+    }
 };
 
-DS18B20Manager myDS18B20Manager = DS18B20Manager(4, 30, 1500);
+uint8_t* pAddr(uint8_t a1, uint8_t a2, uint8_t a3, uint8_t a4, uint8_t a5, uint8_t a6, uint8_t a7, uint8_t a8) {
+  uint8_t* c = new uint8_t[8];
+  c[0] = a1;
+  c[1] = a2;
+  c[2] = a3;
+  c[3] = a4;
+  c[4] = a5;
+  c[5] = a6;
+  c[6] = a7;
+  c[7] = a8;  
+  return c;
+}
+
+DS18B20Manager myDS18B20Manager = DS18B20Manager(4, 30, 1500, true);
 /*  End of M8_MS_DS18B20SensorManager */
 
 void before()
 {
   /* M8_MS_DS18B20SensorManager */
-  uint8_t adress[8] = {0x28, 0xEE, 0xAF, 0x47, 0x1A, 0x16, 0x01, 0x26} ;
-  myDS18B20Manager.addSensor(adress, "Kuchnia");  // M8_MS_DS18B20SensorManager
-
+  myDS18B20Manager.addSensor(pAddr(0x28, 0xEE, 0xAF, 0x47, 0x1A, 0x16, 0x01, 0x26), "Kuchnia");  // M8_MS_DS18B20SensorManager
 }
 
 void setup() { }
