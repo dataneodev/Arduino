@@ -96,7 +96,7 @@ class DS18B20Manager {
     }
 
     void sensorsCheck(bool firstRead = false) {
-      if (!if_init){
+      if (!if_init) {
         return;
       }
 
@@ -156,10 +156,10 @@ class DS18B20Manager {
           }
       if (!exist) {
         DS18B20Single DS18B20;
-        for (uint8_t i = 0; i < 8; i++){
+        for (uint8_t i = 0; i < 8; i++) {
           DS18B20.DS18B20Adress[i] = *(DS18B20Adress + i);
         }
-          
+
         DS18B20.DS18B20name = DS18B20_name;
         lastID++;
         DS18B20.ControlerID = lastID;
@@ -253,8 +253,8 @@ class DS18B20Manager {
       stringadress[16] = '\0';
     }
 
-    void logMsg(char* msg){
-      //Serial.println(msg);  
+    void logMsg(char* msg) {
+      //Serial.println(msg);
     }
 };
 
@@ -267,11 +267,11 @@ uint8_t* pAddr(uint8_t a1, uint8_t a2, uint8_t a3, uint8_t a4, uint8_t a5, uint8
   c[4] = a5;
   c[5] = a6;
   c[6] = a7;
-  c[7] = a8;  
+  c[7] = a8;
   return c;
 }
 
-DS18B20Manager myDS18B20Manager = DS18B20Manager(4, 30, 1500, true);
+DS18B20Manager myDS18B20Manager = DS18B20Manager(4, 6, 1500, true);
 /*  End of M8_MS_DS18B20SensorManager */
 
 void before()
@@ -292,7 +292,13 @@ void presentation()
 
 void loop()
 {
+  unsigned long startp = micros();
   myDS18B20Manager.sensorsCheck(); //M8_MS_DS18B20SensorManager
+  unsigned long endp = micros();
+  unsigned long resultp =  endp - startp;
+  Serial.print("Czas trwania: ");
+  Serial.println(resultp);
+  wait(2000);
 }
 
 void receive(const MyMessage &message) { }

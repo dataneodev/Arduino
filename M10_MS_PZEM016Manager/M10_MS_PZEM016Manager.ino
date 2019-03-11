@@ -100,17 +100,18 @@ class PZEM016Device {
     }
 
     //measure
-    float _lastCurrent = -1; // in A
-    float _lastVoltage = -1; // in V
-    float _lastPower = -1; // in Watt
-    float _lastEnergy = -1; // in kWh
-    float _lastPowerFactor = -1; // eg 0.5
+    bool _lastReadStatus = false;
+    float _lastCurrent = 0.001; // in A
+    float _lastVoltage = 0.1; // in V
+    float _lastPower = 0.1; // in Watt
+    float _lastEnergy = 0.001; // in kWh
+    float _lastPowerFactor = 0.01; // eg 0.5
 
-    float _lastCurrentSent = -1; // in A
-    float _lastVoltageSent = -1; // in V
-    float _lastPowerSent = -1; // in Watt
-    float _lastEnergySent = -1; // in kWh
-    float _lastPowerFactorSent = -1; // eg 0.5
+    float _lastCurrentSent = 0.001; // in A
+    float _lastVoltageSent = 0.1; // in V
+    float _lastPowerSent = 0.1; // in Watt
+    float _lastEnergySent = 0.001; // in kWh
+    float _lastPowerFactorSent = 0.01; // eg 0.5
   private:
     uint8_t _pzemSlaveAddr;
     uint8_t _childID;
@@ -139,6 +140,10 @@ class PZEM016Manager {
     }
 
     void addPZEM016Device(uint8_t pzemSlaveAddr, bool presentToController = true, bool multimeterToController = false, const char* PZEM016Name = "") {
+      if (pzemSlaveAddr == 0) {
+        logMsg("PZEM adress no can not be 0");
+        return;
+      }
       bool addSuccesfull = true;
       if (PZEM016DeviceList.length() > 0)
         for (byte i = 0; i < PZEM016DeviceList.length(); i++)
@@ -158,10 +163,13 @@ class PZEM016Manager {
       if (PZEM016DeviceList.length() > 0) {
         for (byte i = 0; i < PZEM016DeviceList.length(); i++)
         {
-          if (PZEM016DeviceList[i].getIsPower())
-            present(PZEM016DeviceList[i].getChildID(), S_POWER, PZEM016DeviceList[i].getName());
-          if (PZEM016DeviceList[i].getIsMultimeter())
-            present(PZEM016DeviceList[i].getChildID() + 1, S_MULTIMETER, PZEM016DeviceList[i].getName());
+          uint8_t groupNo = getGroupNo(PZEM016DeviceList[i].getPzemSlaveAddr());
+          if (groupNo == 0 || (groupNo > 0 && isFirstOnGroup(PZEM016DeviceList[i].getPzemSlaveAddr(), groupNo))) {
+            if (PZEM016DeviceList[i].getIsPower())
+              present(PZEM016DeviceList[i].getChildID(), S_POWER, PZEM016DeviceList[i].getName());
+            if (PZEM016DeviceList[i].getIsMultimeter())
+              present(PZEM016DeviceList[i].getChildID() + 1, S_MULTIMETER, PZEM016DeviceList[i].getName());
+          }
         }
         checkPZEM(true);
       }
@@ -184,8 +192,16 @@ class PZEM016Manager {
 
       if (forceCheck || timeNow >= lastControllerReport + (_controllerReport * 1000)) {
         if (PZEM016DeviceList.length() > 0)
-          for (byte i = 0; i < PZEM016DeviceList.length(); i++)
-            sendPZEM016Device(PZEM016DeviceList[i]);
+          for (byte i = 0; i < PZEM016DeviceList.length(); i++) {
+            uint8_t groupNo = getGroupNo(PZEM016DeviceList[i].getPzemSlaveAddr());
+            if (groupNo == 0) {
+              sendPZEM016Device(PZEM016DeviceList[i]);
+            }
+            else {
+              if (isFirstOnGroup(PZEM016DeviceList[i].getPzemSlaveAddr(), groupNo))
+                sendGroup(getGroupNo(PZEM016DeviceList[i].getPzemSlaveAddr()));
+            }
+          }
         lastControllerReport = timeNow;
       }
     }
@@ -225,6 +241,26 @@ class PZEM016Manager {
             return PZEM016DeviceList[i]._lastEnergy;
       return 0;
     }
+    void addGroup(uint8_t groupNo, uint8_t pzemAddr) {
+      if (groupNo == 0) {
+        logMsg("Group no can not be 0");
+        return;
+      }
+      if (pzemAddr == 0) {
+        logMsg("PZEM adress no can not be 0");
+        return;
+      }
+      if (PRZEM016GroupList.length() > 0)
+        for (byte i = 0; i < PRZEM016GroupList.length(); i++)
+          if (PRZEM016GroupList[i].groupNo == groupNo && PRZEM016GroupList[i].przemSlaveId == pzemAddr) {
+            logMsg("PZEM adress allready exists in this group");
+            return;
+          }
+      PRZEM016Group newGroup;
+      newGroup.groupNo = groupNo;
+      newGroup.przemSlaveId = pzemAddr;
+      PRZEM016GroupList.push_back(newGroup);
+    }
   private:
     // const
     const uint8_t START_ID = 164;
@@ -245,10 +281,18 @@ class PZEM016Manager {
     uint8_t _lastID  = START_ID;
     static uint8_t _txRxChangePin;
 
+    struct przem016group {
+      uint8_t groupNo;
+      uint8_t przemSlaveId;
+    };
+    typedef struct przem016group PRZEM016Group;
+    QList<PRZEM016Group> PRZEM016GroupList;
+
     void readPZEM016Device(PZEM016Device &device) {
       PZEMNode.SetSlaveID(device.getPzemSlaveAddr());
       uint8_t result = PZEMNode.readInputRegisters(0x0000, 9); //read the 9 registers of the PZEM-014 / 016
-      if (result == PZEMNode.ku8MBSuccess){
+      if (result == PZEMNode.ku8MBSuccess) {
+        device._lastReadStatus = true;
         uint16_t tempWord;
         float tempFloat;
         /*
@@ -300,9 +344,16 @@ class PZEM016Manager {
         tempFloat = tempWord / 100.0;
         device._lastPowerFactor = tempFloat;
       }
+      else {
+        device._lastReadStatus = false;
+        logMsg("Error during read device");
+      }
     }
 
     void sendPZEM016Device(PZEM016Device &device) {
+      if (!device._lastReadStatus) {
+        return;
+      }
       if (device.getIsMultimeter() && device._lastVoltage != device._lastVoltageSent) {
         device._lastVoltageSent = device._lastVoltage;
         powerMessageVoltage.setSensor(device.getChildID() + 1);
@@ -333,6 +384,90 @@ class PZEM016Manager {
         send(powerMessagekPf.set(device._lastPowerFactor, 2));
       }
     }
+    void sendGroup(uint8_t groupNo) {
+      uint8_t groupCount = 0;
+      uint8_t firstInGroupIndex;
+      bool isAllLastSuccess = true;
+
+      float _tempCurrent = 0.000; // in A
+      float _tempVoltage = 0.0; // in V
+      float _tempPower = 0.0; // in Watt
+      float _tempEnergy = 0.000; // in kWh
+      float _tempPowerFactor = 0.00; // eg 0.5
+
+      if (PRZEM016GroupList.length() > 0)
+        for (byte i = 0; i < PRZEM016GroupList.length(); i++)
+          if (PRZEM016GroupList[i].groupNo == groupNo)
+            for (byte j = 0; j < PZEM016DeviceList.length(); j++)
+              if (PZEM016DeviceList[j].getPzemSlaveAddr() == PRZEM016GroupList[i].przemSlaveId) {
+                groupCount++;
+                if (groupCount == 1) {
+                  firstInGroupIndex = j;
+                }
+                if (!PZEM016DeviceList[j]._lastReadStatus)
+                  isAllLastSuccess = false;
+                _tempCurrent += PZEM016DeviceList[j]._lastCurrent;
+                _tempVoltage += PZEM016DeviceList[j]._lastVoltage;
+                _tempPower += PZEM016DeviceList[j]._lastPower;
+                _tempEnergy += PZEM016DeviceList[j]._lastEnergy;
+                _tempPowerFactor += PZEM016DeviceList[j]._lastPowerFactor;
+              }
+
+      if (!isAllLastSuccess) {
+        logMsg("sendGroup -> not all devices read correct!");
+        return;
+      }
+      _tempVoltage = _tempVoltage / groupCount;
+      _tempPowerFactor = _tempPowerFactor / groupCount;
+
+      PZEM016Device PZEM016Temp(1, PZEM016DeviceList[firstInGroupIndex].getChildID(),
+                                PZEM016DeviceList[firstInGroupIndex].getIsPower(),
+                                PZEM016DeviceList[firstInGroupIndex].getIsMultimeter(),
+                                PZEM016DeviceList[firstInGroupIndex].getName());
+
+      PZEM016Temp._lastReadStatus = true;
+      PZEM016Temp._lastCurrent = _tempCurrent;
+      PZEM016Temp._lastVoltage = _tempVoltage;
+      PZEM016Temp._lastPower = _tempPower;
+      PZEM016Temp._lastEnergy = _tempEnergy;
+      PZEM016Temp._lastPowerFactor = _tempPowerFactor;
+
+      PZEM016Temp._lastCurrentSent = PZEM016DeviceList[firstInGroupIndex]._lastCurrentSent;
+      PZEM016Temp._lastVoltageSent = PZEM016DeviceList[firstInGroupIndex]._lastVoltageSent;
+      PZEM016Temp._lastPowerSent = PZEM016DeviceList[firstInGroupIndex]._lastPowerSent;
+      PZEM016Temp._lastEnergySent = PZEM016DeviceList[firstInGroupIndex]._lastEnergySent;
+      PZEM016Temp._lastPowerFactorSent = PZEM016DeviceList[firstInGroupIndex]._lastPowerFactorSent;
+
+      sendPZEM016Device(PZEM016Temp);
+
+      PZEM016DeviceList[firstInGroupIndex]._lastCurrentSent = PZEM016Temp._lastCurrentSent;
+      PZEM016DeviceList[firstInGroupIndex]._lastVoltageSent = PZEM016Temp._lastVoltageSent;
+      PZEM016DeviceList[firstInGroupIndex]._lastPowerSent = PZEM016Temp._lastPowerSent;
+      PZEM016DeviceList[firstInGroupIndex]._lastEnergySent = PZEM016Temp._lastEnergySent;
+      PZEM016DeviceList[firstInGroupIndex]._lastPowerFactorSent = PZEM016Temp._lastPowerFactorSent;
+    }
+
+    uint8_t getGroupNo(uint8_t pzemAddr) {
+      if (PRZEM016GroupList.length() > 0)
+        for (byte i = 0; i < PRZEM016GroupList.length(); i++)
+          if (PRZEM016GroupList[i].przemSlaveId == pzemAddr)
+            return PRZEM016GroupList[i].groupNo;
+      return 0;
+    }
+    bool isFirstOnGroup(uint8_t pzemAddr, uint8_t groupNo) {
+      if (PRZEM016GroupList.length() > 0)
+        for (byte i = 0; i < PRZEM016GroupList.length(); i++)
+          if (PRZEM016GroupList[i].groupNo == groupNo)
+            if (PRZEM016GroupList[i].przemSlaveId == pzemAddr)
+              return true;
+            else
+              return false;
+      return false;
+    }
+
+    void logMsg(char* msg) {
+      Serial.println(msg);
+    }
 };
 uint8_t PZEM016Manager::_txRxChangePin = 0;
 
@@ -352,14 +487,18 @@ PZEM016Manager PZEM016ManagerObj = PZEM016Manager(Serial1, 10, 2, 10);
 void before()
 {
   //void addPZEM016Device(uint8_t pzemSlaveAddr, bool presentToController = true, bool multimeterToController = false, const char* PZEM016Name = "")
-  PZEM016ManagerObj.addPZEM016Device(1, true, true, "PZEM016 Test"); //M10_MS_PRZEM016Manager
+  PZEM016ManagerObj.addPZEM016Device(1, true, true, "PZEM016 Grupa Testowa"); //M10_MS_PRZEM016Manager
+  //PZEM016ManagerObj.addPZEM016Device(2, true, true, "PZEM016 Test"); //M10_MS_PRZEM016Manager
+
+  //void addGroup(uint8_t groupNo, uint8_t pzemAddr)
+  PZEM016ManagerObj.addGroup(1, 1);
 }
 
 void setup() {}
 
 void presentation()
 {
-  sendSketchInfo("PZEM016 Sensor Manager", "1.0");
+  sendSketchInfo("PZEM016 Sensor Manager", "1.1");
   PZEM016ManagerObj.presentAllToControler(); // M10_MS_PRZEM016Manager
 }
 
