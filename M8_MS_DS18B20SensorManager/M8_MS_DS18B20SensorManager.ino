@@ -292,13 +292,7 @@ void presentation()
 
 void loop()
 {
-  unsigned long startp = micros();
   myDS18B20Manager.sensorsCheck(); //M8_MS_DS18B20SensorManager
-  unsigned long endp = micros();
-  unsigned long resultp =  endp - startp;
-  Serial.print("Czas trwania: ");
-  Serial.println(resultp);
-  wait(2000);
 }
 
 void receive(const MyMessage &message) { }
