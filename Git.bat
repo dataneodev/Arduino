@@ -1,1 +1,1 @@
-start "Git" "I:\2.Programy\GitPortable\git-bash.exe"
+start "Git" "I:\2.Programy\PortableGit\git-bash.exe"

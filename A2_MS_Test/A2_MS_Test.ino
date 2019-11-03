@@ -78,7 +78,6 @@
    MySensors Relay Manager 1.2
    see https://sites.google.com/site/dataneosoftware/arduino/mysensors-relay-manager
 */
-
 #include <Bounce2.h>
 #include <QList.h>
 
@@ -195,16 +194,15 @@ class ButtonSimple {
       if (_button_pin_no == 0)
         return false;
       _debouncer.update();
-      if (_debouncer.fell())
+      if (_debouncer.rose())
         return true;
       return false;
     }
     void initPin() {
       if (_button_pin_no != 0) {
-        pinMode(_button_pin_no, INPUT_PULLUP);
         _debouncer = Bounce();
-        _debouncer.attach(_button_pin_no);
-        _debouncer.interval(5);
+        _debouncer.attach(_button_pin_no, INPUT);
+        _debouncer.interval(10);
       }
     }
   private:
@@ -356,13 +354,14 @@ void before()
       RELAY_ON_HIGH - default
       RELAY_ON_LOW
   */
-  myRelayController.addRelay(6, 7, LOAD_FROM_CONTROLLERS, RELAY_ON_HIGH, "lampka"); // ch1
-  myRelayController.addRelay(23, A7);
-  myRelayController.addRelay(23, A6);
-  myRelayController.addRelay(38, A8, SAVE_TO_EEPROM, RELAY_ON_HIGH, "ch8"); //ch8
-  myRelayController.addRelay(40, A9, START_IN_HIGH, RELAY_ON_HIGH, "ch7"); //ch7
-  myRelayController.addRelay(44, A10, START_IN_LOW, RELAY_ON_HIGH, "ch6"); //ch6
-  myRelayController.addRelay(46, A11, START_IN_LOW, RELAY_ON_LOW, "ch5"); //ch5
+  myRelayController.addRelay(22, 23, START_IN_LOW, RELAY_ON_HIGH, "22-23"); //ch1
+  myRelayController.addRelay(24, 25, START_IN_LOW, RELAY_ON_HIGH, "24-25"); //ch2
+  myRelayController.addRelay(26, 27, START_IN_LOW, RELAY_ON_HIGH, "26-27"); //ch3
+  myRelayController.addRelay(28, 29, START_IN_LOW, RELAY_ON_HIGH, "28-29"); //ch4
+  myRelayController.addRelay(30, 31, START_IN_LOW, RELAY_ON_HIGH, "30-31"); //ch5
+  myRelayController.addRelay(32, 33, START_IN_LOW, RELAY_ON_HIGH, "32-33"); //ch6
+  myRelayController.addRelay(34, 35, START_IN_LOW, RELAY_ON_HIGH, "34-35"); //ch7
+  myRelayController.addRelay(36, 37, START_IN_LOW, RELAY_ON_HIGH, "36-37"); //ch8
 }
 
 void setup() { }
