@@ -1,0 +1,6 @@
+{
+    "board": "arduino:avr:megaADK",
+    "programmer": "AVRISP mkII",
+    "output": "build",
+    "sketch": "M8_MS_DS18B20SensorManager.ino"
+}

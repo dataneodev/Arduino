@@ -1,0 +1,52 @@
+[
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "I:\\2.Programy\\arduino\\hardware\\arduino\\avr\\cores\\arduino"
+  },
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "I:\\2.Programy\\arduino\\hardware\\arduino\\avr\\variants\\mega"
+  },
+  {
+    "Sourcefile": "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\build\\sketch\\M8_MS_DS18B20SensorManager.ino.cpp",
+    "Include": "MySensors.h",
+    "Includepath": "I:\\7.Projekty\\5.Arduino\\libraries\\MySensors"
+  },
+  {
+    "Sourcefile": "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\build\\sketch\\M8_MS_DS18B20SensorManager.ino.cpp",
+    "Include": "OneWire.h",
+    "Includepath": "I:\\7.Projekty\\5.Arduino\\libraries\\OneWire"
+  },
+  {
+    "Sourcefile": "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\build\\sketch\\M8_MS_DS18B20SensorManager.ino.cpp",
+    "Include": "DallasTemperature.h",
+    "Includepath": "I:\\7.Projekty\\5.Arduino\\libraries\\DallasTemperature"
+  },
+  {
+    "Sourcefile": "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\build\\sketch\\M8_MS_DS18B20SensorManager.ino.cpp",
+    "Include": "QList.h",
+    "Includepath": "I:\\7.Projekty\\5.Arduino\\libraries\\QList\\src"
+  },
+  {
+    "Sourcefile": "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\build\\sketch\\M8_MS_DS18B20SensorManager.ino.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "I:\\7.Projekty\\5.Arduino\\libraries\\MySensors\\MyASM.S",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "I:\\7.Projekty\\5.Arduino\\libraries\\OneWire\\OneWire.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "I:\\7.Projekty\\5.Arduino\\libraries\\DallasTemperature\\DallasTemperature.cpp",
+    "Include": "",
+    "Includepath": null
+  }
+]

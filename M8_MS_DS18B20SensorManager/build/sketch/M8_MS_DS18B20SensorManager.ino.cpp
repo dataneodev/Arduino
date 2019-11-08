@@ -1,3 +1,5 @@
+#include <Arduino.h>
+#line 1 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
 // 
 //    The MySensors Arduino library handles the wireless radio link and protocol
 //    between your home built sensors/actuators and HA controller of choice.
@@ -258,6 +260,19 @@ class DS18B20Manager {
     }
 };
 
+#line 261 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+uint8_t* pAddr(uint8_t a1, uint8_t a2, uint8_t a3, uint8_t a4, uint8_t a5, uint8_t a6, uint8_t a7, uint8_t a8);
+#line 277 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+void before();
+#line 283 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+void setup();
+#line 285 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+void presentation();
+#line 293 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+void loop();
+#line 298 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+void receive(const MyMessage &message);
+#line 261 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
 uint8_t* pAddr(uint8_t a1, uint8_t a2, uint8_t a3, uint8_t a4, uint8_t a5, uint8_t a6, uint8_t a7, uint8_t a8) {
   uint8_t* c = new uint8_t[8];
   c[0] = a1;
@@ -296,3 +311,4 @@ void loop()
 }
 
 void receive(const MyMessage &message) { }
+

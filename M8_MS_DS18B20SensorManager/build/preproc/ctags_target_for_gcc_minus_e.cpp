@@ -1,3 +1,4 @@
+# 1 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
 // 
 //    The MySensors Arduino library handles the wireless radio link and protocol
 //    between your home built sensors/actuators and HA controller of choice.
@@ -15,8 +16,8 @@
 //    This program is free software; you can redistribute it and/or
 //    modify it under the terms of the GNU General Public License
 //    version 2 as published by the Free Software Foundation.
- 
- 
+
+
 // Enable debug prints to serial monitor
 //#define MY_DEBUG
 
@@ -30,12 +31,12 @@
 //#define MY_REPEATER_FEATURE
 
 // Enable serial gateway
-#define MY_GATEWAY_SERIAL
+
 
 // Define a lower baud rate for Arduinos running on 8 MHz (Arduino Pro Mini 3.3V & SenseBender)
-#if F_CPU == 8000000L
-#define MY_BAUD_RATE 38400
-#endif
+
+
+
 
 // Enable inclusion mode
 //#define MY_INCLUSION_MODE_FEATURE
@@ -62,23 +63,28 @@
 //#define MY_DEFAULT_RX_LED_PIN  6  // Receive led pin
 //#define MY_DEFAULT_TX_LED_PIN  5  // the PCB, on board LED
 
-#include <MySensors.h>
+# 66 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino" 2
 
 /*
+
    dataneo @2019 - M8_MS_DS18B20SensorManager
+
    MySensors DS18B20 Sensor Manager 1.1
+
    see https://sites.google.com/site/dataneosoftware/arduino/mysensors-ds18b20-sensor-manager
+
 */
-#include <OneWire.h>
-#include <DallasTemperature.h>
-#include <QList.h>
+# 72 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+# 73 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino" 2
+# 74 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino" 2
+# 75 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino" 2
 
 class DS18B20Manager {
   public:
     DS18B20Manager(uint8_t pin, unsigned short scanIntervalInSeconds, uint16_t _conversionWait, bool _sensorIdMessage = false) {
       if_init = false;
-      scanInterval = min(scanIntervalInSeconds, 300);
-      conversionWait = max(_conversionWait, 750);
+      scanInterval = ((scanIntervalInSeconds)<(300)?(scanIntervalInSeconds):(300));
+      conversionWait = ((_conversionWait)>(750)?(_conversionWait):(750));
       onewirePin = pin;
       oneWire = new OneWire(onewirePin);
       dallas = new DallasTemperature(oneWire);
@@ -277,7 +283,7 @@ DS18B20Manager myDS18B20Manager = DS18B20Manager(4, 6, 1500, true);
 void before()
 {
   /* M8_MS_DS18B20SensorManager */
-  myDS18B20Manager.addSensor(pAddr(0x28, 0xEE, 0xAF, 0x47, 0x1A, 0x16, 0x01, 0x26), "Kuchnia");  // M8_MS_DS18B20SensorManager
+  myDS18B20Manager.addSensor(pAddr(0x28, 0xEE, 0xAF, 0x47, 0x1A, 0x16, 0x01, 0x26), "Kuchnia"); // M8_MS_DS18B20SensorManager
 }
 
 void setup() { }
