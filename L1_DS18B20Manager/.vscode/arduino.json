@@ -1,0 +1,5 @@
+{
+    "sketch": "L1_DS18B20Manager.ino",
+    "board": "arduino:avr:mega",
+    "configuration": "cpu=atmega2560"
+}

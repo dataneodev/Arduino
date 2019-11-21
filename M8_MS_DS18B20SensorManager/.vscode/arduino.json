@@ -1,6 +1,8 @@
 {
-    "board": "arduino:avr:megaADK",
+    "board": "arduino:avr:mega",
     "programmer": "AVRISP mkII",
     "output": "build",
-    "sketch": "M8_MS_DS18B20SensorManager.ino"
+    "sketch": "M8_MS_DS18B20SensorManager.ino",
+    "configuration": "cpu=atmega2560",
+    "port": "COM7"
 }
