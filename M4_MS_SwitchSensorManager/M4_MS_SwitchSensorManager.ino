@@ -159,10 +159,10 @@ class SwitchManager {
           switchList[i].checkSwitch(false);
     }
     void addSwitch(byte switch_pin_no) {
-      addSwitch(switch_pin_no, NORMAL_CLOSE, '\0');
+      addSwitch(switch_pin_no, NORMAL_CLOSE, "\0");
     }
     void addSwitch(byte switch_pin_no, SWITCH_STATE switch_state) {
-      addSwitch(switch_pin_no, NORMAL_CLOSE, '\0');
+      addSwitch(switch_pin_no, NORMAL_CLOSE, "\0");
     }
     void addSwitch(byte switch_pin_no, SWITCH_STATE switch_state, const char* switch_name) {
       //check if switch exists

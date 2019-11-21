@@ -144,7 +144,7 @@ public:
   }
 
 private:
-  const bool REPORT_ONLY_ON_CHANGE = false;
+  const bool REPORT_ONLY_ON_CHANGE = false; //event fire only if temperature is change
   bool if_init;
   uint8_t scanInterval; // in seconds
   uint16_t conversionWait; //in miliseconds
@@ -205,7 +205,7 @@ private:
 
         char hex[17];
         getAdress(DS18B20List[i].DS18B20Adress, hex);
-        logMsg("The sensor with the given address was not found on the bus: ");
+        logMsg('The sensor with the given address was not found on the bus: ');
         logMsg(hex);
       }
     if_init = true;
@@ -244,7 +244,7 @@ private:
 
           char hex[17];
           getAdress(DS18B20Adress, hex);
-          logMsg("The sensor with the given address already exists: ");
+          logMsg('The sensor with the given address already exists: ');
           logMsg(hex);
         }
 
@@ -302,7 +302,7 @@ private:
           {
             DS18B20List[lastIdTempRequest].temperatureReadErrorPtr();
           }
-          logMsg("Błąd odczytu czujnika");
+          logMsg('Błąd odczytu czujnika');
         }
         else
         {

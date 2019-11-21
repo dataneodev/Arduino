@@ -185,10 +185,10 @@ class MotionManager {
           motionList[i].checkmotion(false);
     }
     void addMotion(byte motion_pin_no) {
-      addMotion(motion_pin_no, SENSOR_ON_HIGH, '\0', S_MOTION);
+      addMotion(motion_pin_no, SENSOR_ON_HIGH, "\0", S_MOTION);
     }
     void addMotion(byte motion_pin_no, MOTION_STATE motion_state) {
-      addMotion(motion_pin_no, SENSOR_ON_HIGH, '\0', S_MOTION);
+      addMotion(motion_pin_no, SENSOR_ON_HIGH, "\0", S_MOTION);
     }
     void addMotion(byte motion_pin_no, MOTION_STATE motion_state, const char* motion_name, mysensors_sensor_t _sensor = S_MOTION) {
       //check if motion exists
@@ -223,7 +223,7 @@ class MotionManager {
     }
 };
 
-MotionManager myMotionManager = MotionManager(HOMEASSISTANT);
+MotionManager myMotionManager = MotionManager(DOMOTICZ);
 /*  End of M5_MS_MotionSensorManager */
 
 void before()
