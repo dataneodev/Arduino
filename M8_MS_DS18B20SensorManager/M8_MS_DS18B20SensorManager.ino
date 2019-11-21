@@ -105,17 +105,14 @@ public:
     sensorsCheck(false);
   }
 
-  void addSensor(uint8_t *DS18B20Adress,
-                 const char *DS18B20Name)
-  {
-    addSensorToManager(DS18B20Adress, DS18B20Name);
-  }
-
   void addSensor(uint8_t a1, uint8_t a2, uint8_t a3, uint8_t a4,
                  uint8_t a5, uint8_t a6, uint8_t a7, uint8_t a8,
                  const char *DS18B20Name)
   {
-    addSensorToManager(pAddr(a1, a2, a3, a4, a5, a6, a7, a8), DS18B20Name);
+    addSensorToManager(pAddr(a1, a2, a3, a4, a5, a6, a7, a8),
+                       DS18B20Name,
+                       nullptr,
+                       nullptr);
   }
 
   void addSensor(uint8_t a1, uint8_t a2, uint8_t a3, uint8_t a4,
@@ -125,11 +122,23 @@ public:
                  void (*temperatureReadErrorPtr)())
 
   {
-    addSensorToManager(pAddr(a1, a2, a3, a4, a5, a6, a7, a8), DS18B20Name);
+    addSensorToManager(pAddr(a1, a2, a3, a4, a5, a6, a7, a8),
+                       DS18B20Name,
+                       temperatureReadPtr,
+                       temperatureReadErrorPtr);
+  }
+
+  void addSensor(uint8_t *DS18B20Adress,
+                 const char *DS18B20Name)
+  {
+    addSensorToManager(DS18B20Adress,
+                       DS18B20Name,
+                       nullptr,
+                       nullptr);
   }
 
 private:
-  const bool REPORT_ONLY_ON_CHANGE = false;
+  const bool REPORT_ONLY_ON_CHANGE = false; //event fire only if temperature is change
   bool if_init;
   uint8_t scanInterval;    // in seconds
   uint16_t conversionWait; //in miliseconds
@@ -183,6 +192,11 @@ private:
       else
       {
         DS18B20List[i].init = false;
+        if (DS18B20List[lastIdTempRequest].temperatureReadErrorPtr != nullptr)
+        {
+          DS18B20List[lastIdTempRequest].temperatureReadErrorPtr();
+        }
+
         char hex[17];
         getAdress(DS18B20List[i].DS18B20Adress, hex);
         logMsg("The sensor with the given address was not found on the bus: ");
@@ -205,7 +219,10 @@ private:
     }
   }
 
-  void addSensorToManager(uint8_t *DS18B20Adress, const char *DS18B20_name)
+  void addSensorToManager(uint8_t *DS18B20Adress,
+                          const char *DS18B20_name,
+                          void (*_temperatureReadPtr)(float),
+                          void (*_temperatureReadErrorPtr)())
   {
     bool exist = false;
     if (DS18B20List.length() > 0)
@@ -213,11 +230,18 @@ private:
         if (compareAdress(DS18B20List[i].DS18B20Adress, DS18B20Adress))
         {
           exist = true;
+
+          if (_temperatureReadErrorPtr != nullptr)
+          {
+            _temperatureReadErrorPtr();
+          }
+
           char hex[17];
           getAdress(DS18B20Adress, hex);
           logMsg("The sensor with the given address already exists: ");
           logMsg(hex);
         }
+
     if (!exist)
     {
       DS18B20Single DS18B20;
@@ -230,7 +254,11 @@ private:
       lastID++;
       DS18B20.ControlerID = lastID;
       DS18B20.init = false;
+      DS18B20.lastRead = false;
       DS18B20.requestTemp = false;
+      DS18B20.temperatureReadPtr = _temperatureReadPtr;
+      DS18B20.temperatureReadErrorPtr = _temperatureReadErrorPtr;
+
       DS18B20List.push_back(DS18B20);
     };
   }
@@ -362,7 +390,7 @@ private:
 /* inicjalize DS18B20Manager
 DS18B20Manager(numer_pinu, 
           interwał_odczytu_temp(w sek), 
-          czas konwersji (w milisek) - domyślnie zwiekszamy w góre do 1000-1500,
+          czas konwersji (w milisek) - domyślnie (750) przy błędach zwiekszamy w góre do 1000-1500,
           czy wysyłać id sensora do kontrolera (nie działa poprawnie wszędzie)); */
 
 DS18B20Manager myDS18B20Manager = DS18B20Manager(4, 6, 1500, true);
