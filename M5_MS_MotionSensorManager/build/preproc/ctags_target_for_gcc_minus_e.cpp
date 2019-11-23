@@ -1,3 +1,4 @@
+# 1 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
 //
 //    The MySensors Arduino library handles the wireless radio link and protocol
 //    between your home built sensors/actuators and HA controller of choice.
@@ -29,12 +30,12 @@
 //#define MY_REPEATER_FEATURE
 
 // Enable serial gateway
-#define MY_GATEWAY_SERIAL
+
 
 // Define a lower baud rate for Arduinos running on 8 MHz (Arduino Pro Mini 3.3V & SenseBender)
-#if F_CPU == 8000000L
-#define MY_BAUD_RATE 38400
-#endif
+
+
+
 
 // Enable inclusion mode
 //#define MY_INCLUSION_MODE_FEATURE
@@ -61,16 +62,21 @@
 //#define MY_DEFAULT_RX_LED_PIN  6  // Receive led pin
 //#define MY_DEFAULT_TX_LED_PIN  5  // the PCB, on board LED
 
-#include <MySensors.h>
+# 65 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino" 2
 
 /*
+
    dataneo @2019 - M8_MS_DS18B20SensorManager
+
    MySensors DS18B20 Sensor Manager 1.2
+
    see https://sites.google.com/site/dataneosoftware/arduino/mysensors-ds18b20-sensor-manager
+
 */
-#include <OneWire.h>
-#include <DallasTemperature.h>
-#include <QList.h>
+# 71 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+# 72 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino" 2
+# 73 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino" 2
+# 74 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino" 2
 
 class DS18B20Manager
 {
@@ -81,8 +87,8 @@ public:
                  bool _sendSensorIdMessage = false)
   {
     if_init = false;
-    scanInterval = min(scanIntervalInSeconds, 300);
-    conversionWait = max(_conversionWait, 750);
+    scanInterval = ((scanIntervalInSeconds)<(300)?(scanIntervalInSeconds):(300));
+    conversionWait = ((_conversionWait)>(750)?(_conversionWait):(750));
     onewirePin = pin;
     oneWire = new OneWire(onewirePin);
     dallas = new DallasTemperature(oneWire);
@@ -140,7 +146,7 @@ public:
 private:
   const bool REPORT_ONLY_ON_CHANGE = false; //event fire only if temperature is change
   bool if_init;
-  uint8_t scanInterval;    // in seconds
+  uint8_t scanInterval; // in seconds
   uint16_t conversionWait; //in miliseconds
   uint8_t onewirePin;
   unsigned long lastScanInit;
@@ -287,7 +293,7 @@ private:
         tempVal = dallas->getTempC(DS18B20List[lastIdTempRequest].DS18B20Adress);
 
         // error read
-        if (tempVal == DEVICE_DISCONNECTED_C || tempVal == -127.00 || tempVal == 85.00)
+        if (tempVal == -127 || tempVal == -127.00 || tempVal == 85.00)
         {
           if (DS18B20List[lastIdTempRequest].temperatureReadErrorPtr != nullptr)
           {
@@ -400,11 +406,15 @@ private:
 };
 
 /* inicjalize DS18B20Manager
-DS18B20Manager(numer_pinu, 
-          interwał_odczytu_temp(w sek), 
-          czas konwersji (w milisek) - domyślnie (750) przy błędach zwiekszamy w góre do 1000-1500,
-          czy wysyłać id sensora do kontrolera (nie działa poprawnie wszędzie)); */
 
+DS18B20Manager(numer_pinu, 
+
+          interwał_odczytu_temp(w sek), 
+
+          czas konwersji (w milisek) - domyślnie (750) przy błędach zwiekszamy w góre do 1000-1500,
+
+          czy wysyłać id sensora do kontrolera (nie działa poprawnie wszędzie)); */
+# 408 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
 DS18B20Manager myDS18B20Manager = DS18B20Manager(4, 6, 1500, true);
 
 /*  End of M8_MS_DS18B20SensorManager */

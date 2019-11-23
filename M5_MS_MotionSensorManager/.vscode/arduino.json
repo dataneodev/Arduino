@@ -1,7 +1,8 @@
 {
-    "sketch": "M5_MS_MotionSensorManager.ino",
+    "sketch": "..\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino",
     "board": "arduino:avr:mega",
     "configuration": "cpu=atmega2560",
     "programmer": "AVRISP mkII",
-    "port": "COM7"
+    "port": "COM7",
+    "output": "build"
 }

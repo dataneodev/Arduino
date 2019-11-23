@@ -1,3 +1,5 @@
+#include <Arduino.h>
+#line 1 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
 //
 //    The MySensors Arduino library handles the wireless radio link and protocol
 //    between your home built sensors/actuators and HA controller of choice.
@@ -199,7 +201,8 @@ private:
 
         char hex[17];
         getAdress(DS18B20List[i].DS18B20Adress, hex);
-        logMsg("The sensor with the given address was not found on the bus: ", hex);
+        logMsg('The sensor with the given address was not found on the bus: ');
+        logMsg(hex);
       }
     if_init = true;
     sensorsCheck(true);
@@ -209,7 +212,6 @@ private:
   {
     msgTemperature.setSensor(DS18B20List[id].ControlerID);
     send(msgTemperature.set(DS18B20List[id].temperature, 1));
-
     if (sensorIdMessage)
     {
       msgId.setSensor(DS18B20List[id].ControlerID);
@@ -238,7 +240,8 @@ private:
 
           char hex[17];
           getAdress(DS18B20Adress, hex);
-          logMsg("The sensor with the given address already exists: ", hex);
+          logMsg('The sensor with the given address already exists: ');
+          logMsg(hex);
         }
 
     if (!exist)
@@ -265,7 +268,9 @@ private:
   void sensorsCheck(bool firstRead)
   {
     if (!if_init)
+    {
       return;
+    }
 
     unsigned long timeNow = millis();
     if (lastScanInit > timeNow || lastTempRequest > timeNow)
@@ -293,9 +298,7 @@ private:
           {
             DS18B20List[lastIdTempRequest].temperatureReadErrorPtr();
           }
-          char hex[17];
-          getAdress(DS18B20List[lastIdTempRequest].DS18B20Adress, hex);
-          logMsg("Sensor reading error: ", hex);
+          logMsg('Błąd odczytu czujnika');
         }
         else
         {
@@ -359,29 +362,16 @@ private:
           return i;
     return 0;
   }
-
   void getAdress(uint8_t adress[8], char *stringadress)
   {
-    uint8_t temp[8];
-    for (uint8_t i = 0; i < 8; i++)
-    {
-      temp[i] = *(adress + i);
-    }
-
     for (int i = 0; i != 8; i++)
-      sprintf(&stringadress[2 * i], "%02X", temp[i]);
+      sprintf(&stringadress[2 * i], "%02X", adress[i]);
     stringadress[16] = '\0';
   }
 
   void logMsg(const char *msg)
   {
-    Serial.println(msg);
-  }
-
-  void logMsg(const char *msg, const char *msg2)
-  {
-    Serial.print(msg);
-    Serial.println(msg2);
+    //Serial.println(msg);
   }
 
   uint8_t *pAddr(uint8_t a1, uint8_t a2, uint8_t a3, uint8_t a4, uint8_t a5, uint8_t a6, uint8_t a7, uint8_t a8)
@@ -409,6 +399,17 @@ DS18B20Manager myDS18B20Manager = DS18B20Manager(4, 6, 1500, true);
 
 /*  End of M8_MS_DS18B20SensorManager */
 
+#line 400 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+void before();
+#line 406 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+void setup();
+#line 408 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+void presentation();
+#line 416 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+void loop();
+#line 421 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+void receive(const MyMessage &message);
+#line 400 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
 void before()
 {
   /* M8_MS_DS18B20SensorManager */
@@ -431,3 +432,4 @@ void loop()
 }
 
 void receive(const MyMessage &message) {}
+
