@@ -1,68 +1,5 @@
 # 1 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
-//
-//    The MySensors Arduino library handles the wireless radio link and protocol
-//    between your home built sensors/actuators and HA controller of choice.
-//    The sensors forms a self healing radio network with optional repeaters. Each
-//    repeater and gateway builds a routing tables in EEPROM which keeps track of the
-//    network topology allowing messages to be routed to nodes.
 
-//    Created by Henrik Ekblad <henrik.ekblad@mysensors.org>
-//    Copyright (C) 2013-2015 Sensnology AB
-//    Full contributor list: https://github.com/mysensors/Arduino/graphs/contributors
-
-//    Documentation: http://www.mysensors.org
-//    Support Forum: http://forum.mysensors.org
-
-//    This program is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU General Public License
-//    version 2 as published by the Free Software Foundation.
-
-// Enable debug prints to serial monitor
-//#define MY_DEBUG
-
-// Enable and select radio type attached
-//#define MY_RADIO_NRF24
-//#define MY_RADIO_NRF5_ESB
-//#define MY_RADIO_RFM69
-//#define MY_RADIO_RFM95
-
-// Enable repeater functionality for this node
-//#define MY_REPEATER_FEATURE
-
-// Enable serial gateway
-
-
-// Define a lower baud rate for Arduinos running on 8 MHz (Arduino Pro Mini 3.3V & SenseBender)
-
-
-
-
-// Enable inclusion mode
-//#define MY_INCLUSION_MODE_FEATURE
-// Enable Inclusion mode button on gateway
-//#define MY_INCLUSION_BUTTON_FEATURE
-
-// Inverses behavior of inclusion button (if using external pullup)
-//#define MY_INCLUSION_BUTTON_EXTERNAL_PULLUP
-
-// Set inclusion mode duration (in seconds)
-//#define MY_INCLUSION_MODE_DURATION 60
-// Digital pin used for inclusion mode button
-//#define MY_INCLUSION_MODE_BUTTON_PIN  3
-
-// Set blinking period
-//#define MY_DEFAULT_LED_BLINK_PERIOD 300
-
-// Inverses the behavior of leds
-//#define MY_WITH_LEDS_BLINKING_INVERSE
-
-// Flash leds on rx/tx/err
-// Uncomment to override default HW configurations
-//#define MY_DEFAULT_ERR_LED_PIN 4  // Error led pin
-//#define MY_DEFAULT_RX_LED_PIN  6  // Receive led pin
-//#define MY_DEFAULT_TX_LED_PIN  5  // the PCB, on board LED
-
-# 65 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino" 2
 
 /*
 
@@ -73,10 +10,13 @@
    see https://sites.google.com/site/dataneosoftware/arduino/mysensors-ds18b20-sensor-manager
 
 */
-# 71 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
-# 72 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino" 2
-# 73 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino" 2
-# 74 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino" 2
+# 9 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+/* #region  M8_MS_DS18B20SensorManager */
+# 11 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino" 2
+
+# 13 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino" 2
+# 14 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino" 2
+# 15 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino" 2
 
 class DS18B20Manager
 {
@@ -102,13 +42,12 @@ public:
   {
     if (DS18B20List.length() > 0)
       for (byte i = 0; i < DS18B20List.length(); i++)
-        presentToControler(i);
-    initAllSensors();
-  }
+        if(DS18B20List[i].presentToControler)
+        {
+          presentToControler(i);
+        }
 
-  void sensorsCheckLoop()
-  {
-    sensorsCheck(false);
+    initAllSensors();
   }
 
   void addSensor(uint8_t a1, uint8_t a2, uint8_t a3, uint8_t a4,
@@ -117,6 +56,7 @@ public:
   {
     addSensorToManager(pAddr(a1, a2, a3, a4, a5, a6, a7, a8),
                        DS18B20Name,
+                       true,
                        nullptr,
                        nullptr);
   }
@@ -124,12 +64,14 @@ public:
   void addSensor(uint8_t a1, uint8_t a2, uint8_t a3, uint8_t a4,
                  uint8_t a5, uint8_t a6, uint8_t a7, uint8_t a8,
                  const char *DS18B20Name,
-                 void (*temperatureReadPtr)(float),
-                 void (*temperatureReadErrorPtr)())
+                 bool presentSensorToControler,
+                 void (*temperatureReadPtr)(uint8_t DS18B20Adress[8], float),
+                 void (*temperatureReadErrorPtr)(uint8_t DS18B20Adress[8]))
 
   {
     addSensorToManager(pAddr(a1, a2, a3, a4, a5, a6, a7, a8),
                        DS18B20Name,
+                       presentSensorToControler,
                        temperatureReadPtr,
                        temperatureReadErrorPtr);
   }
@@ -139,12 +81,38 @@ public:
   {
     addSensorToManager(DS18B20Adress,
                        DS18B20Name,
+                       true,
                        nullptr,
                        nullptr);
   }
 
+  void sensorsCheckLoop()
+  {
+    sensorsCheck(false);
+  }
+
+  bool getLastTemperatureRead(uint8_t *DS18B20Adress, float * temperature)
+  {
+    if(!if_init)
+      return false;
+    if (DS18B20List.length() == 0)
+      return false;
+
+    for (byte i = 0; i < DS18B20List.length(); i++)
+      if (compareAdress(DS18B20List[i].DS18B20Adress, DS18B20Adress))
+      {
+        if(!DS18B20List[i].lastRead || !DS18B20List[i].init)
+          return false;
+        temperature = &DS18B20List[i].temperature;
+        return true;
+      }
+    return false;
+  }
+
 private:
   const bool REPORT_ONLY_ON_CHANGE = false; //event fire only if temperature is change
+  const uint8_t START_ID = 134; //start controler id
+
   bool if_init;
   uint8_t scanInterval; // in seconds
   uint16_t conversionWait; //in miliseconds
@@ -153,7 +121,6 @@ private:
   unsigned long lastTempRequest;
   uint8_t lastIdTempRequest;
   bool requestTemp;
-  const uint8_t START_ID = 134;
   uint8_t lastID = START_ID;
   bool sensorIdMessage;
   OneWire *oneWire;
@@ -170,8 +137,9 @@ private:
     bool init;
     bool lastRead;
     bool requestTemp;
-    void (*temperatureReadPtr)(float);
-    void (*temperatureReadErrorPtr)();
+    bool presentToControler;
+    void (*temperatureReadPtr)(uint8_t DS18B20Adress[8], float);
+    void (*temperatureReadErrorPtr)(uint8_t DS18B20Adress[8]);
   };
 
   typedef struct dS18B20Single DS18B20Single;
@@ -186,7 +154,7 @@ private:
   {
     if (DS18B20List.length() == 0)
     {
-      if_init = false;
+      if_init = true;
       return;
     }
     dallas->begin();
@@ -200,7 +168,7 @@ private:
         DS18B20List[i].init = false;
         if (DS18B20List[lastIdTempRequest].temperatureReadErrorPtr != nullptr)
         {
-          DS18B20List[lastIdTempRequest].temperatureReadErrorPtr();
+          DS18B20List[lastIdTempRequest].temperatureReadErrorPtr(DS18B20List[i].DS18B20Adress);
         }
 
         char hex[17];
@@ -227,8 +195,9 @@ private:
 
   void addSensorToManager(uint8_t *DS18B20Adress,
                           const char *DS18B20_name,
-                          void (*_temperatureReadPtr)(float),
-                          void (*_temperatureReadErrorPtr)())
+                          bool presentSensorToControler,
+                          void (*_temperatureReadPtr)(uint8_t DS18B20Adress[8], float),
+                          void (*_temperatureReadErrorPtr)(uint8_t DS18B20Adress[8]))
   {
     bool exist = false;
     if (DS18B20List.length() > 0)
@@ -239,7 +208,7 @@ private:
 
           if (_temperatureReadErrorPtr != nullptr)
           {
-            _temperatureReadErrorPtr();
+            _temperatureReadErrorPtr(DS18B20List[i].DS18B20Adress);
           }
 
           char hex[17];
@@ -263,7 +232,7 @@ private:
       DS18B20.requestTemp = false;
       DS18B20.temperatureReadPtr = _temperatureReadPtr;
       DS18B20.temperatureReadErrorPtr = _temperatureReadErrorPtr;
-
+      DS18B20.presentToControler = presentSensorToControler;
       DS18B20List.push_back(DS18B20);
     };
   }
@@ -286,18 +255,16 @@ private:
     {
       if (DS18B20List[lastIdTempRequest].init && DS18B20List[lastIdTempRequest].requestTemp)
       {
-        float tempVal;
         DS18B20List[lastIdTempRequest].requestTemp = false;
-        DS18B20List[lastIdTempRequest].lastRead = false;
-
-        tempVal = dallas->getTempC(DS18B20List[lastIdTempRequest].DS18B20Adress);
+        float tempVal = dallas->getTempC(DS18B20List[lastIdTempRequest].DS18B20Adress);
 
         // error read
         if (tempVal == -127 || tempVal == -127.00 || tempVal == 85.00)
         {
+          DS18B20List[lastIdTempRequest].lastRead = false;
           if (DS18B20List[lastIdTempRequest].temperatureReadErrorPtr != nullptr)
           {
-            DS18B20List[lastIdTempRequest].temperatureReadErrorPtr();
+            DS18B20List[lastIdTempRequest].temperatureReadErrorPtr(DS18B20List[lastIdTempRequest].DS18B20Adress);
           }
           char hex[17];
           getAdress(DS18B20List[lastIdTempRequest].DS18B20Adress, hex);
@@ -306,16 +273,20 @@ private:
         else
         {
           //read ok
+          DS18B20List[lastIdTempRequest].lastRead = true;
           if ((REPORT_ONLY_ON_CHANGE && tempVal != DS18B20List[lastIdTempRequest].temperature) ||
               !REPORT_ONLY_ON_CHANGE)
           {
-            sendStateToController(lastIdTempRequest);
+            if(DS18B20List[lastIdTempRequest].presentToControler)
+            {
+              sendStateToController(lastIdTempRequest);
+            }
+
             if (DS18B20List[lastIdTempRequest].temperatureReadPtr != nullptr)
             {
-              DS18B20List[lastIdTempRequest].temperatureReadPtr(tempVal);
+              DS18B20List[lastIdTempRequest].temperatureReadPtr(DS18B20List[lastIdTempRequest].DS18B20Adress, tempVal);
             }
           }
-
           DS18B20List[lastIdTempRequest].temperature = tempVal;
         }
       }
@@ -349,7 +320,7 @@ private:
     }
   }
 
-  bool compareAdress(uint8_t ad1[8], uint8_t ad2[8])
+  bool static compareAdress(uint8_t ad1[8], uint8_t ad2[8])
   {
     bool result = true;
     for (uint8_t i = 0; i < 8; i++)
@@ -366,7 +337,7 @@ private:
     return 0;
   }
 
-  void getAdress(uint8_t adress[8], char *stringadress)
+  void static getAdress(uint8_t adress[8], char *stringadress)
   {
     uint8_t temp[8];
     for (uint8_t i = 0; i < 8; i++)
@@ -404,40 +375,72 @@ private:
     return c;
   }
 };
+/* #endregion */
 
 /* inicjalize DS18B20Manager
 
-DS18B20Manager(numer_pinu, 
+DS18B20Manager(
 
-          interwał_odczytu_temp(w sek), 
+  - numer_pinu 1-wire, 
 
-          czas konwersji (w milisek) - domyślnie (750) przy błędach zwiekszamy w góre do 1000-1500,
+  - interwał_odczytu_temp(w sek), 
 
-          czy wysyłać id sensora do kontrolera (nie działa poprawnie wszędzie)); */
-# 408 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
-DS18B20Manager myDS18B20Manager = DS18B20Manager(4, 6, 1500, true);
+  - czas konwersji (w milisek) - domyślnie (750) przy błędach odczytu zwiekszamy w góre do 1000-1500 (+ dodatkowo rezystor podciągający zmiana z 4.7K do 2.2K) ,
+
+  - czy wysyłać id sensora do kontrolera (nie działa poprawnie na wszystkich kontrolerach)); */
+# 382 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+DS18B20Manager myDS18B20Manager = DS18B20Manager(4, 6, 750, true);
 
 /*  End of M8_MS_DS18B20SensorManager */
 
-void before()
+void before() //MySensors
 {
-  /* M8_MS_DS18B20SensorManager */
-  myDS18B20Manager.addSensor(0x28, 0xEE, 0xAF, 0x47, 0x1A, 0x16, 0x01, 0x26, "Kuchnia", nullptr, nullptr); // M8_MS_DS18B20SensorManager
+  /* M8_MS_DS18B20SensorManager 
+
+    myDS18B20Manager.addSensor(
+
+    - adres czujnika DS18B20 należy ustalić przed dodaniem,
+
+    - opis,
+
+    - czy prezentować czujnik kontrolerowi - domyślnie true, 
+
+    - funkcja wywoływana po odczycie, np. void testTemperatureRead(uint8_t DS18B20Adress[8], float temp){}, w przypadku braku dać nullptr
+
+    - funkcja wywoływana po błędzie odczytu np. void testTemperatureReadError(uint8_t DS18B20Adress[8]){}, w przypadku braku dać nullptr
+
+*/
+# 397 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+ // myDS18B20Manager.addSensor(0x28, 0xEE, 0xAF, 0x47, 0x1A, 0x16, 0x01, 0x26, "Kibel"); // M8_MS_DS18B20SensorManager
+  myDS18B20Manager.addSensor(0x28, 0xEE, 0xAF, 0x47, 0x1A, 0x16, 0x01, 0x26, "Salon", false, nullptr, nullptr); // M8_MS_DS18B20SensorManager
+
+  myDS18B20Manager.addSensor(0x28, 0xEE, 0xAF, 0x47, 0x1A, 0x16, 0x01, 0x26, "Kuchnia", false, testTemperatureRead, testTemperatureReadError); // M8_MS_DS18B20SensorManager
 }
 
 void setup() {}
 
-void presentation()
+void presentation() //MySensors
 {
-  // Send the sketch version information to the gateway and Controller
-  sendSketchInfo("DS18B20 Sensor Manager", "1.2");
-
+  sendSketchInfo("DS18B20 Sensor Manager", "1.2");//M8_MS_DS18B20SensorManager
   myDS18B20Manager.presentAllToControler(); //M8_MS_DS18B20SensorManager
 }
 
-void loop()
+void loop() //Main loop
 {
   myDS18B20Manager.sensorsCheckLoop(); //M8_MS_DS18B20SensorManager
 }
 
-void receive(const MyMessage &message) {}
+void receive(const MyMessage &message) {}//MySensors
+
+// test function
+void testTemperatureRead(uint8_t DS18B20Adress[8], float temp)
+{
+  Serial.print("Odczytano temperature: ");
+  Serial.println(temp);
+}
+
+// test function
+void testTemperatureReadError(uint8_t DS18B20Adress[8])
+{
+  Serial.println("Error read test ");
+}
