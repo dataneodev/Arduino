@@ -1,0 +1,4 @@
+{
+    "sketch": "M6_MS_BME280SensorManager.ino",
+    "board": "arduino:avr:megaADK"
+}

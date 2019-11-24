@@ -251,7 +251,11 @@ private:
         float tempVal = dallas->getTempC(DS18B20List[lastIdTempRequest].DS18B20Adress);
 
         // error read
-        if (tempVal == DEVICE_DISCONNECTED_C || tempVal == -127.00 || tempVal == 85.00)
+        if (tempVal == DEVICE_DISCONNECTED_C ||
+            tempVal == -127.00 ||
+            tempVal == 85.00 ||
+            isnan(tempVal) ||
+            isfinite(tempVal))
         {
           DS18B20List[lastIdTempRequest].lastRead = false;
           if (DS18B20List[lastIdTempRequest].temperatureReadErrorPtr != nullptr)
