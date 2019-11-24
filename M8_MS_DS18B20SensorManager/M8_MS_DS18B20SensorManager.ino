@@ -5,7 +5,7 @@
 */
 #define MY_GATEWAY_SERIAL // Enable serial gateway
 
-#include "DS18B20SensorManager.h"
+#include "DS18B20Manager.h"
 
 DS18B20Manager myDS18B20Manager = DS18B20Manager(4, 6, 750, true);
 
@@ -19,7 +19,7 @@ void before() //MySensors
     - czy prezentować czujnik kontrolerowi - domyślnie true, 
     - funkcja wywoływana po odczycie, np. void testTemperatureRead(uint8_t DS18B20Adress[8], float temp){}, w przypadku braku dać nullptr
     - funkcja wywoływana po błędzie odczytu np. void testTemperatureReadError(uint8_t DS18B20Adress[8]){}, w przypadku braku dać nullptr
-  */
+    */
 
     // myDS18B20Manager.addSensor(0x28, 0xEE, 0xAF, 0x47, 0x1A, 0x16, 0x01, 0x23, "Kibel"); // M8_MS_DS18B20SensorManager
     // myDS18B20Manager.addSensor(0x28, 0xEE, 0xAF, 0x47, 0x1A, 0x16, 0x01, 0x24, "Salon", false, nullptr, nullptr); // M8_MS_DS18B20SensorManager

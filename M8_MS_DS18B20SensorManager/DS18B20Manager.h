@@ -1,10 +1,10 @@
 /*
-   dataneo @2019 - DS18B20SensorManager
+   dataneo @2019 - DS18B20Manager
    MySensors DS18B20 Sensor Manager 1.2
    see https://sites.google.com/site/dataneosoftware/arduino/mysensors-ds18b20-sensor-manager
 */
 
-/* #region  DS18B20SensorManager */
+/* #region  DS18B20Manager */
 #include <MySensors.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
