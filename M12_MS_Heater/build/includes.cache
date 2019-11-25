@@ -1,0 +1,67 @@
+[
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "I:\\2.Programy\\arduino\\hardware\\arduino\\avr\\cores\\arduino"
+  },
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "I:\\2.Programy\\arduino\\hardware\\arduino\\avr\\variants\\mega"
+  },
+  {
+    "Sourcefile": "i:\\7.Projekty\\5.Arduino\\M12_MS_HouseHeater\\build\\sketch\\M12_MS_HouseHeater.ino.cpp",
+    "Include": "DS18B20Manager.h",
+    "Includepath": "I:\\7.Projekty\\5.Arduino\\libraries\\DS18B20Manager"
+  },
+  {
+    "Sourcefile": "i:\\7.Projekty\\5.Arduino\\M12_MS_HouseHeater\\build\\sketch\\M12_MS_HouseHeater.ino.cpp",
+    "Include": "MySensors.h",
+    "Includepath": "I:\\7.Projekty\\5.Arduino\\libraries\\MySensors"
+  },
+  {
+    "Sourcefile": "i:\\7.Projekty\\5.Arduino\\M12_MS_HouseHeater\\build\\sketch\\M12_MS_HouseHeater.ino.cpp",
+    "Include": "OneWire.h",
+    "Includepath": "I:\\7.Projekty\\5.Arduino\\libraries\\OneWire"
+  },
+  {
+    "Sourcefile": "i:\\7.Projekty\\5.Arduino\\M12_MS_HouseHeater\\build\\sketch\\M12_MS_HouseHeater.ino.cpp",
+    "Include": "DallasTemperature.h",
+    "Includepath": "I:\\7.Projekty\\5.Arduino\\libraries\\DallasTemperature"
+  },
+  {
+    "Sourcefile": "i:\\7.Projekty\\5.Arduino\\M12_MS_HouseHeater\\build\\sketch\\M12_MS_HouseHeater.ino.cpp",
+    "Include": "QList.h",
+    "Includepath": "I:\\7.Projekty\\5.Arduino\\libraries\\QList\\src"
+  },
+  {
+    "Sourcefile": "i:\\7.Projekty\\5.Arduino\\M12_MS_HouseHeater\\build\\sketch\\M12_MS_HouseHeater.ino.cpp",
+    "Include": "PZEM016Manager.h",
+    "Includepath": "I:\\7.Projekty\\5.Arduino\\libraries\\PZEM016Manager"
+  },
+  {
+    "Sourcefile": "i:\\7.Projekty\\5.Arduino\\M12_MS_HouseHeater\\build\\sketch\\M12_MS_HouseHeater.ino.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "I:\\7.Projekty\\5.Arduino\\libraries\\MySensors\\MyASM.S",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "I:\\7.Projekty\\5.Arduino\\libraries\\OneWire\\OneWire.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "I:\\7.Projekty\\5.Arduino\\libraries\\DallasTemperature\\DallasTemperature.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "I:\\7.Projekty\\5.Arduino\\libraries\\PZEM016Manager\\ModbusMasterDMod.cpp",
+    "Include": "",
+    "Includepath": null
+  }
+]

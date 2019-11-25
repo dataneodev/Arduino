@@ -7,23 +7,23 @@
 */
 #define MY_GATEWAY_SERIAL // Enable serial gateway
 
-#include "DS18B20Manager.h"
+#include <DS18B20Manager.h>
 
 DS18B20Manager myDS18B20Manager = DS18B20Manager(4, 6, 750, true);
 
 #line 12 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
 void before();
-#line 30 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+#line 34 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
 void setup();
-#line 32 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+#line 36 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
 void presentation();
-#line 38 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+#line 42 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
 void loop();
-#line 43 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+#line 47 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
 void receive(const MyMessage &message);
-#line 46 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+#line 50 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
 void testTemperatureRead(uint8_t DS18B20Adress[8], float temp);
-#line 53 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
+#line 57 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
 void testTemperatureReadError(uint8_t DS18B20Adress[8]);
 #line 12 "i:\\7.Projekty\\5.Arduino\\M8_MS_DS18B20SensorManager\\M8_MS_DS18B20SensorManager.ino"
 void before() //MySensors
@@ -41,7 +41,11 @@ void before() //MySensors
     // myDS18B20Manager.addSensor(0x28, 0xEE, 0xAF, 0x47, 0x1A, 0x16, 0x01, 0x23, "Kibel"); // M8_MS_DS18B20SensorManager
     // myDS18B20Manager.addSensor(0x28, 0xEE, 0xAF, 0x47, 0x1A, 0x16, 0x01, 0x24, "Salon", false, nullptr, nullptr); // M8_MS_DS18B20SensorManager
 
-    myDS18B20Manager.addSensor(0x28, 0xEE, 0xAF, 0x47, 0x1A, 0x16, 0x01, 0x26, "Kuchnia", true, testTemperatureRead, testTemperatureReadError); // M8_MS_DS18B20SensorManager
+    myDS18B20Manager.addSensor(0x28, 0xEE, 0xAF, 0x47, 0x1A, 0x16, 0x01, 0x26,
+                               "Kuchnia",
+                               true,
+                               testTemperatureRead,
+                               testTemperatureReadError); // M8_MS_DS18B20SensorManager
 }
 
 void setup() {}

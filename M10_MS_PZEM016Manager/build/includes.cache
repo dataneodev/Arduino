@@ -1,0 +1,42 @@
+[
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "I:\\2.Programy\\arduino\\hardware\\arduino\\avr\\cores\\arduino"
+  },
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "I:\\2.Programy\\arduino\\hardware\\arduino\\avr\\variants\\mega"
+  },
+  {
+    "Sourcefile": "i:\\7.Projekty\\5.Arduino\\M10_MS_PZEM016Manager\\build\\sketch\\M10_MS_PZEM016Manager.ino.cpp",
+    "Include": "PZEM016Manager.h",
+    "Includepath": "I:\\7.Projekty\\5.Arduino\\libraries\\PZEM016Manager"
+  },
+  {
+    "Sourcefile": "i:\\7.Projekty\\5.Arduino\\M10_MS_PZEM016Manager\\build\\sketch\\M10_MS_PZEM016Manager.ino.cpp",
+    "Include": "MySensors.h",
+    "Includepath": "I:\\7.Projekty\\5.Arduino\\libraries\\MySensors"
+  },
+  {
+    "Sourcefile": "i:\\7.Projekty\\5.Arduino\\M10_MS_PZEM016Manager\\build\\sketch\\M10_MS_PZEM016Manager.ino.cpp",
+    "Include": "QList.h",
+    "Includepath": "I:\\7.Projekty\\5.Arduino\\libraries\\QList\\src"
+  },
+  {
+    "Sourcefile": "i:\\7.Projekty\\5.Arduino\\M10_MS_PZEM016Manager\\build\\sketch\\M10_MS_PZEM016Manager.ino.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "I:\\7.Projekty\\5.Arduino\\libraries\\PZEM016Manager\\ModbusMasterDMod.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "I:\\7.Projekty\\5.Arduino\\libraries\\MySensors\\MyASM.S",
+    "Include": "",
+    "Includepath": null
+  }
+]

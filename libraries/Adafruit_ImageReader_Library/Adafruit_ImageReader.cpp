@@ -49,11 +49,9 @@
 // on screen or image size.)
 
 #ifdef __AVR__
- #define DRAWPIXELS  24 ///<  24 * 5 =  120 bytes
- #define LOADPIXELS  32 ///<  32 * 3 =   96 bytes
+ #define BUFPIXELS  24 ///<  24 * 5 =  120 bytes
 #else
- #define DRAWPIXELS 200 ///< 200 * 5 = 1000 bytes
- #define LOADPIXELS 320 ///< 320 * 3 =  960 bytes
+ #define BUFPIXELS 200 ///< 200 * 5 = 1000 bytes
 #endif
 
 // ADAFRUIT_IMAGE CLASS ****************************************************
@@ -195,6 +193,69 @@ void Adafruit_Image::draw(Adafruit_SPITFT &tft, int16_t x, int16_t y) {
   }
 }
 
+/*!
+    @brief   Draw image to an Adafruit ePaper-type display.
+    @param   epd
+             Screen to draw to (any Adafruit_EPD-derived class).
+    @param   x
+             Horizontal offset in pixels; left edge = 0, positive = right.
+             Value is signed, image will be clipped if all or part is off
+             the screen edges. Screen rotation setting is observed.
+    @param   y
+             Vertical offset in pixels; top edge = 0, positive = down.
+    @return  None (void).
+*/
+void Adafruit_Image::draw(Adafruit_EPD &epd, int16_t x, int16_t y) {
+  int16_t col = x, row = y;
+  if(format == IMAGE_1 ) {
+    uint8_t *buffer = canvas.canvas1->getBuffer();
+    uint8_t i, c;
+    while(row < y + canvas.canvas1->height()) {
+        for (i = 0; i < 8; i++) {
+            if ((*buffer & (0x80 >> i)) > 0) {
+               c = EPD_BLACK; // try to infer black
+            } else {
+               c = EPD_WHITE;
+            }
+            epd.writePixel(col, row, c);
+            
+            col++;
+            if (col == x + canvas.canvas1->width()) {
+              col = x;
+              row++;
+            }
+        }
+        buffer++;
+    };
+  } else if(format == IMAGE_8 ) {
+  } else if(format == IMAGE_16) {
+    uint16_t *buffer = canvas.canvas16->getBuffer();
+    while(row < y + canvas.canvas16->height()) {
+        // RGB in 565 format
+        uint8_t r = (*buffer & 0xf800) >> 8;
+        uint8_t g = (*buffer & 0x07e0) >> 3;
+        uint8_t b = (*buffer & 0x001f) << 3;
+      
+        uint8_t c = 0;
+        if ((r < 0x80) && (g < 0x80) && (b < 0x80)) {
+           c = EPD_BLACK; // try to infer black
+        } else if ((r >= 0x80) && (g >= 0x80) && (b >= 0x80)) {
+           c = EPD_WHITE;
+        } else if (r >= 0x80) {
+           c = EPD_RED; //try to infer red color
+        }
+        
+        epd.writePixel(col, row, c);
+        col++;
+        if (col == x + canvas.canvas16->width()) {
+          col = x;
+          row++;
+        }
+        buffer++;
+    };
+  }
+}
+
 // ADAFRUIT_IMAGEREADER CLASS **********************************************
 // Loads images from SD card to screen or RAM.
 
@@ -245,7 +306,7 @@ Adafruit_ImageReader::~Adafruit_ImageReader(void) {
 */
 ImageReturnCode Adafruit_ImageReader::drawBMP(char *filename,
   Adafruit_SPITFT &tft, int16_t x, int16_t y, boolean transact) {
-  uint16_t tftbuf[DRAWPIXELS]; // Temp space for buffering TFT data
+  uint16_t tftbuf[BUFPIXELS]; // Temp space for buffering TFT data
   // Call core BMP-reading function, passing address to TFT object,
   // TFT working buffer, and X & Y position of top-left corner (image
   // will be cropped on load if necessary). Image pointer is NULL when
@@ -322,8 +383,8 @@ ImageReturnCode Adafruit_ImageReader::coreBMP(
   uint32_t        colors      = 0;            // Number of colors in palette
   uint16_t       *quantized   = NULL;         // 16-bit 5/6/5 color palette
   uint32_t        rowSize;                    // >bmpWidth if scanline padding
-  uint8_t         sdbuf[3*DRAWPIXELS];        // BMP read buf (R+G+B/pixel)
-#if ((3*DRAWPIXELS) <= 255)
+  uint8_t         sdbuf[3*BUFPIXELS];         // BMP read buf (R+G+B/pixel)
+#if ((3*BUFPIXELS) <= 255)
   uint8_t         srcidx      = sizeof sdbuf; // Current position in sdbuf
 #else
   uint16_t        srcidx      = sizeof sdbuf;
@@ -494,10 +555,29 @@ ImageReturnCode Adafruit_ImageReader::coreBMP(
                         tft->dmaWait();
                         tft->endWrite();              // End TFT SPI transact
                       }
+#if defined(ARDUINO_NRF52_ADAFRUIT)
+                      // NRF52840 seems to have trouble reading more than 512
+                      // bytes across certain boundaries. Workaround for now
+                      // is to break the read into smaller chunks...
+                      int32_t bytesToGo = sizeof sdbuf,
+                              bytesRead = 0, bytesThisPass;
+                      while(bytesToGo > 0) {
+                        bytesThisPass = min(bytesToGo, 512);
+                        file.read(&sdbuf[bytesRead], bytesThisPass);
+                        bytesRead += bytesThisPass;
+                        bytesToGo -= bytesThisPass;
+                      }
+#else
                       file.read(sdbuf, sizeof sdbuf); // Load from SD
+#endif
                       if(transact) tft->startWrite(); // Start TFT SPI transact
                       if(destidx) {                   // If buffered TFT data
-                        tft->writePixels(dest, destidx, false); // Write it
+                        // Non-blocking writes (DMA) have been temporarily
+                        // disabled until this can be rewritten with two
+                        // alternating 'dest' buffers (else the nonblocking
+                        // data out is overwritten in the dest[] write below).
+                        //tft->writePixels(dest, destidx, false); // Write it
+                        tft->writePixels(dest, destidx, true); // Write it
                         destidx = 0;                  // and reset dest index
                       }
                     } else {                          // Canvas is simpler,
@@ -539,13 +619,16 @@ ImageReturnCode Adafruit_ImageReader::coreBMP(
                 } // end pixel loop
                 if(tft) {                            // Drawing to TFT?
                   if(destidx) {                      // Any remainders?
-                    tft->writePixels(dest, destidx, false); // Write it
+                    // See notes above re: DMA
+                    //tft->writePixels(dest, destidx, false); // Write it
+                    tft->writePixels(dest, destidx, true); // Write it
                     destidx = 0;                     // and reset dest index
                   }
                   tft->dmaWait();
                   tft->endWrite(); // End TFT (regardless of transact)
                 }
               } // end scanline loop
+                
               if(quantized) {
                 if(tft) free(quantized);          // Palette no longer needed
                 else    img->palette = quantized; // Keep palette with img

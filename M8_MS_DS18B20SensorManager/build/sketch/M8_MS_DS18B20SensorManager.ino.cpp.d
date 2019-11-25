@@ -11,7 +11,7 @@ i:\7.Projekty\5.Arduino\M8_MS_DS18B20SensorManager\build\sketch\M8_MS_DS18B20Sen
  I:\2.Programy\arduino\hardware\arduino\avr\cores\arduino/USBAPI.h \
  I:\2.Programy\arduino\hardware\arduino\avr\cores\arduino/Arduino.h \
  I:\2.Programy\arduino\hardware\arduino\avr\variants\mega/pins_arduino.h \
- i:\7.Projekty\5.Arduino\M8_MS_DS18B20SensorManager\build\sketch\DS18B20Manager.h \
+ I:\7.Projekty\5.Arduino\libraries\DS18B20Manager/DS18B20Manager.h \
  I:\7.Projekty\5.Arduino\libraries\MySensors/MySensors.h \
  I:\7.Projekty\5.Arduino\libraries\MySensors/MyConfig.h \
  I:\7.Projekty\5.Arduino\libraries\MySensors/core/MySplashScreen.h \

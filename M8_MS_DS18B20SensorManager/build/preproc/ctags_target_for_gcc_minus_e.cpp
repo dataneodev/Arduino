@@ -36,7 +36,11 @@ void before() //MySensors
     // myDS18B20Manager.addSensor(0x28, 0xEE, 0xAF, 0x47, 0x1A, 0x16, 0x01, 0x23, "Kibel"); // M8_MS_DS18B20SensorManager
     // myDS18B20Manager.addSensor(0x28, 0xEE, 0xAF, 0x47, 0x1A, 0x16, 0x01, 0x24, "Salon", false, nullptr, nullptr); // M8_MS_DS18B20SensorManager
 
-    myDS18B20Manager.addSensor(0x28, 0xEE, 0xAF, 0x47, 0x1A, 0x16, 0x01, 0x26, "Kuchnia", true, testTemperatureRead, testTemperatureReadError); // M8_MS_DS18B20SensorManager
+    myDS18B20Manager.addSensor(0x28, 0xEE, 0xAF, 0x47, 0x1A, 0x16, 0x01, 0x26,
+                               "Kuchnia",
+                               true,
+                               testTemperatureRead,
+                               testTemperatureReadError); // M8_MS_DS18B20SensorManager
 }
 
 void setup() {}
