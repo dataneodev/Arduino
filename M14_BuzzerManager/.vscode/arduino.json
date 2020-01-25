@@ -1,0 +1,7 @@
+{
+    "sketch": "M14_BuzzerManager.ino",
+    "board": "arduino:avr:megaADK",
+    "port": "COM7",
+    "output": "build",
+    "programmer": "AVRISP mkII"
+}

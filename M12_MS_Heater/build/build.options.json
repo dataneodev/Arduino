@@ -1,11 +1,11 @@
 {
   "additionalFiles": "",
   "builtInLibrariesFolders": "i:\\2.Programy\\arduino\\libraries",
-  "customBuildProperties": "build.path=i:\\7.Projekty\\5.Arduino\\M12_MS_HouseHeater\\build,build.warn_data_percentage=75,runtime.tools.avrdude.path=i:\\2.Programy\\arduino\\hardware\\tools\\avr,runtime.tools.avrdude-6.3.0-arduino17.path=i:\\2.Programy\\arduino\\hardware\\tools\\avr,runtime.tools.arduinoOTA.path=i:\\2.Programy\\arduino\\hardware\\tools\\avr,runtime.tools.arduinoOTA-1.3.0.path=i:\\2.Programy\\arduino\\hardware\\tools\\avr,runtime.tools.avr-gcc.path=i:\\2.Programy\\arduino\\hardware\\tools\\avr,runtime.tools.avr-gcc-7.3.0-atmel3.6.1-arduino5.path=i:\\2.Programy\\arduino\\hardware\\tools\\avr",
+  "customBuildProperties": "build.path=i:\\7.Projekty\\5.Arduino\\M12_MS_Heater\\build,build.warn_data_percentage=75,runtime.tools.arduinoOTA.path=i:\\2.Programy\\arduino\\portable\\packages\\arduino\\tools\\arduinoOTA\\1.3.0,runtime.tools.arduinoOTA-1.3.0.path=i:\\2.Programy\\arduino\\portable\\packages\\arduino\\tools\\arduinoOTA\\1.3.0,runtime.tools.avr-gcc.path=i:\\2.Programy\\arduino\\portable\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino5,runtime.tools.avr-gcc-7.3.0-atmel3.6.1-arduino5.path=i:\\2.Programy\\arduino\\portable\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino5,runtime.tools.avrdude.path=i:\\2.Programy\\arduino\\portable\\packages\\arduino\\tools\\avrdude\\6.3.0-arduino17,runtime.tools.avrdude-6.3.0-arduino17.path=i:\\2.Programy\\arduino\\portable\\packages\\arduino\\tools\\avrdude\\6.3.0-arduino17",
   "fqbn": "arduino:avr:megaADK",
   "hardwareFolders": "i:\\2.Programy\\arduino\\hardware,i:\\2.Programy\\arduino\\portable\\packages",
   "otherLibrariesFolders": "I:\\7.Projekty\\5.Arduino\\libraries",
   "runtime.ide.version": "10810",
-  "sketchLocation": "i:\\7.Projekty\\5.Arduino\\M12_MS_HouseHeater\\M12_MS_HouseHeater.ino",
+  "sketchLocation": "i:\\7.Projekty\\5.Arduino\\M12_MS_Heater\\M12_MS_Heater.ino",
   "toolsFolders": "i:\\2.Programy\\arduino\\tools-builder,i:\\2.Programy\\arduino\\hardware\\tools\\avr,i:\\2.Programy\\arduino\\portable\\packages"
 }

@@ -1,5 +1,5 @@
 {
-    "sketch": "M12_MS_HouseHeater.ino",
+    "sketch": "M12_MS_Heater.ino",
     "port": "COM7",
     "board": "arduino:avr:megaADK",
     "output": "build",

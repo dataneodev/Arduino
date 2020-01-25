@@ -5,8 +5,7 @@
 */
 
 #define MY_GATEWAY_SERIAL // Enable serial gateway
-
-#include <PZEM016Manager.h>
+#include "I:/7.Projekty/5.Arduino/M_Library/PZEM016Manager/PZEM016Manager.h"
 
 /*
   Configuration:

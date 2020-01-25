@@ -3,9 +3,9 @@
    MySensors DS18B20 Sensor Manager 1.2
    see https://sites.google.com/site/dataneosoftware/arduino/mysensors-ds18b20-sensor-manager
 */
-#define MY_GATEWAY_SERIAL // Enable serial gateway
 
-#include "DS18B20Manager.h"
+#define MY_GATEWAY_SERIAL // Enable serial gateway
+#include "I:/7.Projekty/5.Arduino/M_Library/DS18B20Manager/DS18B20Manager.h"
 
 DS18B20Manager myDS18B20Manager = DS18B20Manager(4, 6, 750, true);
 
