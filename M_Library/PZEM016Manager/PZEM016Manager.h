@@ -239,14 +239,14 @@ private:
                 }
         if (addSuccesfull)
         {
-            PZEM016Device newDevice(pzemSlaveAddr, 
-                                    _lastID, 
-                                    presentToController, 
-                                    multimeterToController, 
-                                    PZEM016Name, 
-                                    deviceReadPtr, 
+            PZEM016Device newDevice(pzemSlaveAddr,
+                                    _lastID,
+                                    presentToController,
+                                    multimeterToController,
+                                    PZEM016Name,
+                                    deviceReadPtr,
                                     deviceReadErrorPtr);
-                                    
+
             PZEM016DeviceList.push_back(newDevice);
             _lastID = _lastID + 2;
         }

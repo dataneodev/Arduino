@@ -38,6 +38,58 @@ enum CONTROLLER_TYPE
   OTHER, // NOT TESTED
 };
 
+class Logger
+{
+public:
+  static void logMsg(const char *msg)
+  {
+    Serial.println(msg);
+  }
+};
+
+class EE24C32Loader
+{
+public:
+  static bool IsInicjalized()
+  {
+    if (EE24C32I.begin(&Wire) != 0)
+    {
+      Logger::logMsg("EE24C32 initialization failed");
+      return false;
+    }
+    return true;
+  }
+
+  static void SetAdress(uint8_t EE24C32Address)
+  {
+    EE24C32I = EE24C32(EE24C32Address);
+  }
+
+  static bool save24C32State(uint8_t _relay_pin_no, bool _relay_state)
+  {
+    if (_relay_pin_no > 0)
+    {
+      EE24C32I.write(_relay_pin_no, _relay_state ? 97 : 101);
+    }
+  }
+
+  static bool loadStateFrom24C32(uint8_t _relay_pin_no)
+  {
+    if (EE24C32I.read(_relay_pin_no) == 97)
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
+
+  static EE24C32 EE24C32I;
+};
+
+EE24C32 EE24C32Loader::EE24C32I = EE24C32(0x50);
+
 //Simple relay class
 class RelaySimple
 {
@@ -47,22 +99,17 @@ public:
     _relay_pin_no = 0;
     _save_state = START_IN_HIGH;
     _relay_on_state = RELAY_ON_HIGH;
-    //_readState24C32 = nullptr;
-    //_setState24C32 = nullptr;
   };
+
   RelaySimple(uint8_t relay_pin_no,
               STATE_METHOD save_state,
               RELAY_STATE relay_on_state,
-              const char *relay_name,
-              (bool (RelayManager::*readState24C32)(uint8_t)),
-              (bool (RelayManager::*setState24C32)(uint8_t, bool)))
+              const char *relay_name)
   {
     _relay_pin_no = relay_pin_no;
     _save_state = save_state;
     _relay_on_state = relay_on_state;
     _relay_name = relay_name;
-    //_readState24C32 = readState24C32;
-    //_setState24C32 = setState24C32;
   };
   uint8_t relayPin()
   {
@@ -80,7 +127,7 @@ public:
 
     if (_save_state == SAVE_TO_24C32)
     {
-      _relay_state = loadStateFrom24C32(_relay_pin_no);
+      _relay_state = EE24C32Loader::loadStateFrom24C32(_relay_pin_no);
       digitalWrite(_relay_pin_no, getGPIOState(_relay_state));
       sendStateToController();
     }
@@ -119,7 +166,7 @@ public:
       saveState(_relay_pin_no, _relay_state);
 
     if (_save_state == SAVE_TO_24C32)
-      save24C32State(_relay_pin_no, _relay_state);
+      EE24C32Loader::save24C32State(_relay_pin_no, _relay_state);
 
     if (controller == HOMEASSISTANT)
       sendStateToController();
@@ -145,7 +192,7 @@ public:
       saveState(_relay_pin_no, _relay_state);
 
     if (_save_state == SAVE_TO_24C32)
-      save24C32State(_relay_pin_no, _relay_state);
+      EE24C32Loader::save24C32State(_relay_pin_no, _relay_state);
 
     sendStateToController();
   }
@@ -164,9 +211,6 @@ private:
   STATE_METHOD _save_state;
   RELAY_STATE _relay_on_state;
 
-  //bool (*_readState24C32)(uint8_t);
-  //void (*_setState24C32)(uint8_t, bool);
-
   uint8_t getGPIOState(bool relay_state)
   {
     return (_relay_on_state == RELAY_ON_HIGH) ? relay_state : !relay_state;
@@ -176,20 +220,8 @@ private:
     mMessage.setSensor(_relay_pin_no);
     send(mMessage.set(_relay_state ? "1" : "0"));
   }
-
-  void save24C32State(uint8_t _relay_pin_no, bool _relay_state)
-  {
-    //if (_setState24C32 != nullptr)
-    //   _setState24C32(_relay_pin_no, _relay_state);
-  }
-
-  bool loadStateFrom24C32(uint8_t _relay_pin_no)
-  {
-    // if (_readState24C32 != nullptr)
-    //  return _readState24C32(_relay_pin_no);
-    return false;
-  }
 };
+
 MyMessage RelaySimple::mMessage = MyMessage(1, V_STATUS);
 
 class ButtonSimple
@@ -307,7 +339,7 @@ public:
 
     if (EE24C32Address != 0x50)
     {
-      EE24C32I = EE24C32(EE24C32Address);
+      EE24C32Loader::SetAdress(EE24C32Address);
     }
   }
   //Simple Relay change status in RelayList
@@ -389,9 +421,7 @@ public:
       relayList.push_back(RelaySimple(relay_pin_no,
                                       save_state,
                                       relay_on_state,
-                                      relay_name,
-                                      &loadStateFrom24C32,
-                                      &save24C32State));
+                                      relay_name));
     }
 
     //button check
@@ -414,14 +444,6 @@ public:
       relayButtonPairList.push_back(RelayButtonPair(relay_pin_no, button_pin_no));
   }
 
-  bool save24C32State(uint8_t _relay_pin_no, bool _relay_state)
-  {
-  }
-
-  bool loadStateFrom24C32(uint8_t _relay_pin_no)
-  {
-  }
-
 private:
   bool if_init;
   bool _pullUpPins;
@@ -429,7 +451,6 @@ private:
   QList<ButtonSimple> buttonList;
   QList<RelaySimple> relayList;
   QList<RelayButtonPair> relayButtonPairList;
-  EE24C32 EE24C32I = EE24C32(0x50);
 
   void initAllPins()
   {
@@ -456,19 +477,13 @@ private:
 
     if (ee24c32Exists)
     {
-      if (EE24C32I.begin(&Wire) != 0)
+      if (!EE24C32Loader::IsInicjalized())
       {
-        logMsg("EE24C32 initialization failed");
         if_init = false;
         return;
       }
     }
 
     if_init = true;
-  }
-
-  void logMsg(const char *msg)
-  {
-    Serial.println(msg);
   }
 };
