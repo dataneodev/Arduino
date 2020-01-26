@@ -4,7 +4,7 @@
 #include <DallasTemperature.h>
 
 
-OneWire oneWire(4); //PodĹ‚Ä…czenie do A5
+OneWire oneWire(7); //PodĹ‚Ä…czenie do A5
 DallasTemperature sensors(&oneWire); //Przekazania inf
 
 int numberOfDevices;

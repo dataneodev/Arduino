@@ -7,7 +7,7 @@
 #define MY_GATEWAY_SERIAL // Enable serial gateway
 #include "I:/7.Projekty/5.Arduino/M_Library/DS18B20Manager/DS18B20Manager.h"
 
-DS18B20Manager myDS18B20Manager = DS18B20Manager(4, 6, 750, true);
+DS18B20Manager myDS18B20Manager = DS18B20Manager(7, 6, 750, true);
 
 void before() //MySensors
 {
