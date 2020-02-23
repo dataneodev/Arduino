@@ -271,6 +271,7 @@ private:
           if ((REPORT_ONLY_ON_CHANGE && tempVal != DS18B20List[lastIdTempRequest].temperature) ||
               !REPORT_ONLY_ON_CHANGE)
           {
+            DS18B20List[lastIdTempRequest].temperature = tempVal;
             if (DS18B20List[lastIdTempRequest].presentToControler)
             {
               sendStateToController(lastIdTempRequest);
@@ -281,7 +282,10 @@ private:
               DS18B20List[lastIdTempRequest].temperatureReadPtr(DS18B20List[lastIdTempRequest].DS18B20Adress, tempVal);
             }
           }
-          DS18B20List[lastIdTempRequest].temperature = tempVal;
+          else
+          {
+            DS18B20List[lastIdTempRequest].temperature = tempVal;
+          }
         }
       }
 
@@ -303,7 +307,8 @@ private:
     }
 
     //request temp from begining;
-    if (!requestTemp && ((timeNow > lastScanInit + scanInterval * 1000) || firstRead))
+    unsigned long timeToCheck = lastScanInit + ((unsigned long)scanInterval) * 1000;
+    if (!requestTemp && ((timeNow > timeToCheck) || firstRead))
     {
       lastScanInit = timeNow;
       lastTempRequest = timeNow;
