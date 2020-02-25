@@ -103,7 +103,8 @@ public:
 
 private:
   const bool REPORT_ONLY_ON_CHANGE = false; //event fire only if temperature is change
-  const uint8_t START_ID = 134;             //start controler id
+  const float CHANGE_ON_DIFFERENCE = 0.1f;
+  const uint8_t START_ID = 134; //start controler id
 
   bool if_init;
   uint8_t scanInterval;    // in seconds
@@ -268,7 +269,7 @@ private:
         {
           //read ok
           DS18B20List[lastIdTempRequest].lastRead = true;
-          if ((REPORT_ONLY_ON_CHANGE && tempVal != DS18B20List[lastIdTempRequest].temperature) ||
+          if ((REPORT_ONLY_ON_CHANGE && abs(tempVal - DS18B20List[lastIdTempRequest].temperature) > CHANGE_ON_DIFFERENCE) ||
               !REPORT_ONLY_ON_CHANGE)
           {
             DS18B20List[lastIdTempRequest].temperature = tempVal;
