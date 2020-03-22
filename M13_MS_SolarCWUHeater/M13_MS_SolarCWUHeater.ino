@@ -57,7 +57,7 @@
 Adafruit_TFTLCD gfx = Adafruit_TFTLCD(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
 
 #include "I:/7.Projekty/5.Arduino/M_Library/DS18B20Manager/DS18B20Manager.h"
-DS18B20Manager myDS18B20Manager = DS18B20Manager(ONEWIRE, 30, 900, true);
+DS18B20Manager myDS18B20Manager = DS18B20Manager(ONEWIRE, 30, 900, false);
 
 #include "I:\7.Projekty\5.Arduino\M_Library\BuzzerManager\BuzzerManager.h"
 BuzzerManager buzzer = BuzzerManager(BUZZER);
@@ -124,12 +124,10 @@ void receive(const MyMessage &message)
 
 void presentation() //MySensors
 {
-  
 }
 
 void before() //MySensors
 {
-
 }
 
 void setup(void)

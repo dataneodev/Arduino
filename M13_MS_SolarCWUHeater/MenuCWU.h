@@ -91,7 +91,7 @@ MENU(mainMenu, "Main menu", doNothing, noEvent, wrapStyle, OP("Op1", doNothing, 
 //  {{disabled normal,disabled selected},{enabled normal,enabled selected, enabled editing}}
 //monochromatic color table
 
-MENU_OUTPUTS(out, MAX_DEPTH, ADAGFX_OUT(gfx, colors, 6 * textScale, 9 * textScale, {0, 0, 25, 13}), NONE);
+MENU_OUTPUTS(out, MAX_DEPTH, ADAGFX_OUT(gfx, colors, 6 * textScale, 9 * textScale, {0, 0, 27, 13}), NONE);
 
 NAVROOT(navMenu, mainMenu, MAX_DEPTH, in, out);
 

@@ -150,13 +150,10 @@ private:
       if_init = true;
       return;
     }
-    delay(200);
     dallas->begin();
-    delay(200);
     dallas->setResolution(12);
     for (byte i = 0; i < DS18B20List.length(); i++)
     {
-      delay(100);
       if (dallas->isConnected(DS18B20List[i].DS18B20Adress))
       {
         dallas->setResolution(DS18B20List[i].DS18B20Adress, 12);
@@ -351,7 +348,7 @@ private:
     }
 
     //request temp from begining;
-    unsigned long timeToCheck = min(lastScanInit, lastTempRequest) + ((unsigned long)scanInterval) * 1000;
+    unsigned long timeToCheck = max(lastScanInit, lastTempRequest) + ((unsigned long)scanInterval) * 1000;
     if (!requestTemp && ((timeNow > timeToCheck) || firstRead))
     {
       lastScanInit = timeNow;
