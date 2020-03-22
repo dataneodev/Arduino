@@ -31,6 +31,10 @@ class HeartBeatManager {
       if (_currentTime < _lastSend + _timeSendPeriod)  return;
       SendHeart();
     }
+	
+	bool ComunicationIsOK(){
+		return !buzzerActive;
+	}
     void ControllerReciveMsg() {
       _currentTime = millis();
       _lastRecive = _currentTime;
@@ -38,6 +42,7 @@ class HeartBeatManager {
 
   private:
     byte _alarmBuzzerPin;
+	bool buzzerActive;
     unsigned long _currentTime;
     unsigned long _lastSend;
     unsigned long _lastRecive;

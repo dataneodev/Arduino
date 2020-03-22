@@ -150,12 +150,19 @@ private:
       if_init = true;
       return;
     }
+    delay(200);
     dallas->begin();
+    delay(200);
     dallas->setResolution(12);
-    dallas->setWaitForConversion(false);
     for (byte i = 0; i < DS18B20List.length(); i++)
+    {
+      delay(100);
       if (dallas->isConnected(DS18B20List[i].DS18B20Adress))
+      {
+        dallas->setResolution(DS18B20List[i].DS18B20Adress, 12);
         DS18B20List[i].init = true;
+      }
+
       else
       {
         DS18B20List[i].init = false;
@@ -168,6 +175,9 @@ private:
         getAdress(DS18B20List[i].DS18B20Adress, hex);
         logMsg("The sensor with the given address was not found on the bus: ", hex);
       }
+    }
+
+    dallas->setWaitForConversion(false);
     if_init = true;
     sensorsCheck(true);
   }
@@ -244,17 +254,19 @@ private:
     }
 
     // read temp
-    if (requestTemp && (timeNow > lastTempRequest + conversionWait))
+    if (requestTemp && (timeNow > lastTempRequest + conversionWait + 50))
     {
       if (DS18B20List[lastIdTempRequest].init &&
           DS18B20List[lastIdTempRequest].requestTemp)
       {
         DS18B20List[lastIdTempRequest].requestTemp = false;
+        requestTemp = false;
+        lastTempRequest = timeNow;
+
         float tempVal = dallas->getTempC(DS18B20List[lastIdTempRequest].DS18B20Adress);
         // error read
         if (tempVal == DEVICE_DISCONNECTED_C ||
-            tempVal == -127.00 ||
-            isnan(tempVal))
+            tempVal == DEVICE_DISCONNECTED_RAW)
         {
           DS18B20List[lastIdTempRequest].lastRead = false;
           if (DS18B20List[lastIdTempRequest].temperatureReadErrorPtr != nullptr)
@@ -272,6 +284,7 @@ private:
           if ((REPORT_ONLY_ON_CHANGE && abs(tempVal - DS18B20List[lastIdTempRequest].temperature) > CHANGE_ON_DIFFERENCE) ||
               !REPORT_ONLY_ON_CHANGE)
           {
+
             DS18B20List[lastIdTempRequest].temperature = tempVal;
             if (DS18B20List[lastIdTempRequest].presentToControler)
             {
@@ -290,25 +303,55 @@ private:
         }
       }
 
-      // next temp request
-      if (lastIdTempRequest < DS18B20List.length() - 1)
+    // next temp request
+    nextRequestK:
+      if (!requestTemp &&
+          timeNow + 100 > lastTempRequest &&
+          lastIdTempRequest < DS18B20List.length() - 1)
       {
         uint8_t nextID = getNextID(lastIdTempRequest);
-        if (nextID == 0)
-          return;
-        lastIdTempRequest = nextID;
-        lastTempRequest = timeNow;
-        DS18B20List[lastIdTempRequest].requestTemp = true;
-        dallas->requestTemperaturesByAddress(DS18B20List[lastIdTempRequest].DS18B20Adress);
-      }
-      else
-      {
-        requestTemp = false;
+        bool nextRequest = false;
+
+        if (!DS18B20List[nextID].init)
+        {
+          nextRequest = true;
+          DS18B20List[nextID].lastRead = false;
+        }
+
+        if (nextID != 0 && DS18B20List[nextID].init)
+        {
+          if (dallas->requestTemperaturesByAddress(DS18B20List[nextID].DS18B20Adress))
+          {
+            lastIdTempRequest = nextID;
+            lastTempRequest = timeNow;
+            requestTemp = true;
+            DS18B20List[lastIdTempRequest].requestTemp = true;
+          }
+          else
+          {
+            DS18B20List[nextID].lastRead = false;
+            DS18B20List[nextID].requestTemp = false;
+            nextRequest = true;
+            char hex[17];
+            getAdress(DS18B20List[nextID].DS18B20Adress, hex);
+            logMsg("Device request temperature fail. Not on the bus: ", hex);
+            delay(200);
+          }
+        }
+
+        if (nextRequest)
+        {
+          if (nextID != 0 && nextID < DS18B20List.length() - 1)
+          {
+            lastIdTempRequest = nextID;
+            goto nextRequestK;
+          }
+        }
       }
     }
 
     //request temp from begining;
-    unsigned long timeToCheck = lastScanInit + ((unsigned long)scanInterval) * 1000;
+    unsigned long timeToCheck = min(lastScanInit, lastTempRequest) + ((unsigned long)scanInterval) * 1000;
     if (!requestTemp && ((timeNow > timeToCheck) || firstRead))
     {
       lastScanInit = timeNow;
