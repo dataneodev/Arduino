@@ -152,6 +152,8 @@ private:
     }
     dallas->begin();
     dallas->setResolution(12);
+    dallas->setWaitForConversion(false);
+
     for (byte i = 0; i < DS18B20List.length(); i++)
     {
       if (dallas->isConnected(DS18B20List[i].DS18B20Adress))
@@ -159,7 +161,6 @@ private:
         dallas->setResolution(DS18B20List[i].DS18B20Adress, 12);
         DS18B20List[i].init = true;
       }
-
       else
       {
         DS18B20List[i].init = false;
@@ -173,8 +174,7 @@ private:
         logMsg("The sensor with the given address was not found on the bus: ", hex);
       }
     }
-
-    dallas->setWaitForConversion(false);
+    
     if_init = true;
     sensorsCheck(true);
   }
@@ -263,7 +263,9 @@ private:
         float tempVal = dallas->getTempC(DS18B20List[lastIdTempRequest].DS18B20Adress);
         // error read
         if (tempVal == DEVICE_DISCONNECTED_C ||
-            tempVal == DEVICE_DISCONNECTED_RAW)
+            tempVal == DEVICE_DISCONNECTED_RAW ||
+            tempVal == -127.00 ||
+            isnan(tempVal))
         {
           DS18B20List[lastIdTempRequest].lastRead = false;
           if (DS18B20List[lastIdTempRequest].temperatureReadErrorPtr != nullptr)

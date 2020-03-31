@@ -28,6 +28,8 @@
 #define LCD_RD 33    // LCD Read goes to Analog 0
 #define LCD_RESET 36 // Can alternately just connect to Arduino's reset pin
 #define LCD_ON_OFF A4
+
+#define textScale 2
 /* #endregion LCDConfiguration*/
 
 /* #region  PINConfiguration */
@@ -40,9 +42,11 @@
 #define ENCODER_LEFT 37
 #define ENCODER_RIGHT 34
 #define ENCODER_DOWN 35
+#define RESET_PIN 66
 /* #endregion */
 
 /* #region  MySensorsConfiguration */
+#define MY_NODE_ID 50
 #define MY_DEBUG
 #define MY_GATEWAY_SERIAL // Enable serial gateway
 #define MY_RS485          // Enable RS485 transport layer
@@ -51,7 +55,20 @@
 #define MY_RS485_HWSERIAL Serial3
 /* #endregion */
 
+/* #region  OtherConfiguration */
+#define EP24C32_ADDRESS 0x50
+#define RELAY_PV_ID 1
+#define RELAY_230V_ID 2
+/* #endregion */
+
+/* #region  GlobalVariable */
+uint8_t ERROR_CODE = 0; // 0 no error
+
+/* #endregion */
+
 /* #region  objectInstances */
+#include <Wire.h>
+
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_TFTLCD.h> // Hardware-specific library
 Adafruit_TFTLCD gfx = Adafruit_TFTLCD(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
@@ -63,27 +80,37 @@ DS18B20Manager myDS18B20Manager = DS18B20Manager(ONEWIRE, 30, 900, false);
 BuzzerManager buzzer = BuzzerManager(BUZZER);
 
 #include "I:\7.Projekty\5.Arduino\M_Library\HeartBeatManager\HeartBeatManager.h"
-HeartBeatManager myHeartBeatManager = HeartBeatManager(0);
+HeartBeatManager gateway = HeartBeatManager(0);
 
-#include "I:\7.Projekty\5.Arduino\M_Library\RelayManager\RelayManager.h"
-RelayManager myRelayController = RelayManager(HOMEASSISTANT, true);
+#include <24C32.h>
+EE EEPROM24C32;
 
-#include <EE24C32.h>
+#include "DataLayer.h"
+DataLayer DL(&EEPROM24C32);
 
 #include <DS3232RTC.h>
+DS3232RTC myRTC;
 
 #include <ClickEncoder.h>
 ClickEncoder clickEncoder(ENCODER_LEFT, ENCODER_RIGHT, ENCODER_DOWN, 2, LOW);
 
-/* #endregion objectInstances */
+#include "UserAction.h"
+UserAction userAction(&clickEncoder);
 
-/* #region  Include */
+#include "RelayManager.h"
+RelayManager relayManager(DOMOTICZ, &DL);
+
 #include "MenuCWU.h"
-#include "Display.h"
-#include "DataLayer.h"
-#include "Core.h"
 
-/* #endregion  Include */
+#include "MainScreen.h"
+MainScreen mainScreen(&gfx, &DL);
+
+#include "Display.h"
+Display DI(&gfx, &navMenu, &userAction, &mainScreen, &DL);
+
+#include "Core.h"
+Core CO(&DL, &userAction);
+/* #endregion objectInstances */
 
 /* #region  Inicjalization */
 void pinInicjalize()
@@ -92,15 +119,31 @@ void pinInicjalize()
   pinMode(VOLTAGE, INPUT);
 
   pinMode(PWM, OUTPUT);
+  digitalWrite(PWM, LOW);
+
   pinMode(BUZZER, OUTPUT);
+  digitalWrite(BUZZER, LOW);
+
   pinMode(RELAY, OUTPUT);
+  digitalWrite(RELAY, LOW);
+
   pinMode(ONEWIRE, OUTPUT);
+  digitalWrite(ONEWIRE, LOW);
+
   pinMode(LCD_ON_OFF, OUTPUT);
-  digitalWrite(LCD_ON_OFF, HIGH);
+  digitalWrite(LCD_ON_OFF, LOW);
+
+  pinMode(MY_RS485_DE_PIN, OUTPUT);
+  digitalWrite(MY_RS485_DE_PIN, LOW);
 }
 
 void inicjalizeSystem()
 {
+  clickEncoder.setDoubleClickEnabled(false);
+  clickEncoder.setButtonHeldEnabled(false);
+  clickEncoder.setAccelerationEnabled(false);
+  clickEncoder.setButtonOnPinZeroEnabled(false);
+
   Timer1.initialize(1000);
   Timer1.attachInterrupt(timerIsr);
 }
@@ -109,40 +152,9 @@ void timerIsr()
 {
   clickEncoder.service();
 }
-/* #endregion Inicjalization */
 
-void receiveTime(uint32_t ts)
+void mySensorsInicjalize()
 {
-  myHeartBeatManager.ControllerReciveMsg();
-}
-
-void receive(const MyMessage &message)
-{
-  myHeartBeatManager.ControllerReciveMsg();                    // M2_MS_Heartbeat
-  myRelayController.setStateOnRelayListFromControler(message); //M1_MS_RelayManager
-}
-
-void presentation() //MySensors
-{
-}
-
-void before() //MySensors
-{
-}
-
-void setup(void)
-{
-  pinInicjalize();
-  inicjalizeSystem();
-  dataLayerInicjalization();
-  coreInicjalization();
-  lcdStartup();
-  menuInicjalization();
-  displayInicjalization();
-
-  delay(1000);
-  sendSketchInfo("M13_MS_SolarCWUHeater", "1.0");
-
   myDS18B20Manager.addSensor(0x28, 0xFF, 0x04, 0x23, 0x6E, 0x18, 0x01, 0x3A,
                              "TempSolarRelay",
                              true,
@@ -160,14 +172,50 @@ void setup(void)
                              true,
                              nullptr,
                              nullptr); // M8_MS_DS18B20SensorManager
-  myDS18B20Manager.presentAllToControler();
-  myRelayController.presentAllToControler(); //M1_MS_RelayManager
+
+  relayManager.addRelay(RELAY_PV_ID, "RelayPVEnable");
+  relayManager.addRelay(RELAY_230V_ID, "Relay230VEnable");
 }
+/* #endregion Inicjalization */
+
+void receiveTime(uint32_t ts)
+{
+  gateway.ControllerReciveMsg();
+}
+
+void receive(const MyMessage &message)
+{
+  gateway.ControllerReciveMsg();                          // M2_MS_Heartbeat
+  relayManager.setStateOnRelayListFromControler(message); //M1_MS_RelayManager
+}
+
+void presentation() //MySensors
+{
+  sendSketchInfo("M13_MS_SolarCWUHeater", "1.0");
+  myDS18B20Manager.presentAllToControler();
+  relayManager.presentAllToControler(); //M1_MS_RelayManager
+}
+
+void before() //MySensors
+{
+  pinInicjalize();
+  inicjalizeSystem();
+  DL.Inicjalize(EP24C32_ADDRESS);
+  mySensorsInicjalize();
+
+  CO.Inicjalize();
+  DI.Inicjalize();
+}
+
+void setup(void) {}
 
 void loop(void)
 {
   myDS18B20Manager.sensorsCheckLoop(); //M8_MS_DS18B20SensorManager
-  myHeartBeatManager.HeartBeat();      //M2_MS_Heartbeat
-  corePoll();
-  delay(100); //simulate a delay when other tasks are done
+  gateway.HeartBeat();                 //M2_MS_Heartbeat
+
+  userAction.Pool();
+  CO.Pool();
+  DI.Pool();
+  navMenu.doInput();
 }
