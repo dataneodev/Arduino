@@ -251,10 +251,28 @@ public:
       EEPROM->writeByte(126, newValue, false, false);
   }
 
+  uint16_t getPOWER230V()
+  {
+    return POWER230V;
+  }
+
+  void setPOWER230V(uint16_t newValue, bool forceSave = false)
+  {
+    bool needToSave = newValue != POWER230V;
+    POWER230V = newValue;
+
+    if (!IsInicjalize)
+      return;
+
+    if (needToSave || forceSave)
+      EEPROM->writeUInt32(130, (uint32_t)newValue, false, false);
+  }
+
 private:
   EE *EEPROM;
   bool IsInicjalize = false;
   const uint8_t readCheck = 0x53;
+
   //epprom setting
   uint16_t LCD_DISPLAY_TIMEOFF = 120;
   bool RELAY_PV_ENABLE = false;
@@ -264,14 +282,16 @@ private:
 
   bool RELAY_230V_ADVENCE = true;
 
-  uint8_t RELAY_230_TEMP_START = 45;
-  uint8_t RELAY_230_TEMP_HEAT_UP = 55;
+  uint8_t RELAY_230_TEMP_START = 40;
+  uint8_t RELAY_230_TEMP_HEAT_UP = 45;
 
   uint8_t RELAY_230_ALLOW_START_H = 17;
   uint8_t RELAY_230_ALLOW_START_M = 00;
 
   uint8_t RELAY_230_ALLOW_END_H = 19;
   uint8_t RELAY_230_ALLOW_END_M = 00;
+
+  uint16_t POWER230V = 2100;
 
   void saveAll()
   {
@@ -290,6 +310,7 @@ private:
     setRELAY_230_ALLOW_START_M(RELAY_230_ALLOW_START_M, true);
     setRELAY_230_ALLOW_END_H(RELAY_230_ALLOW_END_H, true);
     setRELAY_230_ALLOW_END_M(RELAY_230_ALLOW_END_M, true);
+    setPOWER230V(POWER230V, true);
 
     EEPROM->writeByte(100, readCheck, false, false);
   }
@@ -318,6 +339,7 @@ private:
     readRELAY_230_ALLOW_START_M();
     readRELAY_230_ALLOW_END_H();
     readRELAY_230_ALLOW_END_M();
+    readPOWER230V();
   }
 
   void readLcdTimeOff()
@@ -378,6 +400,11 @@ private:
   void readRELAY_230_ALLOW_END_M()
   {
     RELAY_230_ALLOW_END_M = EEPROM->readByte(126);
+  }
+
+  void readPOWER230V()
+  {
+    POWER230V = (uint16_t)EEPROM->readUInt32(130);
   }
 };
 

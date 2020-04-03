@@ -101,6 +101,29 @@ public:
     return false;
   }
 
+  bool GetSensorAdress(uint8_t sensorId, uint8_t *sensorAdress)
+  {
+    for (byte i = 0; i < DS18B20List.length(); i++)
+      if (DS18B20List[i].ControlerID == sensorId)
+      {
+        *sensorAdress = DS18B20List[i].DS18B20Adress[0];
+        *(sensorAdress + 1) = DS18B20List[i].DS18B20Adress[1];
+        *(sensorAdress + 2) = DS18B20List[i].DS18B20Adress[2];
+        *(sensorAdress + 3) = DS18B20List[i].DS18B20Adress[3];
+        *(sensorAdress + 4) = DS18B20List[i].DS18B20Adress[4];
+        *(sensorAdress + 5) = DS18B20List[i].DS18B20Adress[5];
+        *(sensorAdress + 6) = DS18B20List[i].DS18B20Adress[6];
+        *(sensorAdress + 7) = DS18B20List[i].DS18B20Adress[7];
+        return true;
+      }
+    return false;
+  }
+
+  DallasTemperature *GetDallasTemperature()
+  {
+    return dallas;
+  }
+
 private:
   const bool REPORT_ONLY_ON_CHANGE = false; //event fire only if temperature is change
   const float CHANGE_ON_DIFFERENCE = 0.1f;
@@ -174,7 +197,7 @@ private:
         logMsg("The sensor with the given address was not found on the bus: ", hex);
       }
     }
-    
+
     if_init = true;
     sensorsCheck(true);
   }

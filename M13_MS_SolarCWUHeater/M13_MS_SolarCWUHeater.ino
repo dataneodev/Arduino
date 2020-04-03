@@ -42,7 +42,7 @@
 #define ENCODER_LEFT 37
 #define ENCODER_RIGHT 34
 #define ENCODER_DOWN 35
-#define RESET_PIN 66
+#define RESET_PIN A3
 /* #endregion */
 
 /* #region  MySensorsConfiguration */
@@ -115,6 +115,9 @@ Core CO(&DL, &userAction);
 /* #region  Inicjalization */
 void pinInicjalize()
 {
+  pinMode(RESET_PIN, OUTPUT);
+  digitalWrite(RESET_PIN, HIGH);
+
   pinMode(CURRENT, INPUT);
   pinMode(VOLTAGE, INPUT);
 
@@ -167,7 +170,14 @@ void mySensorsInicjalize()
                              nullptr,
                              nullptr); // M8_MS_DS18B20SensorManager
 
-  myDS18B20Manager.addSensor(0x28, 0xFF, 0x84, 0x1C, 0x6E, 0x18, 0x01, 0x23,
+  myDS18B20Manager.addSensor(DL.getTempAdressSensor(1),
+                             DL.getTempAdressSensor(2),
+                             DL.getTempAdressSensor(3),
+                             DL.getTempAdressSensor(4),
+                             DL.getTempAdressSensor(5),
+                             DL.getTempAdressSensor(6),
+                             DL.getTempAdressSensor(7),
+                             DL.getTempAdressSensor(8),
                              "TempWather",
                              true,
                              nullptr,
@@ -207,7 +217,11 @@ void before() //MySensors
   DI.Inicjalize();
 }
 
-void setup(void) {}
+void setup(void)
+{
+  pinMode(RESET_PIN, OUTPUT);
+  digitalWrite(RESET_PIN, HIGH);
+}
 
 void loop(void)
 {
