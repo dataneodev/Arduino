@@ -64,6 +64,7 @@ public:
 
 result systemRestart()
 {
+    pinMode(RESET_PIN, OUTPUT);
     digitalWrite(RESET_PIN, LOW);
 }
 
@@ -139,6 +140,10 @@ bool detectNewTempSensor()
         {
             if (myDS18B20Manager.GetDallasTemperature()->getAddress(tempDeviceAddress, i))
             {
+                for (byte i = 0; i < 8; i++)
+                    if (tempDeviceAddress[i] == DL.getTempAdressSensor(i + 1))
+                        return false;
+
                 uint8_t tem1p[8];
                 myDS18B20Manager.GetSensorAdress(135, &tem1p[0]);
 
@@ -150,24 +155,10 @@ bool detectNewTempSensor()
 
                 if (!compareAdress(tem1p, tempDeviceAddress) &&
                     !compareAdress(tem2p, tempDeviceAddress) &&
-                    !compareAdress(tem3p, tempDeviceAddress) &&
-                    tempDeviceAddress[0] != DL.getTempAdressSensor(1) &&
-                    tempDeviceAddress[1] != DL.getTempAdressSensor(2) &&
-                    tempDeviceAddress[2] != DL.getTempAdressSensor(3) &&
-                    tempDeviceAddress[3] != DL.getTempAdressSensor(4) &&
-                    tempDeviceAddress[4] != DL.getTempAdressSensor(5) &&
-                    tempDeviceAddress[5] != DL.getTempAdressSensor(6) &&
-                    tempDeviceAddress[6] != DL.getTempAdressSensor(7) &&
-                    tempDeviceAddress[7] != DL.getTempAdressSensor(8))
+                    !compareAdress(tem3p, tempDeviceAddress))
                 {
-                    DL.setTempAdressSensor(1, tempDeviceAddress[0]);
-                    DL.setTempAdressSensor(2, tempDeviceAddress[1]);
-                    DL.setTempAdressSensor(3, tempDeviceAddress[2]);
-                    DL.setTempAdressSensor(4, tempDeviceAddress[3]);
-                    DL.setTempAdressSensor(5, tempDeviceAddress[4]);
-                    DL.setTempAdressSensor(6, tempDeviceAddress[5]);
-                    DL.setTempAdressSensor(7, tempDeviceAddress[6]);
-                    DL.setTempAdressSensor(8, tempDeviceAddress[7]);
+                    for (byte i = 0; i < 8; i++)
+                        DL.setTempAdressSensor(i + 1, tempDeviceAddress[i]);
                     return true;
                 }
             }
@@ -205,15 +196,15 @@ MENU(subTempSensorMenu, "Opcje czujnika temperatury", doNothing, noEvent, noStyl
 /* #region  relayPVEnabled */
 bool relayPVEnabled = DL.getPVRelay();
 result setrelayPVEnabled();
-SELECT(relayPVEnabled, relayPVEnableMenu, "Zasilanie z PV", setrelayPVEnabled, exitEvent, noStyle,
+SELECT(relayPVEnabled, relayPVEnableMenu, "Zasilanie z PV  ", setrelayPVEnabled, exitEvent, noStyle,
        VALUE("Wlaczone", true, doNothing, noEvent),
        VALUE("Wylaczone", false, doNothing, noEvent));
 /* #endregion */
 
 /* #region  subRelayPVMenu */
-MENU(subRelayPVMenu, "Opcje zasilania PV", doNothing, noEvent, noStyle,
-     OP("Op", doNothing, noEvent),
-     EXIT("<Back"));
+// MENU(subRelayPVMenu, "Opcje zasilania PV", doNothing, noEvent, noStyle,
+//      OP("Op", doNothing, noEvent),
+//      EXIT("<Back"));
 /* #endregion */
 
 /* #region  relay230vEnabled */
@@ -226,39 +217,11 @@ SELECT(relay230VEnagled, relay230VEnableMenu, "Zasilanie z 230V", setrelay230VEn
 
 /* #region  subRelay230VMenu */
 bool relay230VAdvenceEnable = DL.getRELAY_230V_ADVENCE();
-result setrelay230VAdvenceEnable()
-{
-    DL.setRELAY_230V_ADVENCE(relay230VAdvenceEnable);
-    return proceed;
-};
+result setrelay230VAdvenceEnable();
 
-SELECT(relay230VAdvenceEnable, relay230VAdvenceEnableMenu, "Opcje zaaw.", setrelay230VAdvenceEnable, exitEvent, noStyle,
+SELECT(relay230VAdvenceEnable, relay230VAdvenceEnableMenu, "Opcje zaaw. ", setrelay230VAdvenceEnable, exitEvent, noStyle,
        VALUE("Wlaczone", true, doNothing, noEvent),
        VALUE("Wylaczone", false, doNothing, noEvent));
-
-// char *constMEM hexDigit MEMMODE = "0123456789";
-// char *constMEM hexNr[] MEMMODE = {hexDigit, ":", hexDigit};
-// char bufPo[] = "17:11";
-// char bufPrzed[] = "19:11";
-
-// uint8_t hourStart = 17;
-// uint8_t minuteStart = 10;
-
-// uint8_t hourEnd = 17;
-// uint8_t minuteEnd = 10;
-
-// prompt *padData[] = {
-//     new menuField<typeof(hourStart)>(hourStart, "", "", 00, 23, 1, 0, doNothing, noEvent),
-//     new menuField<typeof(minuteStart)>(minuteStart, "/", "", 0, 59, 1, 0, doNothing, noEvent)};
-
-// menuNode padMenu(
-//     "Zacznij po",
-//     sizeof(padData) / sizeof(prompt *),
-//     padData,
-//     doNothing,
-//     noEvent,
-//     noStyle,
-//     (systemStyles)(_asPad | Menu::_menuData | Menu::_canNav | _parentDraw));
 
 uint16_t mocGrzalki = DL.getPOWER230V();
 result setPOWER230V()
@@ -281,11 +244,45 @@ result setRELAY_230_TEMP_HEAT_UP()
     return proceed;
 };
 
+uint8_t hourStart = DL.getRELAY_230_ALLOW_START_H();
+result setRELAY_230_ALLOW_START_H()
+{
+    DL.setRELAY_230_ALLOW_START_H(hourStart);
+    return proceed;
+};
+
+uint8_t minuteStart = DL.getRELAY_230_ALLOW_START_M();
+result setRELAY_230_ALLOW_START_M()
+{
+    DL.setRELAY_230_ALLOW_START_M(minuteStart);
+    return proceed;
+};
+
+uint8_t hourEnd = DL.getRELAY_230_ALLOW_END_H();
+result setRELAY_230_ALLOW_END_H()
+{
+    DL.setRELAY_230_ALLOW_END_H(hourEnd);
+    return proceed;
+};
+
+uint8_t minuteEnd = DL.getRELAY_230_ALLOW_END_M();
+result setRELAY_230_ALLOW_END_M()
+{
+    DL.setRELAY_230_ALLOW_END_M(minuteEnd);
+    return proceed;
+};
+
 MENU(subRelay230VMenu, "Opcje zasilania 230V", doNothing, noEvent, noStyle,
      FIELD(mocGrzalki, "Moc grzalki ", " W", 100, 4500, 100, 1, setPOWER230V, exitEvent, noStyle),
      SUBMENU(relay230VAdvenceEnableMenu),
      FIELD(RELAY_230_TEMP_START, "Zacznij grzac ponizej", " C", 0, 85, 1, 0, setRELAY_230_TEMP_START, exitEvent, noStyle),
-     FIELD(RELAY_230_TEMP_HEAT_UP, "Grzej do", " C", 0, 85, 1, 0, setRELAY_230_TEMP_HEAT_UP, exitEvent, noStyle),
+     FIELD(RELAY_230_TEMP_HEAT_UP, "Grzej do temperatury ", " C", 0, 85, 1, 0, setRELAY_230_TEMP_HEAT_UP, exitEvent, noStyle),
+     OP("Zacznij po:", doNothing, noEvent),
+     FIELD(hourStart, "    Godzina ", "", 0, 23, 1, 0, setRELAY_230_ALLOW_START_H, exitEvent, noStyle),
+     FIELD(minuteStart, "    Minuty  ", "", 0, 59, 1, 0, setRELAY_230_ALLOW_START_M, exitEvent, noStyle),
+     OP("Skoncz przed:", doNothing, noEvent),
+     FIELD(hourEnd, "    Godzina ", "", 0, 23, 1, 0, setRELAY_230_ALLOW_END_H, exitEvent, noStyle),
+     FIELD(minuteEnd, "    Minuty  ", "", 0, 59, 1, 0, setRELAY_230_ALLOW_END_M, exitEvent, noStyle),
      EXIT("<Wstecz"));
 
 /* #endregion */
@@ -297,7 +294,7 @@ result setgetMySensorsEnable()
     DL.setMySensorsEnable(mySensorsEnabled);
     return proceed;
 }
-SELECT(mySensorsEnabled, mysensorsMenu, "Komunikacja RS485", setgetMySensorsEnable, exitEvent, noStyle,
+SELECT(mySensorsEnabled, mysensorsMenu, "Komunikacja    ", setgetMySensorsEnable, exitEvent, noStyle,
        VALUE("Wlaczona", true, doNothing, noEvent),
        VALUE("Wylaczona", false, doNothing, noEvent));
 /* #endregion */
@@ -331,25 +328,129 @@ result backToMain()
 }
 /* #endregion */
 
+/* #region  dateSetting */
+uint16_t actualYear = year();
+result setActualYear()
+{
+    return proceed;
+};
+
+uint8_t actualMonth = month();
+result setActualMonth()
+{
+    return proceed;
+};
+
+uint8_t actualDay = day();
+result setActualDay()
+{
+    return proceed;
+};
+
+uint8_t actualHour = hour();
+result setActualHour()
+{
+    return proceed;
+};
+
+uint8_t actualMinute = minute();
+result setActualMinute()
+{
+    return proceed;
+};
+
+void getDate()
+{
+    actualYear = year();
+    actualMonth = month();
+    actualDay = day();
+    actualHour = hour();
+    actualMinute = minute();
+}
+
+result setDateAndTime()
+{
+    tmElements_t tm;
+    tm.Month = actualMonth;
+    tm.Day = actualDay;
+    tm.Year = actualYear - 1970;
+    tm.Hour = actualHour;
+    tm.Minute = actualMinute;
+    tm.Second = 0;
+    RTC.write(tm);
+
+    setTime(actualHour, actualMinute, 0, actualDay, actualMonth, actualYear);
+    getDate();
+    return proceed;
+}
+
+result refreshDate()
+{
+    getDate();
+    return proceed;
+}
+
+MENU(dateSettingMenu, "Ustawienia daty", refreshDate, enterEvent, noStyle,
+     OP("Ustaw aktualna date", doNothing, noEvent),
+     FIELD(actualYear, "   Rok     ", "", 2020, 2200, 1, 0, setDateAndTime, exitEvent, noStyle),
+     FIELD(actualMonth, "   Miesiac ", "", 1, 12, 1, 0, setDateAndTime, exitEvent, noStyle),
+     FIELD(actualDay, "   Dzien   ", "", 1, 31, 1, 0, setDateAndTime, exitEvent, noStyle),
+     FIELD(actualHour, "   Godzina ", "", 0, 23, 1, 0, setDateAndTime, exitEvent, noStyle),
+     FIELD(actualMinute, "   Minuty  ", "", 0, 59, 1, 0, setDateAndTime, exitEvent, noStyle),
+     EXIT("<Wstecz"));
+/* #endregion */
+
 MENU(mainMenu, "Opcje sterownika", doNothing, noEvent, wrapStyle,
-     FIELD(weatcherTemp, "Temperatura wody ", " C", 30, 85, 1, 0, setWeatherTemp, exitEvent, noStyle),
+     FIELD(weatcherTemp, "Max. temperatura wody ", " C", 30, 85, 1, 0, setWeatherTemp, exitEvent, noStyle),
      SUBMENU(subTempSensorMenu),
      SUBMENU(relayPVEnableMenu),
-     SUBMENU(subRelayPVMenu),
      SUBMENU(relay230VEnableMenu),
      SUBMENU(subRelay230VMenu),
      SUBMENU(mysensorsMenu),
      SUBMENU(lcdTimeOfMenu),
      SUBMENU(restartMenu),
+     SUBMENU(dateSettingMenu),
      OP("Wersja oprogramowania:1.0", doNothing, noEvent),
      OP("Wyjscie z menu", backToMain, enterEvent));
 
-MENU_OUTPUTS(out, 4, ADAGFX_OUT(gfx, colors, 6 * textScale, 9 * textScale, {0, 0, 27, 14}), NONE);
+MENU_OUTPUTS(out, 4, ADAGFX_OUT(gfx, colors, fontX, fontY, {0, 0, 1 + gfxWidth / fontX, 1 + gfxHeight / fontY}), NONE);
 NAVROOT(navMenu, mainMenu, 4, in, out);
 
 void menuInicjalization()
 {
     navMenu.showTitle = true;
+}
+
+// void realyPVUpdate()
+// {
+
+//     if (relayPVEnabled)
+//         mainMenu[2].enable();
+//     else
+//         mainMenu[2].disable();
+// }
+
+void realy230VUpdate()
+{
+
+    if (relay230VEnagled)
+        mainMenu[4].enable();
+    else
+        mainMenu[4].disable();
+}
+
+void relay230VAdvenceUpdate()
+{
+    if (relay230VAdvenceEnable)
+    {
+        for (byte i = 2; i < 10; i++)
+            subRelay230VMenu[i].enable();
+    }
+    else
+    {
+        for (byte i = 2; i < 10; i++)
+            subRelay230VMenu[i].disable();
+    }
 }
 
 void menuShow()
@@ -360,31 +461,37 @@ void menuShow()
     relayPVEnabled = DL.getPVRelay();
     relay230VEnagled = DL.get230VRelay();
 
-    if (relayPVEnabled)
-        mainMenu[3].enable();
-    else
-        mainMenu[3].disable();
+    //realyPVUpdate();
+    realy230VUpdate();
 
-    if (relay230VEnagled)
-        mainMenu[5].enable();
-    else
-        mainMenu[5].disable();
     mainMenu[9].disable();
 
     relay230VAdvenceEnable = DL.getRELAY_230V_ADVENCE();
     mocGrzalki = DL.getPOWER230V();
     RELAY_230_TEMP_START = DL.getRELAY_230_TEMP_START();
     RELAY_230_TEMP_HEAT_UP = DL.getRELAY_230_TEMP_HEAT_UP();
+
+    hourStart = DL.getRELAY_230_ALLOW_START_H();
+    minuteStart = DL.getRELAY_230_ALLOW_START_M();
+
+    hourEnd = DL.getRELAY_230_ALLOW_END_H();
+    minuteEnd = DL.getRELAY_230_ALLOW_END_M();
+    relay230VAdvenceUpdate();
+
+    if (isRTCOK())
+    {
+        mainMenu[8].enable();
+    }
+    else
+    {
+        mainMenu[8].disable();
+    }
 }
 
 /* #region  relayPVEnabled */
 result setrelayPVEnabled()
 {
-    if (relayPVEnabled)
-        mainMenu[3].enable();
-    else
-        mainMenu[3].disable();
-
+    //realyPVUpdate();
     DL.setPVRelay(relayPVEnabled);
     return proceed;
 }
@@ -393,12 +500,15 @@ result setrelayPVEnabled()
 /* #region  relay230vEnabled */
 result setrelay230VEnagled()
 {
-    if (relay230VEnagled)
-        mainMenu[5].enable();
-    else
-        mainMenu[5].disable();
-
+    realy230VUpdate();
     DL.set230VRelay(relay230VEnagled);
+    return proceed;
+}
+
+result setrelay230VAdvenceEnable()
+{
+    relay230VAdvenceUpdate();
+    DL.setRELAY_230V_ADVENCE(relay230VAdvenceEnable);
     return proceed;
 }
 /* #endregion */

@@ -95,7 +95,7 @@ public:
       {
         if (!DS18B20List[i].lastRead || !DS18B20List[i].init)
           return false;
-        temperature = &DS18B20List[i].temperature;
+        *temperature = DS18B20List[i].temperature;
         return true;
       }
     return false;
@@ -106,14 +106,8 @@ public:
     for (byte i = 0; i < DS18B20List.length(); i++)
       if (DS18B20List[i].ControlerID == sensorId)
       {
-        *sensorAdress = DS18B20List[i].DS18B20Adress[0];
-        *(sensorAdress + 1) = DS18B20List[i].DS18B20Adress[1];
-        *(sensorAdress + 2) = DS18B20List[i].DS18B20Adress[2];
-        *(sensorAdress + 3) = DS18B20List[i].DS18B20Adress[3];
-        *(sensorAdress + 4) = DS18B20List[i].DS18B20Adress[4];
-        *(sensorAdress + 5) = DS18B20List[i].DS18B20Adress[5];
-        *(sensorAdress + 6) = DS18B20List[i].DS18B20Adress[6];
-        *(sensorAdress + 7) = DS18B20List[i].DS18B20Adress[7];
+        for (byte j = 0; j < 8; j++)
+          *(sensorAdress + j) = DS18B20List[i].DS18B20Adress[j];
         return true;
       }
     return false;

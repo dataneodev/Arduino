@@ -1,6 +1,21 @@
 /*
    dataneo @2020 - M13_MS_SolarCWUHeater 1.0
 */
+/* #region  GlobalVariable */
+/* 
+code 1 - 50 - no error, but all shutdown
+code 51 - 255 - are error
+code 51 - 150 - no buzzer
+code 151 - 255 - with buzzer
+code description:
+
+*0 - no error 
+*151 - DS3232RTC problem
+
+*/
+uint8_t ERROR_CODE = 0;
+/* #endregion */
+
 /* #region LCDConfiguration*/
 
 // IMPORTANT: Adafruit_TFTLCD LIBRARY MUST BE SPECIFICALLY
@@ -30,6 +45,10 @@
 #define LCD_ON_OFF A4
 
 #define textScale 2
+#define gfxWidth 320
+#define gfxHeight 240
+#define fontX 12
+#define fontY 18
 /* #endregion LCDConfiguration*/
 
 /* #region  PINConfiguration */
@@ -61,16 +80,12 @@
 #define RELAY_230V_ID 2
 /* #endregion */
 
-/* #region  GlobalVariable */
-uint8_t ERROR_CODE = 0; // 0 no error
-
-/* #endregion */
-
 /* #region  objectInstances */
 #include <Wire.h>
 
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_TFTLCD.h> // Hardware-specific library
+//#include <Fonts/FreeMono9pt7b.h>
 Adafruit_TFTLCD gfx = Adafruit_TFTLCD(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
 
 #include "I:/7.Projekty/5.Arduino/M_Library/DS18B20Manager/DS18B20Manager.h"
@@ -85,11 +100,24 @@ HeartBeatManager gateway = HeartBeatManager(0);
 #include <24C32.h>
 EE EEPROM24C32;
 
+/* #region  time */
+#include <DS3232RTC.h>
+void checkRTC()
+{
+  if (timeStatus() != timeSet)
+    ERROR_CODE = 151;
+  else if (ERROR_CODE == 151)
+    ERROR_CODE = 0;
+}
+
+bool isRTCOK()
+{
+  return ERROR_CODE != 151;
+}
+/* #endregion */
+
 #include "DataLayer.h"
 DataLayer DL(&EEPROM24C32);
-
-#include <DS3232RTC.h>
-DS3232RTC myRTC;
 
 #include <ClickEncoder.h>
 ClickEncoder clickEncoder(ENCODER_LEFT, ENCODER_RIGHT, ENCODER_DOWN, 2, LOW);
@@ -115,6 +143,7 @@ Core CO(&DL, &userAction);
 /* #region  Inicjalization */
 void pinInicjalize()
 {
+  digitalWrite(RESET_PIN, HIGH);
   pinMode(RESET_PIN, OUTPUT);
   digitalWrite(RESET_PIN, HIGH);
 
@@ -149,6 +178,10 @@ void inicjalizeSystem()
 
   Timer1.initialize(1000);
   Timer1.attachInterrupt(timerIsr);
+
+  setSyncProvider(RTC.get);
+  setSyncInterval(1);
+  checkRTC();
 }
 
 void timerIsr()
@@ -160,13 +193,13 @@ void mySensorsInicjalize()
 {
   myDS18B20Manager.addSensor(0x28, 0xFF, 0x04, 0x23, 0x6E, 0x18, 0x01, 0x3A,
                              "TempSolarRelay",
-                             true,
+                             DL.getMySensorsEnable(),
                              nullptr,
                              nullptr); // M8_MS_DS18B20SensorManager
 
   myDS18B20Manager.addSensor(0x28, 0xFF, 0x95, 0x1E, 0x6E, 0x18, 0x01, 0x95,
                              "Temp230VRelay",
-                             true,
+                             DL.getMySensorsEnable(),
                              nullptr,
                              nullptr); // M8_MS_DS18B20SensorManager
 
@@ -179,7 +212,7 @@ void mySensorsInicjalize()
                              DL.getTempAdressSensor(7),
                              DL.getTempAdressSensor(8),
                              "TempWather",
-                             true,
+                             DL.getMySensorsEnable(),
                              nullptr,
                              nullptr); // M8_MS_DS18B20SensorManager
 
@@ -201,9 +234,12 @@ void receive(const MyMessage &message)
 
 void presentation() //MySensors
 {
-  sendSketchInfo("M13_MS_SolarCWUHeater", "1.0");
-  myDS18B20Manager.presentAllToControler();
-  relayManager.presentAllToControler(); //M1_MS_RelayManager
+  if (DL.getMySensorsEnable())
+  {
+    sendSketchInfo("M13_MS_SolarCWUHeater", "1.0");
+    myDS18B20Manager.presentAllToControler();
+    relayManager.presentAllToControler(); //M1_MS_RelayManager
+  }
 }
 
 void before() //MySensors
@@ -217,19 +253,15 @@ void before() //MySensors
   DI.Inicjalize();
 }
 
-void setup(void)
-{
-  pinMode(RESET_PIN, OUTPUT);
-  digitalWrite(RESET_PIN, HIGH);
-}
+void setup(void) {}
 
 void loop(void)
 {
   myDS18B20Manager.sensorsCheckLoop(); //M8_MS_DS18B20SensorManager
-  gateway.HeartBeat();                 //M2_MS_Heartbeat
-
   userAction.Pool();
   CO.Pool();
   DI.Pool();
   navMenu.doInput();
+  if (DL.getMySensorsEnable())
+    gateway.HeartBeat(); //M2_MS_Heartbeat
 }

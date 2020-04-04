@@ -207,6 +207,7 @@ private:
         {
             PUBLIC_LCD_STATUS = LCD_STATUS;
             menuShow();
+            _gfx->setFont();
             _menu->reset();
             _menu->poll();
             _userAction->EndRegisterEnterMenu();
@@ -232,7 +233,6 @@ private:
 
         uint16_t identifier = _gfx->readID();
         _gfx->begin(identifier);
-
         _gfx->setRotation(3);
         _gfx->setTextSize(textScale); //test scalling
         _gfx->setTextWrap(false);
