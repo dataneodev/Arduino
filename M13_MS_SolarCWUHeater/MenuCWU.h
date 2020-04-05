@@ -18,6 +18,8 @@ using namespace Menu;
 #define ST7735_WHITE RGB565(255, 255, 255)
 #define ST7735_YELLOW RGB565(255, 255, 0)
 #define ST7735_RED RGB565(255, 0, 0)
+#define ST7735_GREEN RGB565(30, 110, 0)
+#define ST7735_ORANGE RGB565(255, 105, 0)
 
 #define ST7735_GRAY_A RGB565(64, 64, 64)
 #define ST7735_BLUE_A RGB565(0, 50, 125)
@@ -145,13 +147,13 @@ bool detectNewTempSensor()
                         return false;
 
                 uint8_t tem1p[8];
-                myDS18B20Manager.GetSensorAdress(135, &tem1p[0]);
+                myDS18B20Manager.GetSensorAdress(TempSolarRelayID, &tem1p[0]);
 
                 uint8_t tem2p[8];
-                myDS18B20Manager.GetSensorAdress(136, &tem2p[0]);
+                myDS18B20Manager.GetSensorAdress(Temp230VRelayID, &tem2p[0]);
 
                 uint8_t tem3p[8];
-                myDS18B20Manager.GetSensorAdress(137, &tem3p[0]);
+                myDS18B20Manager.GetSensorAdress(TempWatherID, &tem3p[0]);
 
                 if (!compareAdress(tem1p, tempDeviceAddress) &&
                     !compareAdress(tem2p, tempDeviceAddress) &&
@@ -199,12 +201,6 @@ result setrelayPVEnabled();
 SELECT(relayPVEnabled, relayPVEnableMenu, "Zasilanie z PV  ", setrelayPVEnabled, exitEvent, noStyle,
        VALUE("Wlaczone", true, doNothing, noEvent),
        VALUE("Wylaczone", false, doNothing, noEvent));
-/* #endregion */
-
-/* #region  subRelayPVMenu */
-// MENU(subRelayPVMenu, "Opcje zasilania PV", doNothing, noEvent, noStyle,
-//      OP("Op", doNothing, noEvent),
-//      EXIT("<Back"));
 /* #endregion */
 
 /* #region  relay230vEnabled */
@@ -421,15 +417,6 @@ void menuInicjalization()
     navMenu.showTitle = true;
 }
 
-// void realyPVUpdate()
-// {
-
-//     if (relayPVEnabled)
-//         mainMenu[2].enable();
-//     else
-//         mainMenu[2].disable();
-// }
-
 void realy230VUpdate()
 {
 
@@ -461,7 +448,6 @@ void menuShow()
     relayPVEnabled = DL.getPVRelay();
     relay230VEnagled = DL.get230VRelay();
 
-    //realyPVUpdate();
     realy230VUpdate();
 
     mainMenu[9].disable();
@@ -513,7 +499,6 @@ result setrelay230VAdvenceEnable()
 }
 /* #endregion */
 
-//config myOptions('*','-',defaultNavCodes,false);
 /* #endregion MenuConfiguration */
 
 #endif

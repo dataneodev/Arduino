@@ -72,12 +72,17 @@ uint8_t ERROR_CODE = 0;
 #define MY_RS485_DE_PIN 4 // Define this to enables DE-pin management on defined pin
 #define MY_RS485_BAUD_RATE 9600
 #define MY_RS485_HWSERIAL Serial3
+#define TempSolarRelayID 135
+#define Temp230VRelayID 136
+#define TempWatherID 137
 /* #endregion */
 
 /* #region  OtherConfiguration */
 #define EP24C32_ADDRESS 0x50
 #define RELAY_PV_ID 1
 #define RELAY_230V_ID 2
+#define RETURN_TO_MAIN_FROM_MENU 60000
+#define MAIN_CYCLE_TIME 4000
 /* #endregion */
 
 /* #region  objectInstances */
@@ -85,7 +90,9 @@ uint8_t ERROR_CODE = 0;
 
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_TFTLCD.h> // Hardware-specific library
-//#include <Fonts/FreeMono9pt7b.h>
+#include <Fonts/FreeSans9pt7b.h>
+#include <Fonts/FreeSansBold24pt7b.h>
+
 Adafruit_TFTLCD gfx = Adafruit_TFTLCD(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
 
 #include "I:/7.Projekty/5.Arduino/M_Library/DS18B20Manager/DS18B20Manager.h"
@@ -131,7 +138,7 @@ RelayManager relayManager(DOMOTICZ, &DL);
 #include "MenuCWU.h"
 
 #include "MainScreen.h"
-MainScreen mainScreen(&gfx, &DL);
+MainScreen mainScreen(&gfx, &myDS18B20Manager, &DL);
 
 #include "Display.h"
 Display DI(&gfx, &navMenu, &userAction, &mainScreen, &DL);
@@ -150,21 +157,27 @@ void pinInicjalize()
   pinMode(CURRENT, INPUT);
   pinMode(VOLTAGE, INPUT);
 
+  digitalWrite(PWM, LOW);
   pinMode(PWM, OUTPUT);
   digitalWrite(PWM, LOW);
 
+  digitalWrite(BUZZER, LOW);
   pinMode(BUZZER, OUTPUT);
   digitalWrite(BUZZER, LOW);
 
+  digitalWrite(RELAY, LOW);
   pinMode(RELAY, OUTPUT);
   digitalWrite(RELAY, LOW);
 
+  digitalWrite(ONEWIRE, LOW);
   pinMode(ONEWIRE, OUTPUT);
   digitalWrite(ONEWIRE, LOW);
 
+  digitalWrite(LCD_ON_OFF, LOW);
   pinMode(LCD_ON_OFF, OUTPUT);
   digitalWrite(LCD_ON_OFF, LOW);
 
+  digitalWrite(MY_RS485_DE_PIN, LOW);
   pinMode(MY_RS485_DE_PIN, OUTPUT);
   digitalWrite(MY_RS485_DE_PIN, LOW);
 }
@@ -174,7 +187,7 @@ void inicjalizeSystem()
   clickEncoder.setDoubleClickEnabled(false);
   clickEncoder.setButtonHeldEnabled(false);
   clickEncoder.setAccelerationEnabled(false);
-  clickEncoder.setButtonOnPinZeroEnabled(false);
+  //clickEncoder.setButtonOnPinZeroEnabled(false);
 
   Timer1.initialize(1000);
   Timer1.attachInterrupt(timerIsr);
@@ -258,10 +271,16 @@ void setup(void) {}
 void loop(void)
 {
   myDS18B20Manager.sensorsCheckLoop(); //M8_MS_DS18B20SensorManager
+
   userAction.Pool();
-  CO.Pool();
-  DI.Pool();
-  navMenu.doInput();
+  bool mainCycle = userAction.GetMainCycle();
+
+  CO.Pool(mainCycle);
+  DI.Pool(mainCycle);
+
+  if (DI.MenuActive())
+    navMenu.doInput();
+
   if (DL.getMySensorsEnable())
     gateway.HeartBeat(); //M2_MS_Heartbeat
 }

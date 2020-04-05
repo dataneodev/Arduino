@@ -21,6 +21,11 @@ public:
         return NOW_MILLS;
     }
 
+    bool GetMainCycle()
+    {
+        return checkCycleTime(MAIN_CYCLE_TIME);
+    }
+
     bool IsEnterMenu()
     {
         if (_enterMenu)
@@ -69,6 +74,8 @@ private:
 
     unsigned long NOW_MILLS = 0;
     unsigned long LAST_USER_ACTION_MILLS = 0;
+    unsigned long LAST_ACTIVE_CYCLE_TIME_MILLS;
+
     int16_t _lastRotaryValue;
     int16_t _currentRotaryValue;
 
@@ -81,7 +88,7 @@ private:
         unsigned long temp = millis();
         if (temp < NOW_MILLS)
         {
-            LAST_USER_ACTION_MILLS = 0;
+            LAST_USER_ACTION_MILLS = temp;
         }
 
         NOW_MILLS = temp;
@@ -124,6 +131,25 @@ private:
                 _enterMenu = false;
             }
         }
+    }
+
+    bool checkCycleTime(unsigned long CYCLE_TIME)
+    {
+        //over
+        if (NOW_MILLS < LAST_ACTIVE_CYCLE_TIME_MILLS)
+        {
+            LAST_ACTIVE_CYCLE_TIME_MILLS = NOW_MILLS;
+            return true;
+        }
+
+        CYCLE_TIME += LAST_ACTIVE_CYCLE_TIME_MILLS;
+
+        if (NOW_MILLS > CYCLE_TIME)
+        {
+            LAST_ACTIVE_CYCLE_TIME_MILLS = NOW_MILLS;
+            return true;
+        }
+        return false;
     }
 };
 

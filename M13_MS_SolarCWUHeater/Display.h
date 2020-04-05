@@ -20,9 +20,8 @@ public:
         setLcdStatus(MAIN);
     }
 
-    void Pool()
+    void Pool(bool cycle)
     {
-        bool cycle = checkCycleTime();
         bool userDoAction = checkUserAction();
 
         bool backMenuClicked = false;
@@ -51,7 +50,7 @@ public:
 
         if (PUBLIC_LCD_STATUS == MAIN)
         {
-            if (userDoAction && enterMenuClicked)
+            if (enterMenuClicked)
             {
                 setLcdStatus(MENU);
                 return;
@@ -72,8 +71,9 @@ public:
 
         if (PUBLIC_LCD_STATUS == MENU)
         {
-            if (userDoAction && backMenuClicked)
+            if (backMenuClicked)
             {
+                checkMenuLeave();
                 setLcdStatus(MAIN);
                 return;
             }
@@ -94,6 +94,11 @@ public:
         return PUBLIC_LCD_STATUS == MAIN;
     }
 
+    bool MenuActive()
+    {
+        return PUBLIC_LCD_STATUS == MENU;
+    }
+
     LCD_STATUS_ENUM GetLCDStatus()
     {
         return PUBLIC_LCD_STATUS;
@@ -107,28 +112,7 @@ private:
     MainScreen *_mainScreen;
 
     LCD_STATUS_ENUM PUBLIC_LCD_STATUS = OFF;
-    unsigned long LAST_PROCESS_MILLS;
     unsigned long LAST_USER_ACTIVE_MILLS;
-
-    const uint16_t CYCLE_TIME = 2000;                // co ile aktualizować mainDisplay
-    const uint16_t RETURN_TO_MAIN_FROM_MENU = 30000; // 15 SEK.
-
-    bool checkCycleTime()
-    {
-        //over
-        if (_userAction->GetMillis() < LAST_PROCESS_MILLS)
-        {
-            LAST_PROCESS_MILLS = _userAction->GetMillis();
-            return true;
-        }
-
-        if (_userAction->GetMillis() > LAST_PROCESS_MILLS + ((unsigned long)CYCLE_TIME))
-        {
-            LAST_PROCESS_MILLS = _userAction->GetMillis();
-            return true;
-        }
-        return false;
-    }
 
     bool checkUserAction()
     {
@@ -147,27 +131,23 @@ private:
 
     bool checkMenuLeave()
     {
-        if (_userAction->GetMillis() >
-            _userAction->GetLastUserActionMillis() + ((unsigned long)RETURN_TO_MAIN_FROM_MENU))
-        {
+        unsigned long RTM = RETURN_TO_MAIN_FROM_MENU;
+        RTM += _userAction->GetLastUserActionMillis();
+        if (_userAction->GetMillis() > RTM)
             return true;
-        }
         return false;
     }
 
     bool checkDisplayOff()
     {
-        uint8_t lcdTimeout = _dataLayer->getLcdTimeOff();
-        if (lcdTimeout < 30)
-        {
+        unsigned long lcdTimeoutUL = _dataLayer->getLcdTimeOff();
+        if (lcdTimeoutUL < 30)
             return false;
-        }
 
-        if (_userAction->GetMillis() >
-            _userAction->GetLastUserActionMillis() + ((unsigned long)lcdTimeout) * 1000)
-        {
+        lcdTimeoutUL = (lcdTimeoutUL * 1000) + _userAction->GetLastUserActionMillis();
+
+        if (_userAction->GetMillis() > lcdTimeoutUL)
             return true;
-        }
         return false;
     }
 
@@ -180,6 +160,7 @@ private:
 
         if (PUBLIC_LCD_STATUS == OFF && LCD_STATUS != OFF)
         {
+            Serial.println("set MAIN");
             PUBLIC_LCD_STATUS = MAIN;
             lcdOn();
             regenMainInfo();
@@ -189,6 +170,7 @@ private:
 
         if (PUBLIC_LCD_STATUS != OFF && LCD_STATUS == OFF)
         {
+            Serial.println("set OFF");
             PUBLIC_LCD_STATUS = OFF;
             lcdOff();
             _userAction->EndRegisterEnterMenu();
@@ -197,7 +179,8 @@ private:
 
         if (LCD_STATUS == MAIN)
         {
-            PUBLIC_LCD_STATUS = LCD_STATUS;
+            Serial.println("set MAIN");
+            PUBLIC_LCD_STATUS = MAIN;
             regenMainInfo();
             _userAction->BeginRegisterEnterMenu();
             return;
@@ -205,9 +188,11 @@ private:
 
         if (LCD_STATUS == MENU)
         {
+            Serial.println("set MENU");
             PUBLIC_LCD_STATUS = LCD_STATUS;
             menuShow();
             _gfx->setFont();
+            _gfx->setTextSize(textScale);
             _menu->reset();
             _menu->poll();
             _userAction->EndRegisterEnterMenu();

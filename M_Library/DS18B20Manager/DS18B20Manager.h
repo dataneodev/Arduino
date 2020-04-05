@@ -90,6 +90,8 @@ public:
     if (DS18B20List.length() == 0)
       return false;
 
+    *temperature = -255;
+
     for (byte i = 0; i < DS18B20List.length(); i++)
       if (compareAdress(DS18B20List[i].DS18B20Adress, DS18B20Adress))
       {

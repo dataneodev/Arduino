@@ -12,16 +12,13 @@ public:
         shutdownAll();
     }
 
-    void Pool()
+    void Pool(bool cycle)
     {
         if (ERROR_CODE != 0)
         {
             shutdownAll();
             return;
         }
-
-        if (!checkCycleTime())
-            return;
 
         processCore();
 
@@ -36,25 +33,6 @@ private:
     DataLayer *_dataLayer;
     UserAction *_userAction;
     uint8_t PWM_DUTY = 0;
-    const uint16_t CYCLE_TIME = 1000;
-    unsigned long LAST_PROCESS_MILLS;
-
-    bool checkCycleTime()
-    {
-        //over
-        if (_userAction->GetMillis() < LAST_PROCESS_MILLS)
-        {
-            LAST_PROCESS_MILLS = _userAction->GetMillis();
-            return true;
-        }
-
-        if (_userAction->GetMillis() > LAST_PROCESS_MILLS + ((unsigned long)CYCLE_TIME))
-        {
-            LAST_PROCESS_MILLS = _userAction->GetMillis();
-            return true;
-        }
-        return false;
-    }
 
     void processCore()
     {
