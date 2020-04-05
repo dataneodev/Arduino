@@ -1,6 +1,0 @@
-{
-    "sketch": "M13_MS_SolarCWUHeater.ino",
-    "board": "arduino:avr:mega",
-    "configuration": "cpu=atmega2560",
-    "port": "COM5"
-}
