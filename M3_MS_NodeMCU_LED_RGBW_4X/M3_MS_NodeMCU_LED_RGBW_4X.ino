@@ -80,7 +80,7 @@ AltSoftSerial _dev;
 /* #region  user configuration */
 #define SOFTWARE_VERION "1.0"
 #define MIN_LIGHT_LEVEL 0     // minimalna jasnosc
-#define MAX_LIGHT_LEVEL 20000 // maksymalna jasnosc nie moze przekroczyc PWM_PERIOD!!!
+#define MAX_LIGHT_LEVEL 1000  // maksymalna jasnosc nie moze przekroczyc PWM_PERIOD!!!
 #define STARTUP_LIGHT_LEVEL 5 //0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
 
 //tylko 1 z poniższych opcji moze być wybrana :
@@ -151,7 +151,7 @@ extern "C"
 ///// PWM
 // Period of PWM frequency -> default of SDK: 5000 -> * 200ns ^= 1 kHz
 
-#define PWM_PERIOD 20000
+#define PWM_PERIOD 1000 //4kH
 #define PWM_CHANNELS 4
 
 uint32 io_info[PWM_CHANNELS][3] = {
