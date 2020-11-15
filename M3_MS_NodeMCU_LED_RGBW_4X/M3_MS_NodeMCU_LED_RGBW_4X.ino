@@ -80,7 +80,7 @@ AltSoftSerial _dev;
 /* #region  user configuration */
 #define SOFTWARE_VERION "1.0"
 #define MIN_LIGHT_LEVEL 0     // minimalna jasnosc
-#define MAX_LIGHT_LEVEL 1023  // maksymalna jasnosc tj. otwarce kanału 0-1023
+#define MAX_LIGHT_LEVEL 20000 // maksymalna jasnosc tj. - prztrz na PERIOD !!!
 #define STARTUP_LIGHT_LEVEL 5 //0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
 
 //tylko 1 z poniższych opcji moze być wybrana :
@@ -98,7 +98,7 @@ AltSoftSerial _dev;
 #define MY_DISABLED_SERIAL
 #define MY_PARENT_NODE_ID 0
 #define MY_PARENT_NODE_IS_STATIC
-//#define MY_TRANSPORT_WAIT_READY_MS 10000
+#define MY_TRANSPORT_WAIT_READY_MS 60000
 #define MY_TRANSPORT_SANITY_CHECK
 #define MY_TRANSPORT_SANITY_CHECK_INTERVAL_MS 600000
 //#define MY_GATEWAY_SERIAL
@@ -142,6 +142,41 @@ SoftwareSerial swESP(D4, D2);   //RX - RO, TX - DI
 #include <ESP8266WiFi.h>
 #include <24C32.h>
 
+extern "C"
+{
+#include "pwm.h"
+#include "user_interface.h"
+}
+
+///// PWM
+
+// Period of PWM frequency -> default of SDK: 5000 -> * 200ns ^= 1 kHz
+
+#define PWM_PERIOD 20000
+
+// PWM channels
+
+#define PWM_CHANNELS 4
+
+// PWM setup (choice all pins that you use PWM)
+
+uint32 io_info[PWM_CHANNELS][3] = {
+    // MUX, FUNC, PIN
+    {PERIPHS_IO_MUX_GPIO5_U, FUNC_GPIO5, 5},  // D1
+                                              //	{PERIPHS_IO_MUX_GPIO4_U, FUNC_GPIO4,   4}, // D2
+                                              //	{PERIPHS_IO_MUX_GPIO0_U, FUNC_GPIO0,   0}, // D3
+                                              //	{PERIPHS_IO_MUX_GPIO2_U, FUNC_GPIO2,   2}, // D4
+                                              //	{PERIPHS_IO_MUX_MTMS_U,  FUNC_GPIO14, 14}, // D5
+    {PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO12, 12}, // D6
+    {PERIPHS_IO_MUX_MTCK_U, FUNC_GPIO13, 13}, // D7
+    {PERIPHS_IO_MUX_MTDO_U, FUNC_GPIO15, 15}, // D8
+                                              // D0 - not have PWM :-(
+};
+
+// PWM initial duty: all off
+
+uint32 pwm_duty_init[PWM_CHANNELS];
+
 /* #region  global variable */
 EE EEPROM24C32;
 MyMessage mMessage;
@@ -184,12 +219,12 @@ void before()
   inicjalizeWifi();
   inicjalizeI2C();
   readSettingFromEprom();
-  calculate();
 }
 
 void setup()
 {
   presentGlobalVariableToControler(true);
+  calculate();
 }
 
 void presentation() //MySensors
@@ -272,23 +307,38 @@ void receive(const MyMessage &message) //MySensors
 void inicjalizePins()
 {
   //PWM
-  analogWrite(PWM_1, 0);
+  digitalWrite(PWM_1, LOW);
   pinMode(PWM_1, OUTPUT);
-  analogWrite(PWM_1, 0);
+  digitalWrite(PWM_1, LOW);
 
-  analogWrite(PWM_2, 0);
+  digitalWrite(PWM_2, LOW);
   pinMode(PWM_2, OUTPUT);
-  analogWrite(PWM_2, 0);
+  digitalWrite(PWM_2, LOW);
 
-  analogWrite(PWM_3, 0);
+  digitalWrite(PWM_3, LOW);
   pinMode(PWM_3, OUTPUT);
-  analogWrite(PWM_3, 0);
+  digitalWrite(PWM_3, LOW);
 
-  analogWrite(PWM_4, 0);
+  digitalWrite(PWM_4, LOW);
   pinMode(PWM_4, OUTPUT);
-  analogWrite(PWM_4, 0);
+  digitalWrite(PWM_4, LOW);
 
-  analogWriteFreq(4096);
+  ///analogWriteFreq(4096);
+  for (uint8_t channel = 0; channel < PWM_CHANNELS; channel++)
+  {
+    pwm_duty_init[channel] = 0;
+  }
+  // Period
+
+  uint32_t period = PWM_PERIOD;
+
+  // Initialize
+
+  pwm_init(period, pwm_duty_init, PWM_CHANNELS, io_info);
+
+  // Commit
+
+  pwm_start();
 
   digitalWrite(RELAY_PIN, LOW);
   pinMode(RELAY_PIN, OUTPUT);
@@ -541,19 +591,31 @@ void calculate()
 {
   if (deviceEabled)
   {
-    analogWrite(PWM_1, getChannel1Duty());
-    analogWrite(PWM_2, getChannel2Duty());
-    analogWrite(PWM_3, getChannel3Duty());
-    analogWrite(PWM_4, getChannel4Duty());
-    digitalWrite(RELAY_PIN, HIGH);
+    // analogWrite(PWM_1, );
+    // analogWrite(PWM_2, getChannel2Duty());
+    // analogWrite(PWM_3, getChannel3Duty());
+    // analogWrite(PWM_4, getChannel4Duty());
+    // digitalWrite(RELAY_PIN, HIGH);
+
+    pwm_set_duty(getChannel1Duty(), 0);
+    pwm_set_duty(getChannel2Duty(), 1);
+    pwm_set_duty(getChannel3Duty(), 2);
+    pwm_set_duty(getChannel4Duty(), 3);
+    pwm_start(); // commit
   }
   else
   {
-    analogWrite(PWM_1, 0);
-    analogWrite(PWM_2, 0);
-    analogWrite(PWM_3, 0);
-    analogWrite(PWM_4, 0);
-    digitalWrite(RELAY_PIN, LOW);
+    //analogWrite(PWM_1, 0);
+    //analogWrite(PWM_2, 0);
+    //analogWrite(PWM_3, 0);
+    //analogWrite(PWM_4, 0);
+    //digitalWrite(RELAY_PIN, LOW);
+
+    pwm_set_duty(getChannel1Duty(), 0);
+    pwm_set_duty(getChannel2Duty(), 1);
+    pwm_set_duty(getChannel3Duty(), 2);
+    pwm_set_duty(getChannel4Duty(), 3);
+    pwm_start(); // commit
   }
 }
 
