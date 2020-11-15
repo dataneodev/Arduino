@@ -80,7 +80,7 @@ AltSoftSerial _dev;
 /* #region  user configuration */
 #define SOFTWARE_VERION "1.0"
 #define MIN_LIGHT_LEVEL 0     // minimalna jasnosc
-#define MAX_LIGHT_LEVEL 20000 // maksymalna jasnosc tj. - prztrz na PERIOD !!!
+#define MAX_LIGHT_LEVEL 20000 // maksymalna jasnosc nie moze przekroczyc PWM_PERIOD!!!
 #define STARTUP_LIGHT_LEVEL 5 //0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
 
 //tylko 1 z poniższych opcji moze być wybrana :
@@ -149,16 +149,10 @@ extern "C"
 }
 
 ///// PWM
-
 // Period of PWM frequency -> default of SDK: 5000 -> * 200ns ^= 1 kHz
 
 #define PWM_PERIOD 20000
-
-// PWM channels
-
 #define PWM_CHANNELS 4
-
-// PWM setup (choice all pins that you use PWM)
 
 uint32 io_info[PWM_CHANNELS][3] = {
     // MUX, FUNC, PIN
@@ -172,8 +166,6 @@ uint32 io_info[PWM_CHANNELS][3] = {
     {PERIPHS_IO_MUX_MTDO_U, FUNC_GPIO15, 15}, // D8
                                               // D0 - not have PWM :-(
 };
-
-// PWM initial duty: all off
 
 uint32 pwm_duty_init[PWM_CHANNELS];
 
@@ -591,31 +583,19 @@ void calculate()
 {
   if (deviceEabled)
   {
-    // analogWrite(PWM_1, );
-    // analogWrite(PWM_2, getChannel2Duty());
-    // analogWrite(PWM_3, getChannel3Duty());
-    // analogWrite(PWM_4, getChannel4Duty());
-    // digitalWrite(RELAY_PIN, HIGH);
-
     pwm_set_duty(getChannel1Duty(), 0);
     pwm_set_duty(getChannel2Duty(), 1);
     pwm_set_duty(getChannel3Duty(), 2);
     pwm_set_duty(getChannel4Duty(), 3);
-    pwm_start(); // commit
+    pwm_start();
   }
   else
   {
-    //analogWrite(PWM_1, 0);
-    //analogWrite(PWM_2, 0);
-    //analogWrite(PWM_3, 0);
-    //analogWrite(PWM_4, 0);
-    //digitalWrite(RELAY_PIN, LOW);
-
-    pwm_set_duty(getChannel1Duty(), 0);
-    pwm_set_duty(getChannel2Duty(), 1);
-    pwm_set_duty(getChannel3Duty(), 2);
-    pwm_set_duty(getChannel4Duty(), 3);
-    pwm_start(); // commit
+    pwm_set_duty(0, 0);
+    pwm_set_duty(0, 1);
+    pwm_set_duty(0, 2);
+    pwm_set_duty(0, 3);
+    pwm_start();
   }
 }
 
