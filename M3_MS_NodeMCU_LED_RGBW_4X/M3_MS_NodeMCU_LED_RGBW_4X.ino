@@ -96,11 +96,14 @@ AltSoftSerial _dev;
 
 /* #region  const configuration */
 #define MY_DISABLED_SERIAL
+#define MY_PARENT_NODE_ID 0
+#define MY_PARENT_NODE_IS_STATIC
+//#define MY_TRANSPORT_WAIT_READY_MS 10000
+#define MY_TRANSPORT_SANITY_CHECK
+#define MY_TRANSPORT_SANITY_CHECK_INTERVAL_MS 600000
 //#define MY_GATEWAY_SERIAL
 //#define MY_DEBUG
 //RS485
-#define MY_TRANSPORT_UPLINK_CHECK_DISABLED
-#define MY_TRANSPORT_WAIT_READY_MS 2000
 #define MY_RS485                // Enable RS485 transport layer
 #define MY_RS485_DE_PIN D3      // Define this to enables DE-pin management on defined pin
 #define MY_RS485_BAUD_RATE 9600 // Set RS485 baud rate to use
@@ -113,7 +116,7 @@ SoftwareSerial swESP(D4, D2);   //RX - RO, TX - DI
 
 //24C32
 #define SCL_PIN D5
-#define SDA_PIN D0
+#define SDA_PIN 1
 
 //pwm
 #define PWM_1 D1
@@ -122,15 +125,15 @@ SoftwareSerial swESP(D4, D2);   //RX - RO, TX - DI
 #define PWM_4 D8
 
 #if defined(RGBW_MODE)
-#define SKETCH_NAME "NodeMCU_LED_Driver_RGBW"
+#define SKETCH_NAME "RGBW_LED"
 #endif
 
 #if defined(RGB_MODE)
-#define SKETCH_NAME "NodeMCU_LED_Driver_RGB"
+#define SKETCH_NAME "RGB_LED"
 #endif
 
 #if defined(SINGLE_LED_MODE)
-#define SKETCH_NAME "NodeMCU_LED_Driver_Single"
+#define SKETCH_NAME "SingleLED"
 #endif
 /* #endregion */
 
@@ -171,7 +174,8 @@ uint8_t channel2Level = DEFAULT_CH2;
 uint8_t channel3Level = DEFAULT_CH3;
 uint8_t channel4Level = DEFAULT_CH4;
 
-unsigned long lastMessageRevice;
+//unsigned long lastMessageRevice;
+bool flashMemory = false;
 bool statusChanged = false;
 bool levelChanged = false;
 bool channelChanged = false;
@@ -199,34 +203,16 @@ void presentation() //MySensors
   presentGlobalVariableToControler(true);
 }
 
-void loop()
-{
-  // put your main code here, to run repeatedly:
-  //wait(100);
-  //checkLastMessageRecive();
-}
-
-void checkLastMessageRecive()
-{
-  if (lastMessageRevice + REVER_MESSAGE_TIME < millis())
-  {
-  }
-}
+void loop() {}
 
 void receive(const MyMessage &message) //MySensors
 {
   if (message.isAck())
     return;
 
-  lastMessageRevice = millis();
-
   if (message.sensor == DIMMER_ID && message.type == V_STATUS)
   {
-    int val = atoi(message.data);
-    if (val == 0 or val == 1)
-    {
-      setDeviceEnabledFromControler(val);
-    }
+    setDeviceEnabledFromControler(message.getBool());
     return;
   }
 
@@ -307,7 +293,7 @@ void inicjalizePins()
   pinMode(PWM_4, OUTPUT);
   analogWrite(PWM_4, 0);
 
-  analogWriteFreq(4000);
+  analogWriteFreq(10000);
 
   digitalWrite(RELAY_PIN, LOW);
   pinMode(RELAY_PIN, OUTPUT);
@@ -323,7 +309,7 @@ void inicjalizeWifi()
 void inicjalizeI2C()
 {
   Wire.begin(SDA_PIN, SCL_PIN);
-  EEPROM24C32.begin(0x50);
+  EEPROM24C32.begin(0x50, false);
 }
 /* #endregion */
 
@@ -342,8 +328,14 @@ void inicjalizeI2C()
 
 void readSettingFromEprom()
 {
-  if (!EEPROM24C32.checkPresence())
+  flashMemory = EEPROM24C32.checkPresence();
+  if (!flashMemory)
+  {
+#if defined(MY_DEBUG)
+    Serial.println("Błąd pamieci 24C32");
+#endif
     return;
+  }
 
   if (EEPROM24C32.readByte(105) != CHECK_NUMBER)
   {
@@ -357,10 +349,19 @@ void readSettingFromEprom()
   channel2Level = EEPROM24C32.readByte(109);
   channel3Level = EEPROM24C32.readByte(110);
   channel4Level = EEPROM24C32.readByte(111);
+
+#if defined(MY_DEBUG)
+  Serial.println("Odczytano wartosci:");
+  Serial.print("channel1Level:");
+  Serial.println(channel1Level);
+#endif
 }
 
 void setDefaultSetting()
 {
+#if defined(MY_DEBUG)
+  Serial.println("Zapisuje domyslne ustawienia");
+#endif
   EEPROM24C32.writeByte(105, CHECK_NUMBER, false, false);
   setDeviceEnableToEeprom(deviceEabled);
   setLightLevelToEeprom(deviceLightLevel);
@@ -405,9 +406,7 @@ void presentToControler()
 
 void presentGlobalVariableToControler(bool forceSend)
 {
-  lastMessageRevice = millis() + 1000 * 60 * 15;
-
-  if (forceSend || statusChanged)
+  // if (forceSend || statusChanged)
   {
     mMessage.setSensor(DIMMER_ID);
     mMessage.setType(V_STATUS);
@@ -415,7 +414,7 @@ void presentGlobalVariableToControler(bool forceSend)
     statusChanged = false;
   }
 
-  if (forceSend || levelChanged)
+  //  if (forceSend || levelChanged)
   {
     mMessage.setType(V_PERCENTAGE);
     send(mMessage.set(deviceLightLevel));
@@ -438,7 +437,7 @@ void presentGlobalVariableToControler(bool forceSend)
   Serial.println(channel1Level);
 #endif
 
-  if (forceSend || channelChanged)
+  // if (forceSend || channelChanged)
   {
     mMessage.setSensor(RGBW_ID);
     mMessage.setType(V_RGBW);
@@ -454,7 +453,7 @@ void presentGlobalVariableToControler(bool forceSend)
 #endif
 
 #if defined(RGB_MODE)
-  if (forceSend || channelChanged)
+  // if (forceSend || channelChanged)
   {
     mMessage.setSensor(RGBW_ID);
     mMessage.setType(V_RGB);
@@ -474,7 +473,8 @@ void setDeviceEnabledFromControler(bool deviceEnbledToSet)
 {
   statusChanged = deviceEabled != deviceEnbledToSet;
   deviceEabled = deviceEnbledToSet;
-  if (EEPROM24C32.checkPresence())
+
+  if (flashMemory)
   {
     setDeviceEnableToEeprom(deviceEabled);
   }
@@ -493,7 +493,8 @@ void setLightLevelFromControler(uint8_t lightLevel)
 {
   levelChanged = deviceLightLevel != lightLevel;
   deviceLightLevel = lightLevel; // 0 -100
-  if (EEPROM24C32.checkPresence())
+
+  if (flashMemory)
   {
     setLightLevelToEeprom(deviceLightLevel);
   }
@@ -526,15 +527,17 @@ void setRGBWvalueFromControler(uint8_t red, uint8_t green, uint8_t blue, uint8_t
   channel2Level = red;
   channel3Level = green;
   channel4Level = blue;
-  if (EEPROM24C32.checkPresence())
+
+  calculate();
+  presentGlobalVariableToControler(false);
+
+  if (flashMemory)
   {
     setChannelValue(1, channel1Level);
     setChannelValue(2, channel2Level);
     setChannelValue(3, channel3Level);
     setChannelValue(4, channel4Level);
   }
-  calculate();
-  presentGlobalVariableToControler(false);
 }
 #endif
 
@@ -548,14 +551,16 @@ void setRGBValueFromControler(uint8_t red, uint8_t green, uint8_t blue)
   channel1Level = red;
   channel2Level = green;
   channel3Level = blue;
-  if (EEPROM24C32.checkPresence())
+
+  calculate();
+  presentGlobalVariableToControler(false);
+
+  if (flashMemory)
   {
     setChannelValue(1, channel1Level);
     setChannelValue(2, channel2Level);
     setChannelValue(3, channel3Level);
   }
-  calculate();
-  presentGlobalVariableToControler(false);
 }
 #endif
 

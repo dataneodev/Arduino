@@ -60,10 +60,11 @@ AltSoftSerial _dev;
 
 
 // Enable RS485 transport layer
-#define MY_RS485
-#define MY_DEBUG
-#define MY_NODE_ID 24
+
+//#define MY_DEBUG
+//#define MY_NODE_ID 24
 // Define this to enables DE-pin management on defined pin
+#define MY_RS485
 #define MY_RS485_DE_PIN D3 // DE
 // Set RS485 baud rate to use
 #define MY_RS485_BAUD_RATE 9600
@@ -81,7 +82,9 @@ SoftwareSerial swESP(D4, D2); //RX - RO, TX - DI
 
 void before() //MySensors
 {
-
+  WiFi.mode(WIFI_OFF); 
+  WiFi.forceSleepBegin(); //15mA
+  Serial.begin(115200);
 }
 
 void receive(const MyMessage &message)
@@ -91,11 +94,7 @@ void receive(const MyMessage &message)
 
 void setup() 
 {
-  WiFi.mode(WIFI_OFF); 
-  WiFi.forceSleepBegin(); //15mA
-  Serial.begin(115200);
-  
-  swESP.begin(9600);
+
   
 }
 

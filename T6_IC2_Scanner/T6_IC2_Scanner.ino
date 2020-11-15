@@ -5,7 +5,7 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
   Serial.println("\I2C scanner ready!");
-  Wire.begin();
+  Wire.begin(1, D0);
 }
 
 void loop() {
