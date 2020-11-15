@@ -142,15 +142,10 @@ SoftwareSerial swESP(D4, D2);   //RX - RO, TX - DI
 #include <ESP8266WiFi.h>
 #include <24C32.h>
 
-extern "C"
-{
-#include "pwm.h"
-#include "user_interface.h"
-}
-
 ///// PWM
 // Period of PWM frequency -> default of SDK: 5000 -> * 200ns ^= 1 kHz
 
+//#define PWM_USE_NMI 1
 #define PWM_PERIOD 1000 //4kH
 #define PWM_CHANNELS 4
 
@@ -168,6 +163,12 @@ uint32 io_info[PWM_CHANNELS][3] = {
 };
 
 uint32 pwm_duty_init[PWM_CHANNELS];
+
+extern "C"
+{
+#include "pwm.h" //https://github.com/UweHeinritz/ESP8266_new_pwm
+#include "user_interface.h"
+}
 
 /* #region  global variable */
 EE EEPROM24C32;
