@@ -7,13 +7,15 @@
 #include <Adafruit_GFX.h>         // Core graphics library
 #include "Adafruit_EPD.h"         // Hardware-specific library for EPD
 #include <Adafruit_SPIFlash.h>    // SPI / QSPI flash library
-#include <Adafruit_ImageReader.h> // Image-reading functions
+#include <Adafruit_ImageReader_EPD.h> // Image-reading functions
 
 #define EPD_CS      0
 #define EPD_DC      1
 #define SRAM_CS     -1
 #define EPD_RESET   PIN_A3
 #define EPD_BUSY    -1
+
+Adafruit_IL0373      display(152, 152, EPD_DC, EPD_RESET, EPD_CS, SRAM_CS, EPD_BUSY);
 
 // SPI or QSPI flash filesystem (i.e. CIRCUITPY drive)
 #if defined(__SAMD51__) || defined(NRF52840_XXAA)
@@ -27,24 +29,15 @@
   #endif
 #endif
 
-// TFT SPI interface selection
-#if (SPI_INTERFACES_COUNT == 1)
-  SPIClass* spi = &SPI;
-#else
-  SPIClass* spi = &SPI1;
-#endif
+Adafruit_SPIFlash         flash(&flashTransport);
+FatFileSystem             filesys;
+Adafruit_ImageReader_EPD  reader(filesys); // Image-reader, pass in flash filesys
 
-Adafruit_SPIFlash    flash(&flashTransport);
-FatFileSystem        filesys;
-Adafruit_ImageReader reader(filesys); // Image-reader, pass in flash filesys
-
-Adafruit_IL0373      display(152, 152, EPD_DC, EPD_RESET, EPD_CS, SRAM_CS, EPD_BUSY);
-Adafruit_Image       img;        // An image loaded into RAM
+Adafruit_Image_EPD   img;        // An image loaded into RAM
 int32_t              width  = 0, // BMP image dimensions
                      height = 0;
 
 void setup(void) {
-
   ImageReturnCode stat; // Status from image-reading functions
 
   Serial.begin(9600);
@@ -70,18 +63,35 @@ void setup(void) {
 
   Serial.println(F("OK!"));
 
-  // Load full-screen BMP file 'tricolor-blinka.bmp' at position (0,0) (top left).
+  // Load full-screen BMP file 'blinka.bmp' at position (0,0) (top left).
   // Notice the 'reader' object performs this, with 'epd' as an argument.
-  Serial.print(F("Loading tricolor-blinka.bmp to canvas..."));
-  stat = reader.loadBMP("/tricolor-blinka.bmp", img);
+  Serial.print(F("Loading blinka.bmp to canvas..."));
+  stat = reader.drawBMP((char *)"/blinka.bmp", display, 0, 0);
   reader.printStatus(stat); // How'd we do?
+  display.display();
+
+  // Query the dimensions of image 'blinka.bmp' WITHOUT loading to screen:
+  Serial.print(F("Querying blinka.bmp image size..."));
+  stat = reader.bmpDimensions("blinka.bmp", &width, &height);
+  reader.printStatus(stat);   // How'd we do?
+  if(stat == IMAGE_SUCCESS) { // If it worked, print image size...
+    Serial.print(F("Image dimensions: "));
+    Serial.print(width);
+    Serial.write('x');
+    Serial.println(height);
+  }
+
+  delay(30 * 1000); // Pause 30 seconds before continuing because it's eInk
 
   Serial.print(F("Drawing canvas to EPD..."));
   display.clearBuffer();
-  img.draw(display, 0, 0);
-  display.display();
 
-  delay(15 * 1000); // Pause 15 seconds before moving on to loop()
+  // Load small BMP 'blinka.bmp' into a GFX canvas in RAM. This should fail
+  // gracefully on Arduino Uno and other small devices, meaning the image
+  // will not load, but this won't make the program stop or crash, it just
+  // continues on without it. Should work on larger ram boards like M4, etc.
+  stat = reader.loadBMP("/blinka.bmp", img);
+  reader.printStatus(stat); // How'd we do?
 }
 
 void loop() {
@@ -91,6 +101,6 @@ void loop() {
     display.clearBuffer();
     img.draw(display, 0, 0);
     display.display();
-    delay(15 * 1000); // Pause 15 sec.
+    delay(30 * 1000); // Pause 30 sec.
   }
 }

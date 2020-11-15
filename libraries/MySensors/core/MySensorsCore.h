@@ -6,7 +6,7 @@
  * network topology allowing messages to be routed to nodes.
  *
  * Created by Henrik Ekblad <henrik.ekblad@mysensors.org>
- * Copyright (C) 2013-2019 Sensnology AB
+ * Copyright (C) 2013-2020 Sensnology AB
  * Full contributor list: https://github.com/mysensors/MySensors/graphs/contributors
  *
  * Documentation: http://www.mysensors.org
@@ -301,6 +301,12 @@ bool wait(const uint32_t waitingMS, const mysensors_command_t cmd, const uint8_t
  */
 void doYield(void);
 
+/**
+ * Sleep handler will be called right before and right after entering sleep mode.
+ * Applications can define own handler to optimize powering down peripherals before entering sleep.
+ * @param sleep true if entering sleep, false if exiting
+ */
+void sleepHandler(bool sleep);
 
 /**
  * Sleep (PowerDownMode) the MCU and radio. Wake up on timer.

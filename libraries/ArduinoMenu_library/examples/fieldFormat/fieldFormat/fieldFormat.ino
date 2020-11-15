@@ -2,6 +2,7 @@
 
 #include <menu.h>
 #include <menuIO/serialOut.h>
+#include <menuIO/serialIn.h>
 // #include <Streaming.h>
 
 using namespace Menu;
@@ -14,8 +15,8 @@ int test=55;
 template<typename T>
 class leadsField:public menuField<T> {
 public:
-  leadsField(const menuFieldShadow<T>& shadow):menuField<T>(shadow) {}
-  Used printTo(navRoot &root,bool sel,menuOut& out, idx_t idx,idx_t len) {
+  using menuField<T>::menuField;
+  Used printTo(navRoot &root,bool sel,menuOut& out, idx_t idx,idx_t len,idx_t panelNr=0) override {
     menuField<T>::reflex=menuField<T>::target();
     prompt::printTo(root,sel,out,idx,len);
     bool ed=this==root.navFocus;
@@ -38,12 +39,14 @@ MENU(mainMenu,"Main menu",doNothing,noEvent,wrapStyle
 
 #define MAX_DEPTH 1
 
+serialIn serial(Serial);
+
 MENU_OUTPUTS(out,MAX_DEPTH
   ,SERIAL_OUT(Serial)
   ,NONE//must have 2 items at least
 );
 
-NAVROOT(nav,mainMenu,MAX_DEPTH,Serial,out);
+NAVROOT(nav,mainMenu,MAX_DEPTH,serial,out);
 
 void setup() {
   Serial.begin(115200);

@@ -2,7 +2,7 @@
 
 **Generic menu/interactivity system for the arduino framework**
 
-[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://spdx.org/licenses/CC-BY-NC-SA-4.0.html)
+[![License: LGPL-2.1+](https://img.shields.io/badge/License%20LGPL-2.1+-lightgrey.svg)](https://spdx.org/licenses/LGPL-2.1-or-later.html)
 [![Build Status](https://travis-ci.org/neu-rah/ArduinoMenu.svg?branch=master)](https://travis-ci.org/neu-rah/ArduinoMenu)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/ruihfazevedo)
 [![Join Gitter](https://img.shields.io/badge/GITTER-join%20chat-green.svg)](https://gitter.im/ArduinoMenu/Lobby)
@@ -15,6 +15,12 @@ The system is designed as a non blocking polling system, allowing concurrent tas
 Optionally the system can be operated in semi-automated mode, issuing navigation command from user code.
 
 See the [wiki](https://github.com/neu-rah/ArduinoMenu/wiki)
+
+### COVID-19 note
+
+**If you need this menu for any device covid-19 related, be my guest, I grant you free usage even if you going to sell the device**
+
+This menu system has the advantage of being long tested and supporting many interface devices so that makers don't be restricted in hardware.
 
 ## Simple Example
 ```c++
@@ -304,6 +310,8 @@ quadEncoder - Generic encoder using PCINT (builtin)
 Buttons - simple digital keyboard (builtin)
 
 Generic keyboard (no PCINT) - configurable for digital or analog keyboards (builtin)
+
+Analog Joystick
 
 ClickEncoder https://github.com/0xPIT/encoder
 

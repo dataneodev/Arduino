@@ -13,7 +13,7 @@ BME280Manager myBME280Manager = BME280Manager(30); // set scan interval in secon
 void before()
 {
   /* M6_MS_BME280SensorManager */
-  myBME280Manager.addSensor(0x76, 0x70, 7, "Kuchnia"); // M6_MS_BME280SensorManager
+  myBME280Manager.addSensor(0x76, 0x70, 6, "Kuchnia"); // M6_MS_BME280SensorManager
 }
 
 void setup() {}

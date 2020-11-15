@@ -6,7 +6,7 @@
  * network topology allowing messages to be routed to nodes.
  *
  * Created by Henrik Ekblad <henrik.ekblad@mysensors.org>
- * Copyright (C) 2013-2019 Sensnology AB
+ * Copyright (C) 2013-2020 Sensnology AB
  * Full contributor list: https://github.com/mysensors/MySensors/graphs/contributors
  *
  * Documentation: http://www.mysensors.org
@@ -748,7 +748,7 @@ LOCAL bool RFM69_isModeReady(void)
 	uint16_t timeout = 0xFFFF;
 	while (!(RFM69_readReg(RFM69_REG_IRQFLAGS1) & RFM69_IRQFLAGS1_MODEREADY) && timeout--) {
 	};
-	return timeout;
+	return (bool)timeout;
 }
 
 LOCAL void RFM69_encrypt(const char *key)

@@ -65,8 +65,7 @@ private:
   {
     _lastSend = _currentTime;
     sendHeartbeat();
-    if (_alarmBuzzerPin != 0)
-      requestTime();
+    requestTime();
   }
   void BuzzerCheck()
   {

@@ -1,34 +1,20 @@
-void setup() {
-  // put your setup code here, to run once:
-  pinMode(D0, OUTPUT);
-  analogWrite(D0, 0);
+uint8_t LEDpin = D1;
+
+/* By default PWM frequency is 1000Hz and we are using same 
+   for this application hence no need to set */
+uint16_t dutycycle = 0;
+void setup(){
+  Serial.begin(9600);
+  Serial.print("PWM: "); 
+  analogWrite(LEDpin, 0);  /* set initial 50% duty cycle */
+  analogWriteFreq();
+}
+
+void loop(){
+  dutycycle += 1;
   
-  pinMode(D1, OUTPUT);
-  analogWrite(D1, 102);
-
-  pinMode(D2, OUTPUT);
-  analogWrite(D2, 204);
-
-  pinMode(D3, OUTPUT);
-  analogWrite(D3, 306);
-
-  pinMode(D4, OUTPUT);
-  analogWrite(D4, 408);
-
-  pinMode(D5, OUTPUT);
-  analogWrite(D5, 510);
-
-  pinMode(D6, OUTPUT);
-  analogWrite(D6, 612);
-
-  pinMode(D7, OUTPUT);
-  analogWrite(D7, 714);
-
-  pinMode(D8, OUTPUT);
-  analogWrite(D8, 816);
-}
-
-void loop() {
-  // put your main code here, to run repeatedly:
-
-}
+  if(dutycycle > 1023) dutycycle = 0;/* limit dutycycle to 1023 if POT read cross it */
+  
+  analogWrite(LEDpin, dutycycle);
+  delay(30);
+}                                     

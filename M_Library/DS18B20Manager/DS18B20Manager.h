@@ -164,6 +164,9 @@ private:
 
   void initAllSensors()
   {
+    if (if_init)
+      return;
+
     if (DS18B20List.length() == 0)
     {
       if_init = true;

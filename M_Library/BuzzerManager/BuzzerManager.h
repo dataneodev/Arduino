@@ -55,12 +55,17 @@ public:
         }
     }
 
+    bool IsBuzerActive()
+    {
+        return _buzerActive;
+    }
+
 private:
     unsigned short *_actual;
-    unsigned short _m1[3] = {4000, 500, 500}; //{_toneHz, _toneLength, _toneBreak}
+    unsigned short _m1[3] = {1000, 2000, 1500}; //{_toneHz, _toneLength, _toneBreak}
     unsigned short _m2[3] = {4000, 500, 500};
     unsigned short _m3[3] = {4000, 500, 500};
-    
+
     byte _alarmBuzzerPin;
     bool _buzerActive;
     unsigned long _currentTime;

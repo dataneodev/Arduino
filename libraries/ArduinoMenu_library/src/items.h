@@ -52,6 +52,7 @@
         inline styles style() const {return shadow->_style();}
         inline eventMask events() const {return shadow->_events();}
 
+        virtual idx_t sz() const {return 0;}
         inline bool is(systemStyles chk)  const {return (sysStyles()&chk)==chk;}
         inline bool has(systemStyles chk) const {return sysStyles()&chk;}
         inline bool is(styles chk)        const {return (style()&chk)==chk;}
@@ -245,7 +246,7 @@
     class menuNode:public navTarget {
       public:
         inline menuNode(constMEM menuNodeShadow& s):navTarget(s) {}
-        inline menuNode(constText* text,idx_t sz,prompt* constMEM data[],action a=noAction,eventMask e=noEvent,styles style=wrapStyle,systemStyles ss=(systemStyles)(_menuData|_canNav))
+        inline menuNode(const char* text,idx_t sz,prompt* constMEM data[],action a=noAction,eventMask e=noEvent,styles style=wrapStyle,systemStyles ss=(systemStyles)(_menuData|_canNav))
           :navTarget(*new menuNodeShadow(text,sz,data,a,e,style,ss)) {}
         #ifdef MENU_FMT_WRAPS
           virtual classes type() const;
