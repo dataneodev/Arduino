@@ -167,8 +167,6 @@ uint8_t deviceLightLevel = 50; // 0 -100
 #define DEFAULT_CH4 0
 #endif
 
-#define REVER_MESSAGE_TIME 1000
-
 uint8_t channel1Level = 255; // 0-255
 uint8_t channel2Level = DEFAULT_CH2;
 uint8_t channel3Level = DEFAULT_CH3;
@@ -177,8 +175,6 @@ uint8_t channel4Level = DEFAULT_CH4;
 //unsigned long lastMessageRevice;
 bool flashMemory = false;
 bool statusChanged = false;
-bool levelChanged = false;
-bool channelChanged = false;
 /* #endregion */
 
 /* #region  basic function */
@@ -193,14 +189,13 @@ void before()
 
 void setup()
 {
-  // put your setup code here, to run once:
+  presentGlobalVariableToControler(true);
 }
 
 void presentation() //MySensors
 {
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
   presentToControler();
-  presentGlobalVariableToControler(true);
 }
 
 void loop() {}
@@ -293,7 +288,7 @@ void inicjalizePins()
   pinMode(PWM_4, OUTPUT);
   analogWrite(PWM_4, 0);
 
-  analogWriteFreq(10000);
+  analogWriteFreq(4096);
 
   digitalWrite(RELAY_PIN, LOW);
   pinMode(RELAY_PIN, OUTPUT);
@@ -406,7 +401,7 @@ void presentToControler()
 
 void presentGlobalVariableToControler(bool forceSend)
 {
-  // if (forceSend || statusChanged)
+  if (forceSend || statusChanged)
   {
     mMessage.setSensor(DIMMER_ID);
     mMessage.setType(V_STATUS);
@@ -414,12 +409,8 @@ void presentGlobalVariableToControler(bool forceSend)
     statusChanged = false;
   }
 
-  //  if (forceSend || levelChanged)
-  {
-    mMessage.setType(V_PERCENTAGE);
-    send(mMessage.set(deviceLightLevel));
-    levelChanged = false;
-  }
+  mMessage.setType(V_PERCENTAGE);
+  send(mMessage.set(deviceLightLevel));
 
 #if defined(RGBW_MODE)
 #if defined(MY_DEBUG)
@@ -437,41 +428,33 @@ void presentGlobalVariableToControler(bool forceSend)
   Serial.println(channel1Level);
 #endif
 
-  // if (forceSend || channelChanged)
-  {
-    mMessage.setSensor(RGBW_ID);
-    mMessage.setType(V_RGBW);
+  mMessage.setSensor(RGBW_ID);
+  mMessage.setType(V_RGBW);
 
-    char str[8];
-    sprintf(&str[0], "%02x", channel2Level);
-    sprintf(&str[2], "%02x", channel3Level);
-    sprintf(&str[4], "%02x", channel4Level);
-    sprintf(&str[6], "%02x", channel1Level);
-    send(mMessage.set(str));
-    channelChanged = false;
-  }
+  char str[8];
+  sprintf(&str[0], "%02x", channel2Level);
+  sprintf(&str[2], "%02x", channel3Level);
+  sprintf(&str[4], "%02x", channel4Level);
+  sprintf(&str[6], "%02x", channel1Level);
+  send(mMessage.set(str));
 #endif
 
 #if defined(RGB_MODE)
-  // if (forceSend || channelChanged)
-  {
-    mMessage.setSensor(RGBW_ID);
-    mMessage.setType(V_RGB);
+  mMessage.setSensor(RGBW_ID);
+  mMessage.setType(V_RGB);
 
-    char str[6];
-    sprintf(&str[0], "%02x", channel1Level);
-    sprintf(&str[2], "%02x", channel2Level);
-    sprintf(&str[4], "%02x", channel3Level);
-    send(mMessage.set(str));
-    channelChanged = false;
-  }
+  char str[6];
+  sprintf(&str[0], "%02x", channel1Level);
+  sprintf(&str[2], "%02x", channel2Level);
+  sprintf(&str[4], "%02x", channel3Level);
+  send(mMessage.set(str));
 #endif
 }
 /* #endregion */
 
 void setDeviceEnabledFromControler(bool deviceEnbledToSet)
 {
-  statusChanged = deviceEabled != deviceEnbledToSet;
+  statusChanged = statusChanged || deviceEabled != deviceEnbledToSet;
   deviceEabled = deviceEnbledToSet;
 
   if (flashMemory)
@@ -491,7 +474,6 @@ void setDeviceEnabledFromControler(bool deviceEnbledToSet)
 
 void setLightLevelFromControler(uint8_t lightLevel)
 {
-  levelChanged = deviceLightLevel != lightLevel;
   deviceLightLevel = lightLevel; // 0 -100
 
   if (flashMemory)
@@ -518,11 +500,6 @@ void setLightLevelFromControler(uint8_t lightLevel)
 #if defined(RGBW_MODE)
 void setRGBWvalueFromControler(uint8_t red, uint8_t green, uint8_t blue, uint8_t white)
 {
-  channelChanged = channel1Level != white ||
-                   channel2Level != red ||
-                   channel3Level != green ||
-                   channel4Level != blue;
-
   channel1Level = white;
   channel2Level = red;
   channel3Level = green;
@@ -544,10 +521,6 @@ void setRGBWvalueFromControler(uint8_t red, uint8_t green, uint8_t blue, uint8_t
 #if defined(RGB_MODE)
 void setRGBValueFromControler(uint8_t red, uint8_t green, uint8_t blue)
 {
-  channelChanged = channel1Level != red ||
-                   channel2Level != green ||
-                   channel3Level != blue;
-
   channel1Level = red;
   channel2Level = green;
   channel3Level = blue;
