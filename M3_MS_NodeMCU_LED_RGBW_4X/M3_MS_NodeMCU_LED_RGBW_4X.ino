@@ -98,7 +98,7 @@ AltSoftSerial _dev;
 #define MY_DISABLED_SERIAL
 #define MY_PARENT_NODE_ID 0
 #define MY_PARENT_NODE_IS_STATIC
-#define MY_TRANSPORT_WAIT_READY_MS 60000
+//#define MY_TRANSPORT_WAIT_READY_MS 10000
 #define MY_TRANSPORT_SANITY_CHECK
 #define MY_TRANSPORT_SANITY_CHECK_INTERVAL_MS 600000
 //#define MY_GATEWAY_SERIAL
@@ -112,17 +112,17 @@ SoftwareSerial swESP(D4, D2);   //RX - RO, TX - DI
 #define MY_RS485_ESP swESP
 
 //realy
-#define RELAY_PIN 3
+#define RELAY_PIN D8
 
 //24C32
 #define SCL_PIN D5
-#define SDA_PIN 1
+#define SDA_PIN D7
 
 //pwm
 #define PWM_1 D1
 #define PWM_2 D6
-#define PWM_3 D7
-#define PWM_4 D8
+#define PWM_3 3
+#define PWM_4 1
 
 #if defined(RGBW_MODE)
 #define SKETCH_NAME "RGBW_LED"
