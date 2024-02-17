@@ -71,12 +71,12 @@ AltSoftSerial _dev;
 
 #include <SoftwareSerial.h>
 
-//SoftwareSerial swESP(D5, D7); //RX - RO, TX - DI
-//#define MY_RS485_ESP swESP
+SoftwareSerial swESP(D5, D7); //RX - RO, TX - DI
+#define MY_RS485_ESP swESP
 
 #define MY_GATEWAY_SERIAL
 
-//#include <MySensors.h>
+#include <MySensors.h>
 #include <ESP8266WiFi.h>
 
 
@@ -87,10 +87,10 @@ void before() //MySensors
   Serial.begin(115200);
 }
 
-//void receive(const MyMessage &message)
-//{
+void receive(const MyMessage &message)
+{
  
-//}
+}
 
 void setup() 
 {

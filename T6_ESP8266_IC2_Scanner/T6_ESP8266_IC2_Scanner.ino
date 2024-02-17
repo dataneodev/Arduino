@@ -17,7 +17,7 @@ void setup() {
   Serial.println ("I2C scanner. Scanning ...");
   byte count = 0;
   
-  Wire.begin(D1, D2);
+  Wire.begin(D3, D4);
   for (byte i = 8; i < 120; i++)
   {
     Wire.beginTransmission (i);
