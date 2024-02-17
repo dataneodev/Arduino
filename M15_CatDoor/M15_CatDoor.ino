@@ -1,6 +1,21 @@
 #define SOFTWARE_VERION "1.0"
 #define SKETCH_NAME "M15_Cat_Door"
 
+#pragma region INSTALATION
+#include "esp_random.h" //brakuje w plikach mysensors dla esp32, sprawdzicz y mozna usunąć w nowych wersjach
+/*
+
+dla ESP32-C6 zakomentować w pliku:
+C:\Users\Smith\Documents\Arduino\libraries\MySensors\hal\architecture\ESP32\MyHwESP32.h
+
+static __inline__ void __psRestore(const uint32_t *__s)
+{
+	//XTOS_RESTORE_INTLEVEL(*__s);
+}
+
+*/
+#pragma endregion INSTALATION
+
 #pragma region CONFIGURATION
 /*
 przykład
@@ -8,20 +23,23 @@ przykład
 #define MOTION_1_DELAY 5000
 #define MOTION_1_DELAY_WAIT 4000
 
-pierwsze wykrycie ruchu, kolejne wykrycia, do uruchmienia bramki musi wystapic przynajmniej 1 wykrycie ruchu w okresie od 5 sek do 9 sek.
 */
-#define BUZZER_ENABLED
-#define MOTION_1_DELAY 5 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a wykryciem uruchamiajacym otwarcie dla sensoru 1,
-#define MOTION_1_DELAY_WAIT 4 * 1000  // czas oczekiwania na 2 wykrycie ruchu  dla sensoru 1,
+#define ALARM_ENABLED // w przypadku błędow uruchamiać alarm dzwiękowy
+
+#define MOTION_1_DELAY 5 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a kolejnym wykryciem uruchamiajacym otwarcie drzwi dla sensoru 1,
+#define MOTION_1_DELAY_WAIT 4 * 1000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 1,
 
 #define MOTION_2_DELAY 5 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a wykryciem uruchamiajacym otwarcie dla sensoru 2,
-#define MOTION_2_DELAY_WAIT 5 * 1000  // czas oczekiwania na 2 wykrycie ruchu  dla sensoru 2,
+#define MOTION_2_DELAY_WAIT 5 * 1000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 2,
 
 #define OPENING_DOOR_TIME 11 * 1000                // czas otwierania drzwi
 #define OPEN_DOOR_TIME 8 * 1000                    // czas oczekiwania na zamknięcie drzwi od ostatnieo wykrycia ruchu
-#define TO_LONG_OPEN_DOOR_TIME 30 * 1000           // czas zbyt długiego otwarcia drzwi aby włączyc alarm
-#define TIME_SLEEP_AFTER_LAST_DETECTION 60 * 1000  // czas przejscia w deep sleep od ostatniego wykrycia ruchu
+#define TO_LONG_OPEN_DOOR_TIME 60 * 1000           // czas zbyt długiego otwarcia drzwi aby włączyc alarm
+#define TIME_SLEEP_AFTER_LAST_DETECTION 90 * 1000  // czas przejscia w deep sleep od ostatniego wykrycia ruchu
 
+#define MY_NODE_ID 90 //id wezła dla my sensors
+
+#define MY_DEBUG //for tests
 #pragma endregion CONFIGURATION
 
 #pragma region BOARD_PIN_CONFIGURATION
@@ -40,28 +58,23 @@ pierwsze wykrycie ruchu, kolejne wykrycia, do uruchmienia bramki musi wystapic p
 
 #define SDA_PIN 6
 #define SCL_PIN 7
+
+#define RX_PIN 21
+#define TX_PIN 23
 #pragma endregion BOARD_PIN_CONFIGURATION
 
 //RS485
-//#define MY_RS485                // Enable RS485 transport layer
-//#define MY_RS485_DE_PIN 22      // Define this to enables DE-pin management on defined pin
-//#define MY_RS485_BAUD_RATE 9600 // Set RS485 baud rate to use
-//#include <SoftwareSerial.h>     //EspSoftwareSerial - dla płytki esp8266
-//SoftwareSerial swESP(21, 23);   //RX - RO, TX - DI
-//#define MY_RS485_ESP swESP
+#define MY_DISABLED_SERIAL //manualu configure Serial1
+#define MY_RS485                // Enable RS485 transport layer
+#define MY_RS485_DE_PIN 22      // Define this to enables DE-pin management on defined pin
+#define MY_RS485_BAUD_RATE 9600 // Set RS485 baud rate to use
+#define MY_RS485_HWSERIAL Serial1 //
 
-//my sensors
 //#define MY_TRANSPORT_DONT_CARE_MODE //requires setting MY_PARENT_NODE_ID
 #define MY_TRANSPORT_UPLINK_CHECK_DISABLED
 #define MY_TRANSPORT_WAIT_READY_MS 1
-#define MY_NODE_ID 60
-
-//#define MY_DISABLED_SERIAL
 #define MY_PARENT_NODE_ID 0
 #define MY_PARENT_NODE_IS_STATIC
-
-#define MY_GATEWAY_SERIAL
-#define MY_DEBUG
 
 #pragma region TYPES
 class DoorManager {
@@ -217,6 +230,7 @@ private:
 #pragma endregion TYPES
 
 #pragma region GLOBAL_VARIABLE
+#include "driver/gpio.h"
 #include <Wire.h>
 #include <MySensors.h>
 #include <StateMachine.h>
@@ -224,7 +238,7 @@ private:
 #include <Blinkenlight.h>
 
 EE EEPROM24C32;
-//MyMessage mMessage;
+MyMessage mMessage;
 
 DoorManager Door(OPEN_DOOR_PIN, CLOSE_DOOR_PIN);
 StateTime T;
@@ -289,18 +303,19 @@ State* S_SLEEP = SM.addState(&s_SLEEP);
 void s_SLEEP() {
   if (SM.executeOnce) {
     Serial.println("S_SLEEP");
+    Serial.flush();
+
     T.stateStart();
 
     Door.end();
 
     Out1.off();
     Out2.off();
-    Out3.off();
-
-    Serial.flush();
+    Out3.off();    
 
     digitalWrite(POWER_PIN, LOW);
 
+    delay(100);
     
     esp_light_sleep_start();
 
@@ -588,15 +603,19 @@ void setDefaultState() {
 }
 
 void before() {
+  Serial.begin(115200);  
+  Serial1.begin(MY_RS485_BAUD_RATE, SERIAL_8N1, RX_PIN, TX_PIN);
+  Serial.println(SKETCH_NAME);
+
   inicjalizePins();
 }
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(115200);  
+  Serial1.begin(MY_RS485_BAUD_RATE, SERIAL_8N1, RX_PIN, TX_PIN);
   Serial.println(SKETCH_NAME);
-
+    
   WiFi.mode( WIFI_MODE_NULL );
-  SerialBT.begin(SKETCH_NAME);
 
   inicjalizePins();
   inicjalizeI2C();
