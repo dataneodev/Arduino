@@ -2,7 +2,7 @@
 #define SKETCH_NAME "M15_Cat_Door"
 
 #pragma region INSTALATION
-#include "esp_random.h" //brakuje w plikach mysensors dla esp32, sprawdzicz y mozna usunąć w nowych wersjach
+#include "esp_random.h"  //brakuje w plikach mysensors dla esp32, sprawdzicz y mozna usunąć w nowych wersjach
 /*
 
 dla ESP32-C6 zakomentować w pliku:
@@ -17,14 +17,15 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #pragma endregion INSTALATION
 
 #pragma region CONFIGURATION
-/*
-przykład
+#include "DeviceDef.h"
 
-#define MOTION_1_DELAY 5000
-#define MOTION_1_DELAY_WAIT 4000
+DeviceDef devices[] = {
+  DeviceDef(1, 3, 6, 2, 6, "Test")
+};
 
-*/
-#define ALARM_ENABLED // w przypadku błędow uruchamiać alarm dzwiękowy
+
+#define ALARM_ENABLED  // w przypadku błędow uruchamiać alarm dzwiękowy
+#define BLE_AUTH       // autoryzacja ble wymagana aby otworzyć drzwi
 
 #define MOTION_1_DELAY 5 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a kolejnym wykryciem uruchamiajacym otwarcie drzwi dla sensoru 1,
 #define MOTION_1_DELAY_WAIT 4 * 1000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 1,
@@ -37,9 +38,9 @@ przykład
 #define TO_LONG_OPEN_DOOR_TIME 60 * 1000           // czas zbyt długiego otwarcia drzwi aby włączyc alarm
 #define TIME_SLEEP_AFTER_LAST_DETECTION 90 * 1000  // czas przejscia w deep sleep od ostatniego wykrycia ruchu
 
-#define MY_NODE_ID 90 //id wezła dla my sensors
+#define MY_NODE_ID 90  //id wezła dla my sensors
 
-#define MY_DEBUG //for tests
+
 #pragma endregion CONFIGURATION
 
 #pragma region BOARD_PIN_CONFIGURATION
@@ -63,20 +64,32 @@ przykład
 #define TX_PIN 23
 #pragma endregion BOARD_PIN_CONFIGURATION
 
+#pragma region MY_SENSORS_CONFIGURATION
 //RS485
-#define MY_DISABLED_SERIAL //manualu configure Serial1
-#define MY_RS485                // Enable RS485 transport layer
-#define MY_RS485_DE_PIN 22      // Define this to enables DE-pin management on defined pin
-#define MY_RS485_BAUD_RATE 9600 // Set RS485 baud rate to use
-#define MY_RS485_HWSERIAL Serial1 //
-
-//#define MY_TRANSPORT_DONT_CARE_MODE //requires setting MY_PARENT_NODE_ID
-#define MY_TRANSPORT_UPLINK_CHECK_DISABLED
+#define MY_DISABLED_SERIAL         //manual configure Serial1
+#define MY_RS485                   // Enable RS485 transport layer
+#define MY_RS485_DE_PIN 22         // Define this to enables DE-pin management on defined pin
+#define MY_RS485_BAUD_RATE 9600    // Set RS485 baud rate to use
+#define MY_RS485_HWSERIAL Serial1  //
 #define MY_TRANSPORT_WAIT_READY_MS 1
-#define MY_PARENT_NODE_ID 0
-#define MY_PARENT_NODE_IS_STATIC
+
+#define MY_DEBUG  //for tests
+#pragma endregion MY_SENSORS_CONFIGURATION
 
 #pragma region TYPES
+class StateChangeManager {
+private:
+  bool _states[10];
+
+public:
+  bool isStateChanged(bool state, int index) {
+    bool changed = _states[index] != state;
+    _states[index] = state;
+
+    return changed;
+  }
+};
+
 class DoorManager {
 private:
   byte _doorOpenPin;
@@ -237,6 +250,7 @@ private:
 #include "24C32.h"
 #include <Blinkenlight.h>
 
+StateChangeManager SCM;
 EE EEPROM24C32;
 MyMessage mMessage;
 
@@ -252,6 +266,55 @@ Blinkenlight Out3(OUPUT_3_PIN);
 
 #pragma endregion GLOBAL_VARIABLE
 
+#pragma region BLE
+int getClientId() {
+
+  int devicesCount = sizeof(devices) / sizeof(*devices);
+  if (devicesCount == 0) {
+    return 1;
+  }
+
+
+
+
+  // get ble devices
+  return 1;
+}
+
+bool canClientOpenDoor() {
+#ifndef BLE_AUTH
+  return true;
+#endif
+
+  int devicesCount = sizeof(devices) / sizeof(*devices);
+  if (devicesCount == 0) {
+    return true;
+  }
+
+
+
+  return true;
+}
+#pragma endregion BLE
+
+#pragma region MY_SENSORS
+int lastOpenClientId = 0;
+
+void sentDoorOpen() {
+  lastOpenClientId = getClientId();
+
+  mMessage.setSensor(lastOpenClientId);
+  send(mMessage.set("1"));
+}
+
+void sentDoorClose() {
+  mMessage.setSensor(lastOpenClientId);
+  send(mMessage.set("0"));
+}
+
+#pragma endregion MY_SENSORS
+
+
 #pragma region STATES
 
 StateMachine SM = StateMachine();
@@ -259,7 +322,9 @@ StateMachine SM = StateMachine();
 State* S_MOTION_DETECTION = SM.addState(&s_MOTION_DETECTION);
 void s_MOTION_DETECTION() {
   if (SM.executeOnce) {
+#if defined(MY_DEBUG)
     Serial.println("S_MOTION_DETECTION");
+#endif
 
     T.stateStart();
 
@@ -268,6 +333,7 @@ void s_MOTION_DETECTION() {
     M3.start();
 
     Door.end();
+
     Out1.off();
     Out2.off();
     Out3.off();
@@ -275,8 +341,15 @@ void s_MOTION_DETECTION() {
   }
 
   M3.ping();
+  bool m1Ping = M1.ping() == ONE_MOTION_DETECTED;
+  bool m2Ping = M2.ping() == ONE_MOTION_DETECTED;
+  bool oneMotionDetected = m1Ping || m2Ping;
 
-  if (M1.ping() == ONE_MOTION_DETECTED || M2.ping() == ONE_MOTION_DETECTED) {
+  if (!SCM.isStateChanged(oneMotionDetected, 0)) {
+    return;
+  }
+
+  if (oneMotionDetected) {
     Out1.on();
     Out2.off();
     Out3.off();
@@ -290,7 +363,9 @@ void s_MOTION_DETECTION() {
 State* S_WAKE_UP = SM.addState(&s_WAKE_UP);
 void s_WAKE_UP() {
   if (SM.executeOnce) {
+#if defined(MY_DEBUG)
     Serial.println("S_WAKE_UP");
+#endif
 
     M1.weakUp();
     M2.weakUp();
@@ -302,7 +377,11 @@ void s_WAKE_UP() {
 State* S_SLEEP = SM.addState(&s_SLEEP);
 void s_SLEEP() {
   if (SM.executeOnce) {
+#if defined(MY_DEBUG)
     Serial.println("S_SLEEP");
+#endif
+
+
     Serial.flush();
 
     T.stateStart();
@@ -311,12 +390,12 @@ void s_SLEEP() {
 
     Out1.off();
     Out2.off();
-    Out3.off();    
+    Out3.off();
 
     digitalWrite(POWER_PIN, LOW);
 
     delay(100);
-    
+
     esp_light_sleep_start();
 
     ///sleep
@@ -328,7 +407,11 @@ void s_SLEEP() {
 State* S_FATAL_ERROR = SM.addState(&s_FATAL_ERROR);
 void s_FATAL_ERROR() {
   if (SM.executeOnce) {
+#if defined(MY_DEBUG)
     Serial.println("S_FATAL_ERROR");
+#endif
+
+
     T.stateStart();
 
     Door.end();
@@ -342,7 +425,11 @@ void s_FATAL_ERROR() {
 State* S_MOTION_DETECTED = SM.addState(&s_MOTION_DETECTED);
 void s_MOTION_DETECTED() {
   if (SM.executeOnce) {
+#if defined(MY_DEBUG)
     Serial.println("S_MOTION_DETECTED");
+#endif
+
+
     T.stateStart();
 
     Out1.on();
@@ -354,7 +441,11 @@ void s_MOTION_DETECTED() {
 State* S_MOTION_DETECTED_NO_AUTH = SM.addState(&s_MOTION_DETECTED_NO_AUTH);
 void s_MOTION_DETECTED_NO_AUTH() {
   if (SM.executeOnce) {
+#if defined(MY_DEBUG)
     Serial.println("S_MOTION_DETECTED_NO_AUTH");
+#endif
+
+
     T.stateStart();
 
     Out1.off();
@@ -366,7 +457,9 @@ void s_MOTION_DETECTED_NO_AUTH() {
 State* S_OPENING_DOOR = SM.addState(&s_OPENING_DOOR);
 void s_OPENING_DOOR() {
   if (SM.executeOnce) {
+#if defined(MY_DEBUG)
     Serial.println("S_OPENING_DOOR");
+#endif
     T.stateStart();
 
     Door.open();
@@ -376,13 +469,18 @@ void s_OPENING_DOOR() {
     Out3.off();
 
     eeSetDoorOpen(true);
+    sentDoorOpen();
   }
 }
 
 State* S_DOOR_OPEN = SM.addState(&s_DOOR_OPEN);
 void s_DOOR_OPEN() {
   if (SM.executeOnce) {
+#if defined(MY_DEBUG)
     Serial.println("S_DOOR_OPEN");
+#endif
+
+
     T.stateStart();
 
     Door.end();
@@ -396,7 +494,11 @@ void s_DOOR_OPEN() {
 State* S_DOOR_TO_LONG_OPEN = SM.addState(&s_DOOR_TO_LONG_OPEN);
 void s_DOOR_TO_LONG_OPEN() {
   if (SM.executeOnce) {
+#if defined(MY_DEBUG)
     Serial.println("S_DOOR_TO_LONG_OPEN");
+#endif
+
+
     T.stateStart();
 
     Out1.blink();
@@ -408,7 +510,11 @@ void s_DOOR_TO_LONG_OPEN() {
 State* S_CLOSING_DOOR = SM.addState(&s_CLOSING_DOOR);
 void s_CLOSING_DOOR() {
   if (SM.executeOnce) {
+#if defined(MY_DEBUG)
     Serial.println("S_CLOSING_DOOR");
+#endif
+
+
     T.stateStart();
 
     Door.close();
@@ -416,13 +522,19 @@ void s_CLOSING_DOOR() {
     Out1.blink();
     Out2.off();
     Out3.off();
+
+    sentDoorClose();
   }
 }
 
 State* S_DOOR_CLOSED = SM.addState(&s_DOOR_CLOSED);
 void s_DOOR_CLOSED() {
   if (SM.executeOnce) {
+#if defined(MY_DEBUG)
     Serial.println("S_DOOR_CLOSED");
+#endif
+
+
     T.stateStart();
 
     Door.end();
@@ -437,7 +549,11 @@ void s_DOOR_CLOSED() {
 State* S_CLOSING_DOOR_INTERRUPTED = SM.addState(&s_CLOSING_DOOR_INTERRUPTED);
 void s_CLOSING_DOOR_INTERRUPTED() {
   if (SM.executeOnce) {
+#if defined(MY_DEBUG)
     Serial.println("S_CLOSING_DOOR_INTERRUPTED");
+#endif
+
+
     T.stateStart();
 
     Door.end();
@@ -588,39 +704,47 @@ uint getDoorOpenCount() {
 #pragma region MAIN
 void setDefaultState() {
 
-  // if (!EEPROM24C32.checkPresence()) {
-  //   Serial.println("EEPROM24C32 check presence faild");
-  //   SM.transitionTo(S_FATAL_ERROR);
-  //   return;
-  // }
+  if (!EEPROM24C32.checkPresence()) {
+#if defined(MY_DEBUG)
+    Serial.println("EEPROM24C32 check presence faild");
+#endif
 
-  // if (eeIsDoorOpen()) {
-  //   SM.transitionTo(S_DOOR_OPEN);
-  //   return;
-  // }
+    SM.transitionTo(S_FATAL_ERROR);
+    return;
+  }
+
+  if (eeIsDoorOpen()) {
+    SM.transitionTo(S_DOOR_OPEN);
+    return;
+  }
 
   SM.transitionTo(S_MOTION_DETECTION);
 }
 
 void before() {
-  Serial.begin(115200);  
-  Serial1.begin(MY_RS485_BAUD_RATE, SERIAL_8N1, RX_PIN, TX_PIN);
-  Serial.println(SKETCH_NAME);
-
-  inicjalizePins();
 }
 
-void setup() {
-  Serial.begin(115200);  
-  Serial1.begin(MY_RS485_BAUD_RATE, SERIAL_8N1, RX_PIN, TX_PIN);
+void preHwInit() {
+
+#if defined(MY_DEBUG)
+  Serial.begin(115200);
   Serial.println(SKETCH_NAME);
-    
-  WiFi.mode( WIFI_MODE_NULL );
+#endif
+  Serial1.begin(MY_RS485_BAUD_RATE, SERIAL_8N1, RX_PIN, TX_PIN);
+
+  WiFi.mode(WIFI_MODE_NULL);
 
   inicjalizePins();
   inicjalizeI2C();
+}
 
-  delay(10000);
+void setup() {
+#if defined(MY_DEBUG)
+  Serial.begin(115200);
+  Serial.println(SKETCH_NAME);
+#endif
+
+  wait(10000);
 
   defineTransition();
   setDefaultState();
@@ -628,8 +752,18 @@ void setup() {
 
 void presentation()  //MySensors
 {
-  // sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
-  // present(1, S_BINARY, "Door");
+  sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
+
+  int devicesCount = sizeof(devices) / sizeof(*devices);
+  if (devicesCount > 0) {
+
+    for (int i = 0; i < devicesCount; i++) {
+      present(devices[i].Id, S_DOOR, devices[i].Name);
+    }
+
+  } else {
+    present(1, S_DOOR, SKETCH_NAME);
+  }
 }
 
 void loop() {
@@ -642,7 +776,7 @@ void loop() {
   M2.ping();
   M3.ping();
 
-  delay(1);
+  wait(1);
 }
 #pragma endregion MAIN
 
