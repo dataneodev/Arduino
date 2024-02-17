@@ -88,19 +88,20 @@ AltSoftSerial _dev;
 //#define RGB_MODE
 //#define SINGLE_LED_MODE
 
-#define MY_NODE_ID 30 // id węzła my sensors - każdy sterownik musi miec inny numer
+#define MY_NODE_ID 32 // id węzła my sensors - każdy sterownik musi miec inny numer
 #define DIMMER_ID 1
 #define RGBW_ID 1
 
 /* #endregion */
 
 /* #region  const configuration */
+#define MY_RAM_ROUTING_TABLE_FEATURE
 #define MY_DISABLED_SERIAL
-#define MY_PARENT_NODE_ID 0
-#define MY_PARENT_NODE_IS_STATIC
+#define MY_PARENT_NODE_ID 0 //direct connect to gateway
+//#define MY_PARENT_NODE_IS_STATIC //direct connect to gateway
 //#define MY_TRANSPORT_WAIT_READY_MS 10000
 #define MY_TRANSPORT_SANITY_CHECK
-#define MY_TRANSPORT_SANITY_CHECK_INTERVAL_MS 600000
+#define MY_TRANSPORT_SANITY_CHECK_INTERVAL_MS 15 * 60 * 1000
 //#define MY_GATEWAY_SERIAL
 //#define MY_DEBUG
 //RS485
@@ -227,6 +228,7 @@ void presentation() //MySensors
 {
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
   presentToControler();
+  presentGlobalVariableToControler(true);
 }
 
 void loop() {}
@@ -587,20 +589,33 @@ void calculate()
 {
   if (deviceEabled)
   {
-    pwm_set_duty(getChannel1Duty(), 0);
-    pwm_set_duty(getChannel2Duty(), 1);
-    pwm_set_duty(getChannel3Duty(), 2);
-    pwm_set_duty(getChannel4Duty(), 3);
+    unsigned int duty_1 = getChannel1Duty();
+    unsigned int duty_2 = getChannel2Duty();
+    unsigned int duty_3 = getChannel3Duty();
+    unsigned int duty_4 = getChannel4Duty();
+
+    pwm_set_duty(duty_1, 0);
+    pwm_set_duty(duty_2, 1);
+    pwm_set_duty(duty_3, 2);
+    pwm_set_duty(duty_4, 3);
     pwm_start();
+
+    setRelayStatus(duty_1 > 0 || duty_2 > 0 || duty_3 > 0 || duty_4 > 0);
   }
   else
   {
+    setRelayStatus(false);
     pwm_set_duty(0, 0);
     pwm_set_duty(0, 1);
     pwm_set_duty(0, 2);
     pwm_set_duty(0, 3);
     pwm_start();
   }
+}
+
+void setRelayStatus(bool enabled)
+{
+  digitalWrite(RELAY_PIN, enabled ? HIGH : LOW);
 }
 
 unsigned int getChannel1Duty()

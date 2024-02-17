@@ -19,8 +19,8 @@ void loop() {
     Serial.begin(115200);
     delay(2000);
     Serial.println("TCA9548A I2C scanner ready!");
-    Wire.begin(D1, D2);
-    
+    Wire.begin(D3, D4);
+   //Wire.setClock(10000L);
     initLoop = true;
   }
   
@@ -32,7 +32,8 @@ void loop() {
         if (addr == TCAADDR) continue;
       
         uint8_t data;
-        if (! twi_writeTo(addr, &data, 0, 1)) {
+        uint8_t status = twi_writeTo(addr, &data, 0, 1);
+        if (status == 0) {
            Serial.print("Found I2C 0x");  Serial.println(addr,HEX);
         }
       }

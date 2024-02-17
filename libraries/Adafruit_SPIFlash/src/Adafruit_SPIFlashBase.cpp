@@ -22,6 +22,8 @@
 
 #endif
 
+#if !CONFIG_IDF_TARGET_ESP32S2
+
 /// List of all possible flash devices used by Adafruit boards
 static const SPIFlash_Device_t possible_devices[] = {
     // Main devices used in current Adafruit products
@@ -53,6 +55,21 @@ enum {
       sizeof(possible_devices) / sizeof(possible_devices[0])
 };
 
+static SPIFlash_Device_t const *findDevice(SPIFlash_Device_t const *device_list,
+                                           int count,
+                                           uint8_t const (&jedec_ids)[3]) {
+  for (uint8_t i = 0; i < count; i++) {
+    const SPIFlash_Device_t *dev = &device_list[i];
+    if (jedec_ids[0] == dev->manufacturer_id &&
+        jedec_ids[1] == dev->memory_type && // comment to appease format check
+        jedec_ids[2] == dev->capacity) {
+      return dev;
+    }
+  }
+  return NULL;
+}
+#endif
+
 Adafruit_SPIFlashBase::Adafruit_SPIFlashBase() {
   _trans = NULL;
   _flash_dev = NULL;
@@ -68,20 +85,6 @@ Adafruit_SPIFlashBase::Adafruit_SPIFlashBase(
   _ind_active = true;
 }
 
-static SPIFlash_Device_t const *findDevice(SPIFlash_Device_t const *device_list,
-                                           int count,
-                                           uint8_t const (&jedec_ids)[3]) {
-  for (uint8_t i = 0; i < count; i++) {
-    const SPIFlash_Device_t *dev = &device_list[i];
-    if (jedec_ids[0] == dev->manufacturer_id &&
-        jedec_ids[1] == dev->memory_type && // comment to appease format check
-        jedec_ids[2] == dev->capacity) {
-      return dev;
-    }
-  }
-  return NULL;
-}
-
 bool Adafruit_SPIFlashBase::begin(SPIFlash_Device_t const *flash_devs,
                                   size_t count) {
   if (_trans == NULL)
@@ -89,6 +92,15 @@ bool Adafruit_SPIFlashBase::begin(SPIFlash_Device_t const *flash_devs,
 
   _trans->begin();
 
+#if CONFIG_IDF_TARGET_ESP32S2
+  (void)flash_devs;
+  (void)count;
+
+  // For ESP32S2 the spi flash is already detected and configured
+  // We could skip the initial sequence
+  _flash_dev = ((Adafruit_FlashTransport_ESP32 *)_trans)->getFlashDevice();
+
+#else
   //------------- flash detection -------------//
   uint8_t jedec_ids[3];
   _trans->readCommand(SFLASH_CMD_READ_JEDEC_ID, jedec_ids, 3);
@@ -106,7 +118,8 @@ bool Adafruit_SPIFlashBase::begin(SPIFlash_Device_t const *flash_devs,
 
   if (_flash_dev == NULL) {
     Serial.print("Unknown flash device 0x");
-    Serial.println(jedec_ids[0] << 16 | jedec_ids[1] << 8 | jedec_ids[2], HEX);
+    Serial.println(
+        ((uint32_t)jedec_ids[0]) << 16 | jedec_ids[1] << 8 | jedec_ids[2], HEX);
     return false;
   }
 
@@ -132,19 +145,17 @@ bool Adafruit_SPIFlashBase::begin(SPIFlash_Device_t const *flash_devs,
   }
 
   // Speed up to max device frequency, or as high as possible
-  uint32_t const wr_clock_speed = min(
+  uint32_t const wr_speed = min(
       (uint32_t)_flash_dev->max_clock_speed_mhz * 1000000U, (uint32_t)F_CPU);
-  uint32_t rd_clock_speed = wr_clock_speed;
+  uint32_t rd_speed = wr_speed;
 
 #if defined(ARDUINO_ARCH_SAMD) && !defined(__SAMD51__)
-  // Hand-on testing show that SAMD21 M0 can write up to 24 Mhz, but can only
-  // read reliably at 12 Mhz with FRAM
-  if (_flash_dev->is_fram) {
-    rd_clock_speed = min(12000000, rd_clock_speed);
-  }
+  // Hand-on testing show that SAMD21 M0 can write up to 24 Mhz,
+  // but can only read reliably at 12 Mhz
+  rd_speed = min(12000000, rd_speed);
 #endif
 
-  _trans->setClockSpeed(wr_clock_speed, rd_clock_speed);
+  _trans->setClockSpeed(wr_speed, rd_speed);
 
   // Enable Quad Mode if available
   if (_trans->supportQuadMode() && _flash_dev->supports_qspi) {
@@ -175,11 +186,11 @@ bool Adafruit_SPIFlashBase::begin(SPIFlash_Device_t const *flash_devs,
 
   // Addressing byte depends on total size
   uint8_t addr_byte;
-  if (_flash_dev->total_size > 16 * 1024 * 1024) {
+  if (_flash_dev->total_size > 16UL * 1024 * 1024) {
     addr_byte = 4;
     // Enable 4-Byte address mode (This has to be done after the reset above)
     _trans->runCommand(SFLASH_CMD_4_BYTE_ADDR);
-  } else if (_flash_dev->total_size > 64 * 1024) {
+  } else if (_flash_dev->total_size > 64UL * 1024) {
     addr_byte = 3;
   } else {
     addr_byte = 2;
@@ -198,6 +209,7 @@ bool Adafruit_SPIFlashBase::begin(SPIFlash_Device_t const *flash_devs,
 
   writeDisable();
   waitUntilReady();
+#endif
 
   return true;
 }
@@ -221,7 +233,7 @@ uint32_t Adafruit_SPIFlashBase::getJEDECID(void) {
   if (!_flash_dev) {
     return 0xFFFFFF;
   } else {
-    return (_flash_dev->manufacturer_id << 16) |
+    return (((uint32_t)_flash_dev->manufacturer_id) << 16) |
            (_flash_dev->memory_type << 8) | _flash_dev->capacity;
   }
 }
