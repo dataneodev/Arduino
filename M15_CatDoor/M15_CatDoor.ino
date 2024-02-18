@@ -25,6 +25,7 @@ DeviceDef devices[] = {
 
 
 #define ALARM_ENABLED  // w przypadku błędow uruchamiać alarm dzwiękowy
+
 #define BLE_AUTH       // autoryzacja ble wymagana aby otworzyć drzwi
 
 #define MOTION_1_DELAY 5 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a kolejnym wykryciem uruchamiajacym otwarcie drzwi dla sensoru 1,
@@ -40,7 +41,7 @@ DeviceDef devices[] = {
 
 #define MY_NODE_ID 90  //id wezła dla my sensors
 
-
+#define DEBUG_GK  //for tests
 #pragma endregion CONFIGURATION
 
 #pragma region BOARD_PIN_CONFIGURATION
@@ -72,8 +73,6 @@ DeviceDef devices[] = {
 #define MY_RS485_BAUD_RATE 9600    // Set RS485 baud rate to use
 #define MY_RS485_HWSERIAL Serial1  //
 #define MY_TRANSPORT_WAIT_READY_MS 1
-
-#define MY_DEBUG  //for tests
 #pragma endregion MY_SENSORS_CONFIGURATION
 
 #pragma region TYPES
@@ -308,6 +307,10 @@ void sentDoorOpen() {
 }
 
 void sentDoorClose() {
+  if(lastOpenClientId == 0){
+    lastOpenClientId = 1;
+  }
+
   mMessage.setSensor(lastOpenClientId);
   send(mMessage.set("0"));
 }
@@ -322,7 +325,7 @@ StateMachine SM = StateMachine();
 State* S_MOTION_DETECTION = SM.addState(&s_MOTION_DETECTION);
 void s_MOTION_DETECTION() {
   if (SM.executeOnce) {
-#if defined(MY_DEBUG)
+#if defined(DEBUG_GK)
     Serial.println("S_MOTION_DETECTION");
 #endif
 
@@ -363,7 +366,7 @@ void s_MOTION_DETECTION() {
 State* S_WAKE_UP = SM.addState(&s_WAKE_UP);
 void s_WAKE_UP() {
   if (SM.executeOnce) {
-#if defined(MY_DEBUG)
+#if defined(DEBUG_GK)
     Serial.println("S_WAKE_UP");
 #endif
 
@@ -377,7 +380,7 @@ void s_WAKE_UP() {
 State* S_SLEEP = SM.addState(&s_SLEEP);
 void s_SLEEP() {
   if (SM.executeOnce) {
-#if defined(MY_DEBUG)
+#if defined(DEBUG_GK)
     Serial.println("S_SLEEP");
 #endif
 
@@ -407,7 +410,7 @@ void s_SLEEP() {
 State* S_FATAL_ERROR = SM.addState(&s_FATAL_ERROR);
 void s_FATAL_ERROR() {
   if (SM.executeOnce) {
-#if defined(MY_DEBUG)
+#if defined(DEBUG_GK)
     Serial.println("S_FATAL_ERROR");
 #endif
 
@@ -425,7 +428,7 @@ void s_FATAL_ERROR() {
 State* S_MOTION_DETECTED = SM.addState(&s_MOTION_DETECTED);
 void s_MOTION_DETECTED() {
   if (SM.executeOnce) {
-#if defined(MY_DEBUG)
+#if defined(DEBUG_GK)
     Serial.println("S_MOTION_DETECTED");
 #endif
 
@@ -441,7 +444,7 @@ void s_MOTION_DETECTED() {
 State* S_MOTION_DETECTED_NO_AUTH = SM.addState(&s_MOTION_DETECTED_NO_AUTH);
 void s_MOTION_DETECTED_NO_AUTH() {
   if (SM.executeOnce) {
-#if defined(MY_DEBUG)
+#if defined(DEBUG_GK)
     Serial.println("S_MOTION_DETECTED_NO_AUTH");
 #endif
 
@@ -457,7 +460,7 @@ void s_MOTION_DETECTED_NO_AUTH() {
 State* S_OPENING_DOOR = SM.addState(&s_OPENING_DOOR);
 void s_OPENING_DOOR() {
   if (SM.executeOnce) {
-#if defined(MY_DEBUG)
+#if defined(DEBUG_GK)
     Serial.println("S_OPENING_DOOR");
 #endif
     T.stateStart();
@@ -476,7 +479,7 @@ void s_OPENING_DOOR() {
 State* S_DOOR_OPEN = SM.addState(&s_DOOR_OPEN);
 void s_DOOR_OPEN() {
   if (SM.executeOnce) {
-#if defined(MY_DEBUG)
+#if defined(DEBUG_GK)
     Serial.println("S_DOOR_OPEN");
 #endif
 
@@ -494,7 +497,7 @@ void s_DOOR_OPEN() {
 State* S_DOOR_TO_LONG_OPEN = SM.addState(&s_DOOR_TO_LONG_OPEN);
 void s_DOOR_TO_LONG_OPEN() {
   if (SM.executeOnce) {
-#if defined(MY_DEBUG)
+#if defined(DEBUG_GK)
     Serial.println("S_DOOR_TO_LONG_OPEN");
 #endif
 
@@ -510,7 +513,7 @@ void s_DOOR_TO_LONG_OPEN() {
 State* S_CLOSING_DOOR = SM.addState(&s_CLOSING_DOOR);
 void s_CLOSING_DOOR() {
   if (SM.executeOnce) {
-#if defined(MY_DEBUG)
+#if defined(DEBUG_GK)
     Serial.println("S_CLOSING_DOOR");
 #endif
 
@@ -530,7 +533,7 @@ void s_CLOSING_DOOR() {
 State* S_DOOR_CLOSED = SM.addState(&s_DOOR_CLOSED);
 void s_DOOR_CLOSED() {
   if (SM.executeOnce) {
-#if defined(MY_DEBUG)
+#if defined(DEBUG_GK)
     Serial.println("S_DOOR_CLOSED");
 #endif
 
@@ -549,7 +552,7 @@ void s_DOOR_CLOSED() {
 State* S_CLOSING_DOOR_INTERRUPTED = SM.addState(&s_CLOSING_DOOR_INTERRUPTED);
 void s_CLOSING_DOOR_INTERRUPTED() {
   if (SM.executeOnce) {
-#if defined(MY_DEBUG)
+#if defined(DEBUG_GK)
     Serial.println("S_CLOSING_DOOR_INTERRUPTED");
 #endif
 
@@ -705,7 +708,7 @@ uint getDoorOpenCount() {
 void setDefaultState() {
 
   if (!EEPROM24C32.checkPresence()) {
-#if defined(MY_DEBUG)
+#if defined(DEBUG_GK)
     Serial.println("EEPROM24C32 check presence faild");
 #endif
 
@@ -721,34 +724,14 @@ void setDefaultState() {
   SM.transitionTo(S_MOTION_DETECTION);
 }
 
-void before() {
-}
-
 void preHwInit() {
-
-#if defined(MY_DEBUG)
+#if defined(DEBUG_GK)
   Serial.begin(115200);
-  Serial.println(SKETCH_NAME);
 #endif
   Serial1.begin(MY_RS485_BAUD_RATE, SERIAL_8N1, RX_PIN, TX_PIN);
-
-  WiFi.mode(WIFI_MODE_NULL);
-
-  inicjalizePins();
-  inicjalizeI2C();
 }
 
-void setup() {
-#if defined(MY_DEBUG)
-  Serial.begin(115200);
-  Serial.println(SKETCH_NAME);
-#endif
-
-  wait(10000);
-
-  defineTransition();
-  setDefaultState();
-}
+void before() {}
 
 void presentation()  //MySensors
 {
@@ -764,6 +747,20 @@ void presentation()  //MySensors
   } else {
     present(1, S_DOOR, SKETCH_NAME);
   }
+}
+
+void setup() {  
+#if defined(DEBUG_GK)
+  Serial.println(SKETCH_NAME);
+#endif
+
+  WiFi.mode(WIFI_MODE_NULL);
+
+  inicjalizePins();
+  inicjalizeI2C();
+
+  defineTransition();
+  setDefaultState();
 }
 
 void loop() {
