@@ -282,6 +282,7 @@ private:
 #include <StateMachine.h>
 #include "24C32.h"
 #include <Blinkenlight.h>
+#include <Fadinglight.h>
 
 StateChangeManager SCM;
 EE EEPROM24C32;
@@ -781,7 +782,7 @@ bool T_S_DOOR_OPEN_S_CLOSING_DOOR()
     return false;
   }
 
-  return T.isElapsed(OPEN_DOOR_TIME)
+  return T.isElapsed(OPEN_DOOR_TIME);
 }
 
 bool T_S_DOOR_OPEN_S_DOOR_TO_LONG_OPEN()
@@ -961,7 +962,7 @@ void setup()
 #endif
 
   // WiFi.mode(WIFI_MODE_NULL);
-  analogWriteFreq(100);
+  //analogWriteFreq(100);
 
   inicjalizePins();
   inicjalizeI2C();
