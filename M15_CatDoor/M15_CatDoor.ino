@@ -962,7 +962,12 @@ void setup()
 #endif
 
   // WiFi.mode(WIFI_MODE_NULL);
-  //analogWriteFreq(100);
+
+//ledc_set_freq(LEDC_LOW_SPEED_MODE, LEDC_TIMER_0, 100);
+//ledc_set_pin
+//ledcSetup(0, 100, 8);
+//ledcAttachPin(OUT_1_PIN, 0);
+
 
   inicjalizePins();
   inicjalizeI2C();
