@@ -878,22 +878,23 @@ void loop() {
   M3.ping();
 }
 
-void receive(const MyMessage &message) {
-  if (message.isAck())
-    return;
 
-  if (MS_OPEN_DOOR_ID == message.sensor) {
-    EEStorage.setDoorAlwaysOpen(message.getBool());
-  }
+// void receive(const MyMessage &message) {
+//   if (message.isAck())
+//     return;
 
-  if (MS_CLOSE_DOOR_ID == message.sensor) {
-    EEStorage.setDoorAlwaysClose(message.getBool());
-  }
+//   if (MS_OPEN_DOOR_ID == message.sensor) {
+//     EEStorage.setDoorAlwaysOpen(message.getBool());
+//   }
 
-  if (MS_AUTH_BLE_ID == message.sensor) {
-    EEStorage.setAthorizationBle(message.getBool());
-  }
-}
+//   if (MS_CLOSE_DOOR_ID == message.sensor) {
+//     EEStorage.setDoorAlwaysClose(message.getBool());
+//   }
+
+//   if (MS_AUTH_BLE_ID == message.sensor) {
+//     EEStorage.setAthorizationBle(message.getBool());
+//   }
+// }
 
 #pragma endregion MAIN
 
