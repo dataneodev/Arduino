@@ -84,9 +84,6 @@ DeviceDef devices[] = {
 #pragma endregion MY_SENSORS_CONFIGURATION
 
 #pragma region TYPES
-int getDevicesCount() {
-  return sizeof(devices) / sizeof(*devices);
-}
 
 class StateChangeManager {
 private:
@@ -284,6 +281,10 @@ Blinkenlight Out3(OUPUT_3_PIN);
 #pragma endregion GLOBAL_VARIABLE
 
 #pragma region BLE
+int getBLEDevicesCount() {
+  return sizeof(devices) / sizeof(*devices);
+}
+
 int getClientId() {
 
   int devicesCount = sizeof(devices) / sizeof(*devices);
@@ -300,7 +301,7 @@ bool canClientOpenDoor() {
     return true;
   }
 
-  if (getDevicesCount() == 0) {
+  if (getBLEDevicesCount() == 0) {
     return true;
   }
 
@@ -360,14 +361,14 @@ void sentMyAllClientOpenDoorDefaultStatus() {
   Serial.println("sentMyAllClientOpenDoorDefaultStatus");
 #endif
 
-  int devCount = getDevicesCount();
+  int devCount = getBLEDevicesCount();
 
   if (devCount == 0) {
     sentMyClientOpenDoorStatus(1, false);
     return;
   }
 
-  for (int i = 0; i < getDevicesCount(); i++) {
+  for (int i = 0; i < getBLEDevicesCount(); i++) {
     sentMyClientOpenDoorStatus(devices[i].Id, false);
   }
 }
@@ -926,8 +927,8 @@ void presentation()  // MySensors
   present(MS_CLOSE_DOOR_ID, S_BINARY, "Drzwi zawsze otwarte");
   present(MS_AUTH_BLE_ID, S_BINARY, "Autoryzacja BLE");
 
-  if (getDevicesCount() > 0) {
-    for (int i = 0; i < getDevicesCount(); i++) {
+  if (getBLEDevicesCount() > 0) {
+    for (int i = 0; i < getBLEDevicesCount(); i++) {
       present(devices[i].Id, S_DOOR, devices[i].Name);
     }
   } else {
@@ -974,8 +975,25 @@ void loop() {
   }
 }
 
+void receive(const MyMessage &message) {
+  if (message.isAck())
+    return;
 
+  if (MS_OPEN_DOOR_ID == message.sensor) {
+    EEStorage.setDoorAlwaysOpen(message.getBool());
+    sentMyDoorAlwaysOpenStatus();
+  }
 
+  if (MS_CLOSE_DOOR_ID == message.sensor) {
+    EEStorage.setDoorAlwaysClose(message.getBool());
+    sentMyDoorAlwaysCloseStatus();
+  }
+
+  if (MS_AUTH_BLE_ID == message.sensor) {
+    EEStorage.setAthorizationBle(message.getBool());
+    sentMyBleAuthStatus();
+  }
+}
 #pragma endregion MAIN
 
 #pragma region INICJALIZE
@@ -1012,26 +1030,3 @@ void inicjalizePins() {
   esp_sleep_enable_gpio_wakeup();
 }
 #pragma endregion INICJALIZE
-
-
-//nie kompiluje się
-
-// void receive(const MyMessage &message) {
-//   if (message.isAck())
-//     return;
-
-//   if (MS_OPEN_DOOR_ID == message.sensor) {
-//     EEStorage.setDoorAlwaysOpen(message.getBool());
-//     sentMyDoorAlwaysOpenStatus();
-//   }
-
-//   if (MS_CLOSE_DOOR_ID == message.sensor) {
-//     EEStorage.setDoorAlwaysClose(message.getBool());
-//     sentMyDoorAlwaysCloseStatus();
-//   }
-
-//   if (MS_AUTH_BLE_ID == message.sensor) {
-//     EEStorage.setAthorizationBle(message.getBool());
-//     sentMyBleAuthStatus();
-//   }
-// }
