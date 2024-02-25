@@ -119,9 +119,9 @@ private:
     }
 
     _isDoorOpen = EEPROM24C32->readByte(106) == TRUE_VALUE;
-    _doorOpenCount = EEPROM24C32->readByte(110) == TRUE_VALUE;
-    _alwaysOpen = EEPROM24C32->readUInt32(114) == TRUE_VALUE;
-    _alwaysClose = EEPROM24C32->readUInt32(115) == TRUE_VALUE;
-    _useBleAuth = EEPROM24C32->readUInt32(116) == TRUE_VALUE;
+    _doorOpenCount = EEPROM24C32->readUInt32(110) == TRUE_VALUE;
+    _alwaysOpen = EEPROM24C32->readByte(114) == TRUE_VALUE;
+    _alwaysClose = EEPROM24C32->readByte(115) == TRUE_VALUE;
+    _useBleAuth = EEPROM24C32->readByte(116) == TRUE_VALUE;
   }
 };

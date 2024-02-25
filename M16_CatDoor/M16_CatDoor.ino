@@ -2,6 +2,7 @@
 #define SKETCH_NAME "M15_Cat_Door"
 
 #pragma region INSTALATION
+
 #include "esp_random.h"  //brakuje w plikach mysensors dla esp32, sprawdzicz y mozna usunąć w nowych wersjach
 /*
 
@@ -255,6 +256,7 @@ private:
 #pragma region GLOBAL_VARIABLE
 #include "driver/gpio.h"
 #include <Wire.h>
+
 #include <MySensors.h>
 #include <StateMachine.h>
 #include "24C32.h"
@@ -262,10 +264,10 @@ private:
 #include <Blinkenlight.h>
 #include <Fadinglight.h>
 
+MyMessage mMessage;
 StateChangeManager SCM;
 EE EE24C32;
 Storage EEStorage(&EE24C32);
-MyMessage mMessage;
 
 DoorManager Door(OPEN_DOOR_PIN, CLOSE_DOOR_PIN);
 StateTime T;
@@ -294,12 +296,11 @@ int getClientId() {
 }
 
 bool canClientOpenDoor() {
-#ifndef BLE_AUTH
-  return true;
-#endif
+  if (!EEStorage.useAthorizationBle()) {
+    return true;
+  }
 
-  int devicesCount = sizeof(devices) / sizeof(*devices);
-  if (devicesCount == 0) {
+  if (getDevicesCount() == 0) {
     return true;
   }
 
@@ -308,14 +309,44 @@ bool canClientOpenDoor() {
 #pragma endregion BLE
 
 #pragma region MY_SENSORS
-int lastOpenClientId = 0;
-
-void sentDoorOpen() {
-  lastOpenClientId = getClientId();
+void sentMyDoorAlwaysOpenStatus() {
+#if defined(DEBUG_GK)
+  Serial.print("sentMyDoorAlwaysOpenStatus");
+  Serial.println(EEStorage.isDoorAlwaysOpen() ? "1" : "0");
+#endif
 
   mMessage.setType(V_STATUS);
-  mMessage.setSensor(lastOpenClientId);
-  send(mMessage.set("1"));
+  mMessage.setSensor(MS_OPEN_DOOR_ID);
+  send(mMessage.set(EEStorage.isDoorAlwaysOpen() ? "1" : "0"));
+}
+
+void sentMyDoorAlwaysCloseStatus() {
+#if defined(DEBUG_GK)
+  Serial.print("sentMyDoorAlwaysCloseStatus");
+  Serial.println(EEStorage.isDoorAlwaysClose() ? "1" : "0");
+#endif
+
+  mMessage.setType(V_STATUS);
+  mMessage.setSensor(MS_CLOSE_DOOR_ID);
+  send(mMessage.set(EEStorage.isDoorAlwaysClose() ? "1" : "0"));
+}
+
+void sentMyBleAuthStatus() {
+#if defined(DEBUG_GK)
+  Serial.print("sentMyBleAuthStatus");
+  Serial.println(EEStorage.useAthorizationBle() ? "1" : "0");
+#endif
+
+  mMessage.setType(V_STATUS);
+  mMessage.setSensor(MS_AUTH_BLE_ID);
+  send(mMessage.set(EEStorage.useAthorizationBle() ? "1" : "0"));
+}
+
+void sentMyDoorOpenCount() {
+#if defined(DEBUG_GK)
+  Serial.print("sentMyDoorOpenCount");
+  Serial.println(EEStorage.getDoorOpenCount());
+#endif
 
   uint32_t openCount = EEStorage.getDoorOpenCount();
 
@@ -324,14 +355,62 @@ void sentDoorOpen() {
   send(mMessage.set(openCount));
 }
 
+void sentMyAllClientOpenDoorDefaultStatus() {
+#if defined(DEBUG_GK)
+  Serial.println("sentMyAllClientOpenDoorDefaultStatus");
+#endif
+
+  int devCount = getDevicesCount();
+
+  if (devCount == 0) {
+    sentMyClientOpenDoorStatus(1, false);
+    return;
+  }
+
+  for (int i = 0; i < getDevicesCount(); i++) {
+    sentMyClientOpenDoorStatus(devices[i].Id, false);
+  }
+}
+
+void sentMyClientOpenDoorStatus(int clientId, bool status) {
+#if defined(DEBUG_GK)
+  Serial.println("sentMyClientOpenDoorStatus");
+
+  Serial.print("Client ID: ");
+  Serial.println(clientId);
+
+  Serial.print("Status: ");
+  Serial.println(status ? "1" : "0");
+#endif
+
+  mMessage.setType(V_STATUS);
+  mMessage.setSensor(clientId);
+  send(mMessage.set(status ? "1" : "0"));
+}
+
+int lastOpenClientId = 0;
+
+void sentDoorOpen() {
+  lastOpenClientId = getClientId();
+
+  sentMyClientOpenDoorStatus(lastOpenClientId, true);
+  sentMyDoorOpenCount();
+}
+
 void sentDoorClose() {
   if (lastOpenClientId == 0) {
     lastOpenClientId = 1;
   }
 
-  mMessage.setType(V_STATUS);
-  mMessage.setSensor(lastOpenClientId);
-  send(mMessage.set("0"));
+  sentMyClientOpenDoorStatus(lastOpenClientId, false);
+}
+
+void sendAllMySensorsStatus() {
+  sentMyAllClientOpenDoorDefaultStatus();
+  sentMyDoorOpenCount();
+  sentMyDoorAlwaysOpenStatus();
+  sentMyDoorAlwaysCloseStatus();
+  sentMyBleAuthStatus();
 }
 
 #pragma endregion MY_SENSORS
@@ -402,9 +481,8 @@ void s_SLEEP() {
   if (SM.executeOnce) {
 #if defined(DEBUG_GK)
     Serial.println("S_SLEEP");
-#endif
-
     Serial.flush();
+#endif
 
     T.stateStart();
 
@@ -496,7 +574,6 @@ void s_MOTION_DETECTED_NO_AUTH() {
 #else
     Out1.blink();
     Out2.off();
-
 #endif
 
     Out3.off();
@@ -655,6 +732,10 @@ bool T_S_WAKE_UP_S_MOTION_DETECTION() {
 }
 
 bool T_S_MOTION_DETECTION_S_MOTION_DETECTED() {
+  if (EEStorage.isDoorAlwaysClose()) {
+    return false;
+  }
+
   bool isMotionDetect = M1.ping() == MOTIONS_DETECTED || M2.ping() == MOTIONS_DETECTED || M3.ping() == MOTIONS_DETECTED;
 
   // add ble auth
@@ -703,6 +784,10 @@ bool T_S_OPENING_DOOR_S_DOOR_OPEN() {
 }
 
 bool T_S_DOOR_OPEN_S_CLOSING_DOOR() {
+  if (EEStorage.isDoorAlwaysOpen()) {
+    return false;
+  }
+
 #ifdef USE_M1_M2_ON_DOOR_CLOSING
   if (!M1.isElapsedFromLastMotionDetection(OPEN_DOOR_TIME)) {
     return false;
@@ -721,6 +806,10 @@ bool T_S_DOOR_OPEN_S_CLOSING_DOOR() {
 }
 
 bool T_S_DOOR_OPEN_S_DOOR_TO_LONG_OPEN() {
+  if (EEStorage.isDoorAlwaysOpen()) {
+    return false;
+  }
+
   return T.isElapsed(TO_LONG_OPEN_DOOR_TIME);
 }
 
@@ -827,6 +916,7 @@ void preHwInit() {
 
 void before() {}
 
+bool isPresentedToController = false;
 void presentation()  // MySensors
 {
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
@@ -843,6 +933,8 @@ void presentation()  // MySensors
   } else {
     present(1, S_DOOR, SKETCH_NAME);
   }
+
+  isPresentedToController = true;
 }
 
 void setup() {
@@ -876,25 +968,13 @@ void loop() {
   M1.ping();
   M2.ping();
   M3.ping();
+
+  if (SCM.isStateChanged(isPresentedToController, 1)) {
+    sendAllMySensorsStatus();
+  }
 }
 
 
-// void receive(const MyMessage &message) {
-//   if (message.isAck())
-//     return;
-
-//   if (MS_OPEN_DOOR_ID == message.sensor) {
-//     EEStorage.setDoorAlwaysOpen(message.getBool());
-//   }
-
-//   if (MS_CLOSE_DOOR_ID == message.sensor) {
-//     EEStorage.setDoorAlwaysClose(message.getBool());
-//   }
-
-//   if (MS_AUTH_BLE_ID == message.sensor) {
-//     EEStorage.setAthorizationBle(message.getBool());
-//   }
-// }
 
 #pragma endregion MAIN
 
@@ -932,3 +1012,26 @@ void inicjalizePins() {
   esp_sleep_enable_gpio_wakeup();
 }
 #pragma endregion INICJALIZE
+
+
+//nie kompiluje się
+
+// void receive(const MyMessage &message) {
+//   if (message.isAck())
+//     return;
+
+//   if (MS_OPEN_DOOR_ID == message.sensor) {
+//     EEStorage.setDoorAlwaysOpen(message.getBool());
+//     sentMyDoorAlwaysOpenStatus();
+//   }
+
+//   if (MS_CLOSE_DOOR_ID == message.sensor) {
+//     EEStorage.setDoorAlwaysClose(message.getBool());
+//     sentMyDoorAlwaysCloseStatus();
+//   }
+
+//   if (MS_AUTH_BLE_ID == message.sensor) {
+//     EEStorage.setAthorizationBle(message.getBool());
+//     sentMyBleAuthStatus();
+//   }
+// }
