@@ -18,6 +18,7 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #pragma endregion INSTALATION
 
 #pragma region CONFIGURATION
+
 #include "DeviceDef.h"
 
 DeviceDef devices[] = {
@@ -27,24 +28,28 @@ DeviceDef devices[] = {
 #define ALARM_ENABLED  // w przypadku błędow uruchamiać alarm dzwiękowy
 #define OUT_2_ENABLED  // czy dioda 2 jest zainstalowana - czerwona błędu - inne zachowanie jak są 2 diody
 
-#define BLE_AUTH  // autoryzacja ble wymagana aby otworzyć drzwi
+#define BLE_AUTH  // autoryzacja ble wymagana aby otworzyć drzwi - sterowane przez mysensors, aby zmienic trzeba
 
 #define USE_M1_M2_ON_DOOR_CLOSING  // czy wykrycie ruchy przez m1 i m2 także przerywa zamykanie drzwi
 
-#define MOTION_1_DELAY 5 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a kolejnym wykryciem uruchamiajacym otwarcie drzwi dla sensoru 1,
+#define MOTION_1_DELAY 7 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a kolejnym wykryciem uruchamiajacym otwarcie drzwi dla sensoru 1,
 #define MOTION_1_DELAY_WAIT 4 * 1000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 1,
 
-#define MOTION_2_DELAY 5 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a wykryciem uruchamiajacym otwarcie dla sensoru 2,
-#define MOTION_2_DELAY_WAIT 5 * 1000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 2,
+#define MOTION_2_DELAY 7 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a wykryciem uruchamiajacym otwarcie dla sensoru 2,
+#define MOTION_2_DELAY_WAIT 4 * 1000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 2,
 
-#define OPENING_DOOR_TIME 11 * 1000                // czas otwierania drzwi
-#define OPEN_DOOR_TIME 8 * 1000                    // czas oczekiwania na zamknięcie drzwi od ostatnieo wykrycia ruchu
-#define TO_LONG_OPEN_DOOR_TIME 60 * 1000           // czas zbyt długiego otwarcia drzwi aby włączyc alarm
-#define TIME_SLEEP_AFTER_LAST_DETECTION 90 * 1000  // czas przejscia w deep sleep od ostatniego wykrycia ruchu
+#define OPENING_DOOR_TIME 11 * 1000                 // czas otwierania drzwi
+#define OPEN_DOOR_TIME 10 * 1000                     // czas oczekiwania na zamknięcie drzwi od ostatnieo wykrycia ruchu
+#define TO_LONG_OPEN_DOOR_TIME 60 * 1000            // czas zbyt długiego otwarcia drzwi aby włączyc alarm
+#define TIME_SLEEP_AFTER_LAST_DETECTION 120 * 1000  // czas przejscia w deep sleep od ostatniego wykrycia ruchu
+#define DOOR_INTERRUPTED_WAITING 4 * 1000           // czas zatrzymania w przypadku wykrycia ruchy przy zamykaniu - po tym czasie następuje otwarcie
 
 #define MY_NODE_ID 90  // id wezła dla my sensors
 
-#define DEBUG_GK  // for tests
+#define CHECK_NUMBER 0x68  //zmienic aby zresetować ustawienia zapisane w pamięci
+#define DEBUG_GK           // for tests
+#define FADE 2
+#define FADE_OFF 100000
 #pragma endregion CONFIGURATION
 
 #pragma region BOARD_PIN_CONFIGURATION
@@ -178,6 +183,7 @@ public:
   void start() {
     _secondMotionDetected = false;
     _lastState = getPinState();
+    _startAt = 0;
 
     if (_lastState) {
       _lastMotionAt = millis();
@@ -186,7 +192,7 @@ public:
 
   void weakUp() {
     _lastState = getPinState();
-
+    _secondMotionDetected = false;
     if (_lastState) {
       _startAt = millis();
       _lastMotionAt = _startAt;
@@ -201,18 +207,18 @@ public:
       _lastMotionAt = current;
     }
 
-    bool invoke = !_lastState && state;
+    if (_startAt > current) {
+      _startAt = 0;
+      _secondMotionDetected = false;
+      _lastState = state;
+      return NO_MOTION;
+    }
+
+    bool invoke = !_lastState && state && ((current - _startAt) > 500);
     _lastState = state;
 
-    bool isTotalPassed = current > _startAt + _motionDelayTotal;
-    bool isDelayPassed = isTotalPassed || current > _startAt + _motionDelay;
-
-    if (_startAt > current) {
-      _startAt = current;
-      _secondMotionDetected = false;
-
-      return invoke ? ONE_MOTION_DETECTED : NO_MOTION;
-    }
+    bool isTotalPassed = current > (_startAt + _motionDelayTotal);
+    bool isDelayPassed = isTotalPassed || (current > (_startAt + _motionDelay));
 
     if (invoke && isDelayPassed && !isTotalPassed) {
       _secondMotionDetected = true;
@@ -258,8 +264,9 @@ private:
 #include <StateMachine.h>
 #include "24C32.h"
 #include "Storage.h"
-#include <Blinkenlight.h>
-#include <Fadinglight.h>
+
+#include "Blinkenlight.h"
+#include "Fadinglight.h"
 
 MyMessage mMessage;
 StateChangeManager SCM;
@@ -272,9 +279,7 @@ MotionDetect M1(MOTION_SENSOR_1_PIN, MOTION_1_DELAY, MOTION_1_DELAY_WAIT);
 MotionDetect M2(MOTION_SENSOR_2_PIN, MOTION_2_DELAY, MOTION_2_DELAY_WAIT);
 MotionDetect M3(MOTION_SENSOR_3_PIN, 5 * 1000, 1);
 
-Blinkenlight Out1(OUPUT_1_PIN);
-Fadinglight Out1Fade(OUPUT_1_PIN, false, 2);
-
+Fadinglight Out1(OUPUT_1_PIN, false, 2);
 Blinkenlight Out2(OUPUT_2_PIN);
 Blinkenlight Out3(OUPUT_3_PIN);
 
@@ -417,8 +422,49 @@ void sendAllMySensorsStatus() {
 #pragma endregion MY_SENSORS
 
 #pragma region STATES
-
+void allLedOff() {
+  Out1.off();
+  Out2.off();
+  Out3.off();
+}
 StateMachine SM = StateMachine();
+
+State *S_START_UP = SM.addState(&s_START_UP);
+void s_START_UP() {
+  if (SM.executeOnce) {
+#if defined(DEBUG_GK)
+    Serial.println("S_START_UP");
+#endif
+
+    T.stateStart();
+
+    allLedOff();
+
+    Out1.updateFadeSpeed(FADE_OFF);
+    Out1.blink(SPEED_RAPID);
+  }
+
+  M1.start();
+  M2.start();
+  M3.start();
+}
+
+State *S_WAKE_UP = SM.addState(&s_WAKE_UP);
+void s_WAKE_UP() {
+  if (SM.executeOnce) {
+#if defined(DEBUG_GK)
+    Serial.println("S_WAKE_UP");
+#endif
+
+    T.stateStart();
+
+    M1.weakUp();
+    M2.weakUp();
+    M3.weakUp();
+
+    allLedOff();
+  }
+}
 
 State *S_MOTION_DETECTION = SM.addState(&s_MOTION_DETECTION);
 void s_MOTION_DETECTION() {
@@ -429,17 +475,9 @@ void s_MOTION_DETECTION() {
 
     T.stateStart();
 
-    M1.start();
-    M2.start();
-    M3.start();
-
     Door.end();
 
-    Out1.off();
-    Out1Fade.off();
-    Out2.off();
-    Out3.off();
-
+    allLedOff();
     return;
   }
 
@@ -452,57 +490,67 @@ void s_MOTION_DETECTION() {
   }
 
   if (oneMotionDetected) {
+#if defined(DEBUG_GK)
+    Serial.println("ONE_MOTION_DETECTED");
+#endif
+
     SpeedSetting waitingFade = {
       .on_ms = 1500,
       .off_ms = 1500,
       .pause_ms = 3000,
       .ending_ms = 6000,
     };
-    Out1Fade.blink(waitingFade);
-  } else {
-    Out1Fade.off();
-  }
-}
 
-State *S_WAKE_UP = SM.addState(&s_WAKE_UP);
-void s_WAKE_UP() {
-  if (SM.executeOnce) {
+    Out1.updateFadeSpeed(FADE);
+    Out1.blink(waitingFade);
+
+  } else {
 #if defined(DEBUG_GK)
-    Serial.println("S_WAKE_UP");
+    Serial.println("END_ONE_MOTION_DETECTED");
 #endif
 
-    M1.weakUp();
-    M2.weakUp();
-    M3.weakUp();
+    Out1.off();
   }
 }
+
 
 State *S_SLEEP = SM.addState(&s_SLEEP);
 void s_SLEEP() {
   if (SM.executeOnce) {
 #if defined(DEBUG_GK)
     Serial.println("S_SLEEP");
-    Serial.flush();
+    ///  Serial.flush();
+    // Serial.end();
 #endif
+
+    //  Serial1.flush();
+    // Serial1.end();
 
     T.stateStart();
 
     Door.end();
 
-    Out1.off();
-    Out1Fade.off();
-    Out2.off();
-    Out3.off();
+    allLedOff();
 
     digitalWrite(POWER_PIN, LOW);
 
-    delay(100);
-
+    /// sleep
     esp_light_sleep_start();
 
-    /// sleep
-
+    //wakeup
     digitalWrite(POWER_PIN, HIGH);
+
+#if defined(DEBUG_GK)
+    //    Serial.begin(115200);
+    //   Serial.flush();
+    Serial.println("AWAKE_FROM_SLEEP");
+#endif
+
+    //   Serial1.begin(MY_RS485_BAUD_RATE, SERIAL_8N1, RX_PIN, TX_PIN);
+
+    //  inicjalizeI2C();
+
+    //  EEStorage.Inicjalize();
   }
 }
 
@@ -517,13 +565,11 @@ void s_FATAL_ERROR() {
 
     Door.end();
 
-    Out1Fade.off();
-
 #ifdef OUT_2_ENABLED
     Out1.off();
-
     Out2.blink(SPEED_RAPID);
 #else
+    Out1.updateFadeSpeed(FADE_OFF);
     Out1.blink(SPEED_RAPID);
     Out2.off();
 #endif
@@ -543,18 +589,7 @@ void s_MOTION_DETECTED() {
 
     T.stateStart();
 
-    Out1Fade.off();
-
-    const SpeedSetting openingSetting = {
-      .on_ms = 400,
-      .off_ms = 400,
-      .pause_ms = 800,
-      .ending_ms = 1600,
-    };
-    Out1.blink(openingSetting);
-
-    Out2.off();
-    Out3.off();
+    allLedOff();
   }
 }
 
@@ -567,13 +602,13 @@ void s_MOTION_DETECTED_NO_AUTH() {
 
     T.stateStart();
 
-    Out1Fade.off();
 #ifdef OUT_2_ENABLED
     Out1.off();
-    Out2.blink();
-
+    Out2.blink(SPEED_RAPID);
 #else
-    Out1.blink();
+    Out1.updateFadeSpeed(FADE_OFF);
+    Out1.blink(SPEED_RAPID);
+
     Out2.off();
 #endif
 
@@ -598,8 +633,8 @@ void s_OPENING_DOOR() {
       .ending_ms = 1600,
     };
 
-    Out1.off();
-    Out1Fade.blink(openingSetting);
+    Out1.updateFadeSpeed(FADE_OFF);
+    Out1.blink(openingSetting);
 
     Out2.off();
     Out3.off();
@@ -620,7 +655,7 @@ void s_DOOR_OPEN() {
 
     Door.end();
 
-    Out1Fade.off();
+    Out1.updateFadeSpeed(FADE_OFF);
     Out1.on();
     Out2.off();
     Out3.off();
@@ -636,11 +671,11 @@ void s_DOOR_TO_LONG_OPEN() {
 
     T.stateStart();
 
-    Out1Fade.off();
 #ifdef OUT_2_ENABLED
     Out1.off();
     Out2.blink(SPEED_RAPID);
 #else
+    Out1.updateFadeSpeed(FADE_OFF);
     Out1.blink(SPEED_RAPID);
     Out2.off();
 #endif
@@ -669,9 +704,8 @@ void s_CLOSING_DOOR() {
       .ending_ms = 1600,
     };
 
-    Out1.off();
-    Out1Fade.blink(closingSetting);
-
+    Out1.updateFadeSpeed(FADE_OFF);
+    Out1.blink(closingSetting);
     Out2.off();
     Out3.off();
 
@@ -690,10 +724,7 @@ void s_DOOR_CLOSED() {
 
     Door.end();
 
-    Out1Fade.off();
-    Out1.off();
-    Out2.off();
-    Out3.off();
+    allLedOff();
 
     EEStorage.setDoorOpen(false);
   }
@@ -710,12 +741,12 @@ void s_CLOSING_DOOR_INTERRUPTED() {
 
     Door.end();
 
-    Out1Fade.off();
 
 #ifdef OUT_2_ENABLED
     Out1.off();
     Out2.blink(SPEED_RAPID);
 #else
+    Out1.updateFadeSpeed(FADE_OFF);
     Out1.blink(SPEED_RAPID);
     Out2.off();
 #endif
@@ -724,12 +755,16 @@ void s_CLOSING_DOOR_INTERRUPTED() {
   }
 }
 
+bool T_S_START_UP_S_MOTION_DETECTION() {
+  return T.isElapsed(2000);
+}
+
 bool T_S_SLEEP_S_WAKE_UP() {
-  return true;
+  return T.isElapsed(100);
 }
 
 bool T_S_WAKE_UP_S_MOTION_DETECTION() {
-  return true;
+  return T.isElapsed(100);
 }
 
 bool T_S_MOTION_DETECTION_S_MOTION_DETECTED() {
@@ -737,7 +772,7 @@ bool T_S_MOTION_DETECTION_S_MOTION_DETECTED() {
     return false;
   }
 
-  bool isMotionDetect = M1.ping() == MOTIONS_DETECTED || M2.ping() == MOTIONS_DETECTED || M3.ping() == MOTIONS_DETECTED;
+  bool isMotionDetect = M1.ping() == MOTIONS_DETECTED || M2.ping() == MOTIONS_DETECTED;
 
   // add ble auth
 
@@ -856,10 +891,12 @@ bool T_S_CLOSING_DOOR_S_CLOSING_DOOR_INTERRUPTED() {
 }
 
 bool T_S_CLOSING_DOOR_INTERRUPTED_S_OPENING_DOOR() {
-  return T.isElapsed(4000);
+  return T.isElapsed(DOOR_INTERRUPTED_WAITING);
 }
 
 void defineTransition() {
+  S_START_UP->addTransition(&T_S_START_UP_S_MOTION_DETECTION, S_MOTION_DETECTION);
+
   S_SLEEP->addTransition(&T_S_SLEEP_S_WAKE_UP, S_WAKE_UP);
 
   S_WAKE_UP->addTransition(&T_S_WAKE_UP_S_MOTION_DETECTION, S_MOTION_DETECTION);
@@ -905,7 +942,7 @@ void setDefaultState() {
     return;
   }
 
-  SM.transitionTo(S_MOTION_DETECTION);
+  SM.transitionTo(S_START_UP);
 }
 
 void preHwInit() {
@@ -938,6 +975,8 @@ void presentation()  // MySensors
   isPresentedToController = true;
 }
 
+#include "driver/ledc.h"
+
 void setup() {
 #if defined(DEBUG_GK)
   Serial.println(SKETCH_NAME);
@@ -945,10 +984,6 @@ void setup() {
 
   // WiFi.mode(WIFI_MODE_NULL);
 
-  //ledc_set_freq(LEDC_LOW_SPEED_MODE, LEDC_TIMER_0, 100);
-  //ledc_set_pin
-  //ledcSetup(0, 100, 8);
-  //ledcAttachPin(OUT_1_PIN, 0);
 
 
   inicjalizePins();
@@ -962,6 +997,7 @@ void setup() {
 
 void loop() {
   SM.run();
+
   Out1.update();
   Out2.update();
   Out3.update();
@@ -1008,6 +1044,8 @@ void inicjalizePins() {
 
   pinMode(OUPUT_1_PIN, OUTPUT);
   digitalWrite(OUPUT_1_PIN, LOW);
+  //analogWriteResolution(OUPUT_1_PIN, 8);
+  analogWriteFrequency(OUPUT_1_PIN, 1000);
 
   pinMode(OUPUT_2_PIN, OUTPUT);
   digitalWrite(OUPUT_2_PIN, LOW);

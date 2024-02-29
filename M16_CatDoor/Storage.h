@@ -1,7 +1,7 @@
 #include "24C32.h"
 
 
-#define CHECK_NUMBER 0x68
+
 #define TRUE_VALUE 0x55
 #define FALSE_VALUE 0x45
 
@@ -98,11 +98,10 @@ private:
   bool _useBleAuth = false;
 
   void readAll() {
-    if (!_isInicjalized) {
-      return;
-    }
-
     if (EEPROM24C32->readByte(105) != CHECK_NUMBER) {
+#if defined(DEBUG_GK)
+      Serial.println("RESET SETTINGS");
+#endif
       EEPROM24C32->writeByte(105, CHECK_NUMBER, false, false);  //check value
       EEPROM24C32->writeByte(106, FALSE_VALUE, false, false);   // is door open
 
@@ -118,10 +117,19 @@ private:
 #endif
     }
 
+#if defined(DEBUG_GK)
+    Serial.println("READ SETTINGS");
+#endif
+
     _isDoorOpen = EEPROM24C32->readByte(106) == TRUE_VALUE;
-    _doorOpenCount = EEPROM24C32->readUInt32(110) == TRUE_VALUE;
+    _doorOpenCount = EEPROM24C32->readUInt32(110) ;
     _alwaysOpen = EEPROM24C32->readByte(114) == TRUE_VALUE;
     _alwaysClose = EEPROM24C32->readByte(115) == TRUE_VALUE;
     _useBleAuth = EEPROM24C32->readByte(116) == TRUE_VALUE;
+
+#if defined(DEBUG_GK)
+    Serial.print("Door open count:");
+    Serial.println(_doorOpenCount);
+#endif
   }
 };
