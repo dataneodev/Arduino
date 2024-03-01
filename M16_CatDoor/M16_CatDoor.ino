@@ -754,9 +754,9 @@ bool T_S_WAKE_UP_S_MOTION_DETECTION() {
 }
 
 bool T_S_MOTION_DETECTION_S_MOTION_DETECTED() {
-  // if (M3.ping() == MOTIONS_DETECTED || M3.ping() == ONE_MOTION_DETECTED) {
-  //   return true;
-  // }
+  if (M3.ping() == MOTIONS_DETECTED || M3.ping() == ONE_MOTION_DETECTED) {
+    return true;
+  }
 
   if (EEStorage.isDoorAlwaysClose()) {
     return false;
