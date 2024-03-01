@@ -39,7 +39,7 @@ DeviceDef devices[] = {
 #define MOTION_2_DELAY_WAIT 4 * 1000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 2,
 
 #define OPENING_DOOR_TIME 11 * 1000                 // czas otwierania drzwi
-#define OPEN_DOOR_TIME 10 * 1000                     // czas oczekiwania na zamknięcie drzwi od ostatnieo wykrycia ruchu
+#define OPEN_DOOR_TIME 10 * 1000                    // czas oczekiwania na zamknięcie drzwi od ostatnieo wykrycia ruchu
 #define TO_LONG_OPEN_DOOR_TIME 60 * 1000            // czas zbyt długiego otwarcia drzwi aby włączyc alarm
 #define TIME_SLEEP_AFTER_LAST_DETECTION 120 * 1000  // czas przejscia w deep sleep od ostatniego wykrycia ruchu
 #define DOOR_INTERRUPTED_WAITING 4 * 1000           // czas zatrzymania w przypadku wykrycia ruchy przy zamykaniu - po tym czasie następuje otwarcie
@@ -214,22 +214,23 @@ public:
       return NO_MOTION;
     }
 
-    bool invoke = !_lastState && state && ((current - _startAt) > 500);
+    bool invoke = !_lastState && state && ((current - _startAt) > 100);
     _lastState = state;
 
+    bool init = _startAt == 0;
     bool isTotalPassed = current > (_startAt + _motionDelayTotal);
     bool isDelayPassed = isTotalPassed || (current > (_startAt + _motionDelay));
 
-    if (invoke && isDelayPassed && !isTotalPassed) {
+    if (invoke && isDelayPassed && !isTotalPassed && !init) {
       _secondMotionDetected = true;
       return MOTIONS_DETECTED;
     }
 
-    if (_secondMotionDetected && !isTotalPassed) {
+    if (_secondMotionDetected && !isTotalPassed && !init) {
       return MOTIONS_DETECTED;
     }
 
-    if (!isTotalPassed) {
+    if (!isTotalPassed && !init) {
       return ONE_MOTION_DETECTED;
     }
 
@@ -438,15 +439,15 @@ void s_START_UP() {
 
     T.stateStart();
 
+    M1.start();
+    M2.start();
+    M3.start();
+
     allLedOff();
 
     Out1.updateFadeSpeed(FADE_OFF);
     Out1.blink(SPEED_RAPID);
   }
-
-  M1.start();
-  M2.start();
-  M3.start();
 }
 
 State *S_WAKE_UP = SM.addState(&s_WAKE_UP);
@@ -513,18 +514,12 @@ void s_MOTION_DETECTION() {
   }
 }
 
-
 State *S_SLEEP = SM.addState(&s_SLEEP);
 void s_SLEEP() {
   if (SM.executeOnce) {
 #if defined(DEBUG_GK)
     Serial.println("S_SLEEP");
-    ///  Serial.flush();
-    // Serial.end();
 #endif
-
-    //  Serial1.flush();
-    // Serial1.end();
 
     T.stateStart();
 
@@ -541,16 +536,8 @@ void s_SLEEP() {
     digitalWrite(POWER_PIN, HIGH);
 
 #if defined(DEBUG_GK)
-    //    Serial.begin(115200);
-    //   Serial.flush();
     Serial.println("AWAKE_FROM_SLEEP");
 #endif
-
-    //   Serial1.begin(MY_RS485_BAUD_RATE, SERIAL_8N1, RX_PIN, TX_PIN);
-
-    //  inicjalizeI2C();
-
-    //  EEStorage.Inicjalize();
   }
 }
 
@@ -741,7 +728,6 @@ void s_CLOSING_DOOR_INTERRUPTED() {
 
     Door.end();
 
-
 #ifdef OUT_2_ENABLED
     Out1.off();
     Out2.blink(SPEED_RAPID);
@@ -756,7 +742,7 @@ void s_CLOSING_DOOR_INTERRUPTED() {
 }
 
 bool T_S_START_UP_S_MOTION_DETECTION() {
-  return T.isElapsed(2000);
+  return T.isElapsed(1500);
 }
 
 bool T_S_SLEEP_S_WAKE_UP() {
@@ -768,6 +754,10 @@ bool T_S_WAKE_UP_S_MOTION_DETECTION() {
 }
 
 bool T_S_MOTION_DETECTION_S_MOTION_DETECTED() {
+  // if (M3.ping() == MOTIONS_DETECTED || M3.ping() == ONE_MOTION_DETECTED) {
+  //   return true;
+  // }
+
   if (EEStorage.isDoorAlwaysClose()) {
     return false;
   }
@@ -843,6 +833,7 @@ bool T_S_DOOR_OPEN_S_CLOSING_DOOR() {
 
 bool T_S_DOOR_OPEN_S_DOOR_TO_LONG_OPEN() {
   if (EEStorage.isDoorAlwaysOpen()) {
+    T.stateStart();
     return false;
   }
 
@@ -996,15 +987,18 @@ void setup() {
 }
 
 void loop() {
+
+  M1.ping();
+  M2.ping();
+  M3.ping();
+
   SM.run();
 
   Out1.update();
   Out2.update();
   Out3.update();
 
-  M1.ping();
-  M2.ping();
-  M3.ping();
+
 
   if (SCM.isStateChanged(isPresentedToController, 1)) {
     sendAllMySensorsStatus();
