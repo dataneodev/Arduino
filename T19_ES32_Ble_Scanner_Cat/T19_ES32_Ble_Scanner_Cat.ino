@@ -28,5 +28,17 @@ void setup() {
 }
 
 void loop() {
+
   ScannerGK.scan();
+
+
+  if(ScannerGK.isAuth()){
+Serial.println("isAuth");
+Serial.print("Id: ");
+Serial.println(ScannerGK.getAuthDeviceId());
+
+Serial.print("Name: ");
+const char* name = ScannerGK.getAuthDeviceName();
+Serial.println(name);
+  }
 }

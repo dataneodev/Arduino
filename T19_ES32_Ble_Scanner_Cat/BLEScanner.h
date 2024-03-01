@@ -117,7 +117,7 @@ public:
     return _lastDeviceId;
   }
 
-  const char* getAuthDeviceName() {
+  const char *getAuthDeviceName() {
     if (_defindedDevicesCount == 0 || _lastDeviceId < 2) {
       return "dsfsdf";
     }
