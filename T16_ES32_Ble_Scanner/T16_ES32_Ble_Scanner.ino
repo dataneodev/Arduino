@@ -31,6 +31,7 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+  Serial.println("Scan start!");
   BLEScanResults *foundDevices = pBLEScan->start(scanTime, false);
   Serial.print("Devices found: ");
   Serial.println(foundDevices->getCount());
