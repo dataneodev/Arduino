@@ -22,11 +22,12 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #include "DeviceDef.h"
 
 DeviceDef devices[] = {
-  DeviceDef(1, 3, 6, 2, 6, "Test")
+  DeviceDef(1, new BLEAddress("CB:F7:92:0F:3B:2E"), "Myszka"),
+  DeviceDef(2, new BLEAddress("6b:12:b9:ab:dc:6d"), "Telefon") 
 };
 
 #define ALARM_ENABLED  // w przypadku błędow uruchamiać alarm dzwiękowy
-#define OUT_2_ENABLED  // czy dioda 2 jest zainstalowana - czerwona błędu - inne zachowanie jak są 2 diody
+//#define OUT_2_ENABLED  // czy dioda 2 jest zainstalowana - czerwona błędu - inne zachowanie jak są 2 diody
 
 #define BLE_AUTH  // autoryzacja ble wymagana aby otworzyć drzwi - sterowane przez mysensors, aby zmienic trzeba
 
@@ -50,6 +51,7 @@ DeviceDef devices[] = {
 #define DEBUG_GK           // for tests
 #define FADE 2
 #define FADE_OFF 100000
+#define MIN_RSSI -60
 #pragma endregion CONFIGURATION
 
 #pragma region BOARD_PIN_CONFIGURATION
@@ -261,10 +263,17 @@ private:
 #include "driver/gpio.h"
 #include <Wire.h>
 
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEScan.h>
+#include <BLEAdvertisedDevice.h>
+#include <BLEAddress.h>
+
 #include <MySensors.h>
 #include <StateMachine.h>
 #include "24C32.h"
 #include "Storage.h"
+#include "BLEScanner.h"
 
 #include "Blinkenlight.h"
 #include "Fadinglight.h"
@@ -273,6 +282,7 @@ MyMessage mMessage;
 StateChangeManager SCM;
 EE EE24C32;
 Storage EEStorage(&EE24C32);
+BLEScanner ScannerGK(&devices[0], sizeof(devices) / sizeof(*devices));
 
 DoorManager Door(OPEN_DOOR_PIN, CLOSE_DOOR_PIN);
 StateTime T;
@@ -285,35 +295,6 @@ Blinkenlight Out2(OUPUT_2_PIN);
 Blinkenlight Out3(OUPUT_3_PIN);
 
 #pragma endregion GLOBAL_VARIABLE
-
-#pragma region BLE
-int getBLEDevicesCount() {
-  return sizeof(devices) / sizeof(*devices);
-}
-
-int getClientId() {
-
-  int devicesCount = sizeof(devices) / sizeof(*devices);
-  if (devicesCount == 0) {
-    return 1;
-  }
-
-  // get ble devices
-  return 1;
-}
-
-bool canClientOpenDoor() {
-  if (!EEStorage.useAthorizationBle()) {
-    return true;
-  }
-
-  if (getBLEDevicesCount() == 0) {
-    return true;
-  }
-
-  return true;
-}
-#pragma endregion BLE
 
 #pragma region MY_SENSORS
 void sentMyDoorAlwaysOpenStatus() {
@@ -367,15 +348,15 @@ void sentMyAllClientOpenDoorDefaultStatus() {
   Serial.println("sentMyAllClientOpenDoorDefaultStatus");
 #endif
 
-  int devCount = getBLEDevicesCount();
+  int devCount = ScannerGK.getDefindedDevicesCount();
 
   if (devCount == 0) {
     sentMyClientOpenDoorStatus(1, false);
     return;
   }
 
-  for (int i = 0; i < getBLEDevicesCount(); i++) {
-    sentMyClientOpenDoorStatus(devices[i].Id, false);
+  for (int i = 0; i < devCount; i++) {
+    sentMyClientOpenDoorStatus(devices[i].GetId(), false);
   }
 }
 
@@ -398,7 +379,7 @@ void sentMyClientOpenDoorStatus(int clientId, bool status) {
 int lastOpenClientId = 0;
 
 void sentDoorOpen() {
-  lastOpenClientId = getClientId();
+  lastOpenClientId = ScannerGK.getAuthDeviceId();
 
   sentMyClientOpenDoorStatus(lastOpenClientId, true);
   sentMyDoorOpenCount();
@@ -475,24 +456,24 @@ void s_MOTION_DETECTION() {
 #endif
 
     T.stateStart();
-
     Door.end();
 
     allLedOff();
     return;
   }
 
-  bool m1Ping = M1.ping() == ONE_MOTION_DETECTED;
-  bool m2Ping = M2.ping() == ONE_MOTION_DETECTED;
-  bool oneMotionDetected = m1Ping || m2Ping;
+  MotionDetectState m1Ping = M1.ping();
+  MotionDetectState m2Ping = M2.ping();
 
-  if (!SCM.isStateChanged(oneMotionDetected, 0)) {
+  bool motionDetected = m1Ping == ONE_MOTION_DETECTED || m2Ping == ONE_MOTION_DETECTED || m1Ping == MOTIONS_DETECTED || m2Ping == MOTIONS_DETECTED;
+
+  if (!SCM.isStateChanged(motionDetected, 0)) {
     return;
   }
 
-  if (oneMotionDetected) {
+  if (motionDetected) {
 #if defined(DEBUG_GK)
-    Serial.println("ONE_MOTION_DETECTED");
+    Serial.println("MOTION_DETECTED");
 #endif
 
     SpeedSetting waitingFade = {
@@ -507,7 +488,7 @@ void s_MOTION_DETECTION() {
 
   } else {
 #if defined(DEBUG_GK)
-    Serial.println("END_ONE_MOTION_DETECTED");
+    Serial.println("END_MOTION_DETECTED");
 #endif
 
     Out1.off();
@@ -580,29 +561,6 @@ void s_MOTION_DETECTED() {
   }
 }
 
-State *S_MOTION_DETECTED_NO_AUTH = SM.addState(&s_MOTION_DETECTED_NO_AUTH);
-void s_MOTION_DETECTED_NO_AUTH() {
-  if (SM.executeOnce) {
-#if defined(DEBUG_GK)
-    Serial.println("S_MOTION_DETECTED_NO_AUTH");
-#endif
-
-    T.stateStart();
-
-#ifdef OUT_2_ENABLED
-    Out1.off();
-    Out2.blink(SPEED_RAPID);
-#else
-    Out1.updateFadeSpeed(FADE_OFF);
-    Out1.blink(SPEED_RAPID);
-
-    Out2.off();
-#endif
-
-    Out3.off();
-  }
-}
-
 State *S_OPENING_DOOR = SM.addState(&s_OPENING_DOOR);
 void s_OPENING_DOOR() {
   if (SM.executeOnce) {
@@ -627,7 +585,6 @@ void s_OPENING_DOOR() {
     Out3.off();
 
     EEStorage.setDoorOpen(true);
-    sentDoorOpen();
   }
 }
 
@@ -646,6 +603,8 @@ void s_DOOR_OPEN() {
     Out1.on();
     Out2.off();
     Out3.off();
+
+    sentDoorOpen();
   }
 }
 
@@ -695,8 +654,6 @@ void s_CLOSING_DOOR() {
     Out1.blink(closingSetting);
     Out2.off();
     Out3.off();
-
-    sentDoorClose();
   }
 }
 
@@ -713,7 +670,12 @@ void s_DOOR_CLOSED() {
 
     allLedOff();
 
+    M1.start();
+    M2.start();
+    M3.start();
+
     EEStorage.setDoorOpen(false);
+    sentDoorClose();
   }
 }
 
@@ -755,7 +717,7 @@ bool T_S_WAKE_UP_S_MOTION_DETECTION() {
 
 bool T_S_MOTION_DETECTION_S_MOTION_DETECTED() {
   if (M3.ping() == MOTIONS_DETECTED || M3.ping() == ONE_MOTION_DETECTED) {
-    return true;
+    return T.isElapsed(100);
   }
 
   if (EEStorage.isDoorAlwaysClose()) {
@@ -764,9 +726,18 @@ bool T_S_MOTION_DETECTION_S_MOTION_DETECTED() {
 
   bool isMotionDetect = M1.ping() == MOTIONS_DETECTED || M2.ping() == MOTIONS_DETECTED;
 
-  // add ble auth
+  if (!isMotionDetect) {
+    return false;
+  }
 
-  return isMotionDetect;
+  if (EEStorage.useAthorizationBle()) {
+    ScannerGK.scan();
+    if (!ScannerGK.isAuth()) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 bool T_S_MOTION_DETECTION_S_SLEEP() {
@@ -955,9 +926,9 @@ void presentation()  // MySensors
   present(MS_CLOSE_DOOR_ID, S_BINARY, "Drzwi zawsze otwarte");
   present(MS_AUTH_BLE_ID, S_BINARY, "Autoryzacja BLE");
 
-  if (getBLEDevicesCount() > 0) {
-    for (int i = 0; i < getBLEDevicesCount(); i++) {
-      present(devices[i].Id, S_DOOR, devices[i].Name);
+  if (ScannerGK.getDefindedDevicesCount() > 0) {
+    for (int i = 0; i < ScannerGK.getDefindedDevicesCount(); i++) {
+      present(devices[i].GetId(), S_DOOR, devices[i].GetName());
     }
   } else {
     present(1, S_DOOR, SKETCH_NAME);
@@ -981,6 +952,7 @@ void setup() {
   inicjalizeI2C();
 
   EEStorage.Inicjalize();
+  ScannerGK.init();
 
   defineTransition();
   setDefaultState();
@@ -997,8 +969,6 @@ void loop() {
   Out1.update();
   Out2.update();
   Out3.update();
-
-
 
   if (SCM.isStateChanged(isPresentedToController, 1)) {
     sendAllMySensorsStatus();

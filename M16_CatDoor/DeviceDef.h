@@ -1,18 +1,27 @@
+#include <BLEAddress.h>
+
 class DeviceDef {
-  public:
-    
-  int Id;
-  int BLEAddres[4];
-  const char* Name;
+public:
+  DeviceDef(int id, BLEAddress* address, const char* _name)
+    : _address(address) {
+    _id = id + 1;
+    _name = _name;
+  }
 
-  DeviceDef(int _id, int ble1, int ble2,int ble3,int ble4,const char* _name){
-      Id = _id;
+bool IsEquals(BLEAddress* address){
+  return address->equals(*_address);
+}
 
-      BLEAddres[0] = ble1;
-      BLEAddres[1] = ble2;
-      BLEAddres[2] = ble3;
-      BLEAddres[3] = ble4;
+int GetId(){
+  return _id;
+}
 
-      Name = _name;
-    }
-} ;
+const char* GetName(){
+  return _name;
+}
+
+private:
+  int _id;
+  BLEAddress* _address;
+  const char* _name;
+};
