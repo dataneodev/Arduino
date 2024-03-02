@@ -23,7 +23,7 @@ static __inline__ void __psRestore(const uint32_t *__s)
 
 DeviceDef devices[] = {
   DeviceDef(1, new BLEAddress("CB:F7:92:0F:3B:2E"), "Myszka"),
-  DeviceDef(2, new BLEAddress("6b:12:b9:ab:dc:6d"), "Telefon") 
+  DeviceDef(2, new BLEAddress("6b:12:b9:ab:dc:6d"), "Telefon")
 };
 
 #define ALARM_ENABLED  // w przypadku błędow uruchamiać alarm dzwiękowy
@@ -33,19 +33,19 @@ DeviceDef devices[] = {
 
 #define USE_M1_M2_ON_DOOR_CLOSING  // czy wykrycie ruchy przez m1 i m2 także przerywa zamykanie drzwi
 
-#define MOTION_1_DELAY 7 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a kolejnym wykryciem uruchamiajacym otwarcie drzwi dla sensoru 1,
+#define MOTION_1_DELAY 4 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a kolejnym wykryciem uruchamiajacym otwarcie drzwi dla sensoru 1,
 #define MOTION_1_DELAY_WAIT 4 * 1000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 1,
 
-#define MOTION_2_DELAY 7 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a wykryciem uruchamiajacym otwarcie dla sensoru 2,
+#define MOTION_2_DELAY 4 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a wykryciem uruchamiajacym otwarcie dla sensoru 2,
 #define MOTION_2_DELAY_WAIT 4 * 1000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 2,
 
 #define OPENING_DOOR_TIME 11 * 1000                 // czas otwierania drzwi
 #define OPEN_DOOR_TIME 10 * 1000                    // czas oczekiwania na zamknięcie drzwi od ostatnieo wykrycia ruchu
-#define TO_LONG_OPEN_DOOR_TIME 60 * 1000            // czas zbyt długiego otwarcia drzwi aby włączyc alarm
+#define TO_LONG_OPEN_DOOR_TIME 100 * 1000           // czas zbyt długiego otwarcia drzwi aby włączyc alarm
 #define TIME_SLEEP_AFTER_LAST_DETECTION 120 * 1000  // czas przejscia w deep sleep od ostatniego wykrycia ruchu
 #define DOOR_INTERRUPTED_WAITING 4 * 1000           // czas zatrzymania w przypadku wykrycia ruchy przy zamykaniu - po tym czasie następuje otwarcie
 
-#define MY_NODE_ID 90  // id wezła dla my sensors
+#define MY_NODE_ID 95  // id wezła dla my sensors
 
 #define CHECK_NUMBER 0x68  //zmienic aby zresetować ustawienia zapisane w pamięci
 #define DEBUG_GK           // for tests
@@ -716,6 +716,10 @@ bool T_S_WAKE_UP_S_MOTION_DETECTION() {
 }
 
 bool T_S_MOTION_DETECTION_S_MOTION_DETECTED() {
+  if(EEStorage.isDoorAlwaysOpen() ){
+     return T.isElapsed(100);
+  }
+  
   if (M3.ping() == MOTIONS_DETECTED || M3.ping() == ONE_MOTION_DETECTED) {
     return T.isElapsed(100);
   }
@@ -925,13 +929,12 @@ void presentation()  // MySensors
   present(MS_OPEN_DOOR_ID, S_BINARY, "Drzwi zawsze zamknięte");
   present(MS_CLOSE_DOOR_ID, S_BINARY, "Drzwi zawsze otwarte");
   present(MS_AUTH_BLE_ID, S_BINARY, "Autoryzacja BLE");
+  present(1, S_DOOR, SKETCH_NAME);
 
   if (ScannerGK.getDefindedDevicesCount() > 0) {
     for (int i = 0; i < ScannerGK.getDefindedDevicesCount(); i++) {
       present(devices[i].GetId(), S_DOOR, devices[i].GetName());
     }
-  } else {
-    present(1, S_DOOR, SKETCH_NAME);
   }
 
   isPresentedToController = true;
@@ -943,11 +946,6 @@ void setup() {
 #if defined(DEBUG_GK)
   Serial.println(SKETCH_NAME);
 #endif
-
-  // WiFi.mode(WIFI_MODE_NULL);
-
-
-
   inicjalizePins();
   inicjalizeI2C();
 
@@ -980,11 +978,21 @@ void receive(const MyMessage &message) {
     return;
 
   if (MS_OPEN_DOOR_ID == message.sensor) {
+    if (message.getBool() && EEStorage.isDoorAlwaysClose()) {
+      EEStorage.setDoorAlwaysClose(false);
+      sentMyDoorAlwaysCloseStatus();
+    }
+
     EEStorage.setDoorAlwaysOpen(message.getBool());
     sentMyDoorAlwaysOpenStatus();
   }
 
   if (MS_CLOSE_DOOR_ID == message.sensor) {
+    if (message.getBool() && EEStorage.isDoorAlwaysOpen()) {
+      EEStorage.setDoorAlwaysOpen(false);
+      sentMyDoorAlwaysOpenStatus();
+    }
+
     EEStorage.setDoorAlwaysClose(message.getBool());
     sentMyDoorAlwaysCloseStatus();
   }

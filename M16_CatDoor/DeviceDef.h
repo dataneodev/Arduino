@@ -2,10 +2,12 @@
 
 class DeviceDef {
 public:
-  DeviceDef(int id, BLEAddress* address, const char* _name)
+
+
+  DeviceDef(int id, BLEAddress* address, const char* name)
     : _address(address) {
     _id = id + 1;
-    _name = _name;
+    _name = name;
   }
 
 bool IsEquals(BLEAddress* address){
@@ -22,6 +24,7 @@ const char* GetName(){
 
 private:
   int _id;
+  const char * _name;
   BLEAddress* _address;
-  const char* _name;
+  
 };

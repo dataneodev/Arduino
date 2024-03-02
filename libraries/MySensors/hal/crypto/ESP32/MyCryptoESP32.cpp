@@ -6,7 +6,7 @@
 * network topology allowing messages to be routed to nodes.
 *
 * Created by Henrik Ekblad <henrik.ekblad@mysensors.org>
-* Copyright (C) 2013-2020 Sensnology AB
+* Copyright (C) 2013-2019 Sensnology AB
 * Full contributor list: https://github.com/mysensors/MySensors/graphs/contributors
 *
 * Documentation: http://www.mysensors.org
@@ -28,7 +28,6 @@ void SHA256(uint8_t *dest, const uint8_t *data, size_t dataLength)
 	mbedtls_md_starts(&ctx);
 	mbedtls_md_update(&ctx, (const unsigned char *)data, dataLength);
 	mbedtls_md_finish(&ctx, dest);
-	mbedtls_md_free(&ctx);
 }
 
 
@@ -43,7 +42,6 @@ void SHA256HMAC(uint8_t *dest, const uint8_t *key, size_t keyLength, const uint8
 	mbedtls_md_hmac_starts(&ctx, (const unsigned char *)key, keyLength);
 	mbedtls_md_hmac_update(&ctx, (const unsigned char *)data, dataLength);
 	mbedtls_md_hmac_finish(&ctx, dest);
-	mbedtls_md_free(&ctx);
 }
 
 // ESP32 AES128 CBC

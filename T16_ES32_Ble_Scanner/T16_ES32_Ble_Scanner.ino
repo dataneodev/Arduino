@@ -17,6 +17,11 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
     }
 };
 
+void scanCompleteCB(BLEScanResults result){
+
+  
+}
+
 void setup() {
   Serial.begin(115200);
   Serial.println("Scanning...");

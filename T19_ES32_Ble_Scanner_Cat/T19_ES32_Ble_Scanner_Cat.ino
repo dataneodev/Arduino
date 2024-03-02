@@ -24,7 +24,7 @@ BLEScanner ScannerGK(&devices[0], sizeof(devices) / sizeof(*devices));
 void setup() {
   Serial.begin(115200);
   Serial.println("Scanning...");
-  ScannerGK.start();
+  ScannerGK.init();
 }
 
 void loop() {

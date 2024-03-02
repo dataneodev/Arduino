@@ -6,7 +6,7 @@
  * network topology allowing messages to be routed to nodes.
  *
  * Created by Henrik Ekblad <henrik.ekblad@mysensors.org>
- * Copyright (C) 2013-2020 Sensnology AB
+ * Copyright (C) 2013-2019 Sensnology AB
  * Full contributor list: https://github.com/mysensors/MySensors/graphs/contributors
  *
  * Documentation: http://www.mysensors.org
@@ -1217,16 +1217,6 @@
 #ifndef MY_SMART_SLEEP_WAIT_DURATION_MS
 #define MY_SMART_SLEEP_WAIT_DURATION_MS (500ul)
 #endif
-
-/**
- * @def MY_SLEEP_HANDLER
- * @brief Define this to enable the custom pre- & post-sleep handler.
- *
- * Sleep handler is invoked right before entering the sleep function, as well a just after the sleep
- * completes. Applications can use this handler to turn off peripherals or put pins into a best
- * possible low power state according to the concrete hardware design.
- */
-//#define MY_SLEEP_HANDLER
 /** @}*/ // End of SleepSettingGrpPub group
 
 /**
@@ -1363,6 +1353,7 @@
 #define MY_INCLUSION_BUTTON_PRESSED (LOW)
 #endif
 
+
 /**************************************
 * Ethernet Gateway Transport Defaults
 ***************************************/
@@ -1423,7 +1414,7 @@
 
 /**
 * @def MY_HOSTNAME
-* @brief Hostname of your device. Only supported on ESP8266 and ESP32.
+* @brief Hostname of your device
 */
 #ifndef MY_HOSTNAME
 #define MY_HOSTNAME "MYSENSORS_DEVICE"
@@ -1495,63 +1486,6 @@
 //#define MY_MQTT_SUBSCRIBE_TOPIC_PREFIX "mygateway1-in"
 
 /**
- * @def MY_MQTT_CA_CERT
- * @brief Set a specific CA certificate needed to validate MQTT server against. Use the certificate as a trust anchor, accepting remote certificates signed by it.
- *
- * This define is mandatory when you need connect MQTT over SSL/TLS.
- * Example: @code
- *
- * const char mqtt_ca_cert[] PROGMEM = R"EOF(
- * ----- BEGIN THE CERTIFICATE -----
- * XXX ... XXX
- * ----- FINISH CERTIFICATE -----
- * )EOF";
- *
- * #define MY_MQTT_CA_CERT mqtt_ca_cert
- *
- * @endcode
- */
-//#define MY_MQTT_CA_CERT
-
-/**
- * @def MY_MQTT_CLIENT_CERT
- * @brief Set a client certificate to send to a MQTT server that requests one over TLS connection.
- *
- * This define is mandatory when you need connect MQTT over SSL/TLS.
- * Example: @code
- *
- * const char mqtt_client_cert[] PROGMEM = R"EOF(
- * ----- BEGIN THE CERTIFICATE -----
- * XXX ... XXX
- * ----- FINISH CERTIFICATE -----
- * )EOF";
- *
- * #define MY_MQTT_CLIENT_CERT mqtt_client_cert
- *
- * @endcode
- */
-//#define MY_MQTT_CLIENT_CERT
-
-/**
- * @def MY_MQTT_CLIENT_KEY
- * @brief Set a client private key to send to a MQTT server that requests one over TLS connection.
- *
- * This define is mandatory when you need connect MQTT over SSL/TLS.
- * Example: @code
- *
- * const char mqtt_client_key[] PROGMEM = R"EOF(
- * ----- START THE RSA PRIVATE KEY -----
- * XXX ... XXX
- * ----- FINISH THE RSA PRIVATE KEY -----
- * )EOF";
- *
- * #define MY_MQTT_CLIENT_KEY mqtt_client_key
- *
- * @endcode
- */
-//#define MY_MQTT_CLIENT_KEY
-
-/**
  * @def MY_IP_ADDRESS
  * @brief Static ip address of gateway. If not defined, DHCP will be used.
  *
@@ -1581,6 +1515,14 @@
  * @note This is not supported on ENC28J60 and Linux based GWs.
  */
 //#define MY_USE_UDP
+
+/**
+ * @def MY_IP_RENEWAL_INTERVAL_MS
+ * @brief DHCP, default renewal setting in milliseconds.
+ */
+#ifndef MY_IP_RENEWAL_INTERVAL_MS
+#define MY_IP_RENEWAL_INTERVAL_MS (60*1000ul)
+#endif
 
 /**
  * @def MY_MAC_ADDRESS
@@ -2320,9 +2262,6 @@
 #define MY_MQTT_CLIENT_ID
 #define MY_MQTT_PUBLISH_TOPIC_PREFIX
 #define MY_MQTT_SUBSCRIBE_TOPIC_PREFIX
-#define MY_MQTT_CA_CERT
-#define MY_MQTT_CLIENT_CERT
-#define MY_MQTT_CLIENT_KEY
 #define MY_SIGNAL_REPORT_ENABLED
 // general
 #define MY_WITH_LEDS_BLINKING_INVERSE
@@ -2330,7 +2269,6 @@
 #define MY_DISABLE_REMOTE_RESET
 #define MY_DISABLE_RAM_ROUTING_TABLE_FEATURE
 #define MY_LOCK_DEVICE
-#define MY_SLEEP_HANDLER
 // core
 #define MY_CORE_ONLY
 // GW
@@ -2344,6 +2282,7 @@
 #define MY_WIFI_SSID
 #define MY_WIFI_BSSID
 #define MY_WIFI_PASSWORD
+#define MY_HOSTNAME
 #define MY_GATEWAY_LINUX
 #define MY_GATEWAY_TINYGSM
 #define MY_GATEWAY_MQTT_CLIENT

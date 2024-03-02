@@ -1,4 +1,4 @@
-class BLEScanner {
+class BLEScanner : public BLEAdvertisedDeviceCallbacks {
 public:
 
   BLEScanner(DeviceDef* dev, int deviceCount) {
@@ -13,6 +13,7 @@ public:
 
     BLEDevice::init("");
     _pBLEScan = BLEDevice::getScan();
+   // _pBLEScan->setAdvertisedDeviceCallbacks(this);
     _pBLEScan->setActiveScan(true);
     _pBLEScan->setInterval(100);
     _pBLEScan->setWindow(99);
@@ -105,6 +106,40 @@ public:
     _pBLEScan->clearResults();
   }
 
+  void onResult(BLEAdvertisedDevice advertisedDevice) {
+    BLEAddress adress = advertisedDevice.getAddress();
+
+#if defined(DEBUG_GK)
+    Serial.print("BLEAdvertised device: ");
+    Serial.println(adress.toString().c_str());
+#endif
+
+    int devId = getDeviceId(adress);
+    if (devId == 0) {
+       return;
+    }
+
+    int rssi = advertisedDevice.getRSSI();
+
+    if (_lastDeviceId != 0 && rssi < _lastRssi) {
+      return;
+    }
+
+    if (rssi < MIN_RSSI) {
+#if defined(DEBUG_GK)
+      Serial.print("Found match device with weak RSSI Id: ");
+      Serial.println(devId);
+
+      Serial.print("RSSI: ");
+      Serial.println(rssi);
+#endif
+       return;
+    }
+
+    _lastRssi = rssi;
+    _lastDeviceId = devId;
+  }
+
   bool isAuth() {
     if (_defindedDevicesCount == 0) {
       return true;
@@ -127,10 +162,10 @@ public:
     }
 
     for (int i = 0; i < _defindedDevicesCount; i++) {
-      DeviceDef* curr = _defindedDevices + i * sizeof(DeviceDef);
+      DeviceDef curr = _defindedDevices[i];
 
-      if (curr->GetId() == _lastDeviceId) {
-        return curr->GetName();
+      if (curr.GetId() == _lastDeviceId) {
+        return curr.GetName();
       }
     }
 
@@ -141,8 +176,8 @@ private:
   int _defindedDevicesCount;
   DeviceDef* _defindedDevices;
 
-  int scanPeriod = 4000;  // milisecond
-  int scanTime = 2;       //In seconds
+  int scanPeriod = 7000;  // milisecond
+  int scanTime = 4;       //In seconds
 
   BLEScan* _pBLEScan;
 

@@ -6,7 +6,7 @@
 * network topology allowing messages to be routed to nodes.
 *
 * Created by Henrik Ekblad <henrik.ekblad@mysensors.org>
-* Copyright (C) 2013-2020 Sensnology AB
+* Copyright (C) 2013-2019 Sensnology AB
 * Full contributor list: https://github.com/mysensors/MySensors/graphs/contributors
 *
 * Documentation: http://www.mysensors.org
@@ -83,14 +83,7 @@
 #endif /* End of MY_IP_ADDRESS */
 
 #if defined(MY_GATEWAY_ESP8266) || defined(MY_GATEWAY_ESP32)
-#if defined(MY_MQTT_CA_CERT) && defined(MY_MQTT_CLIENT_CERT) && defined(MY_MQTT_CLIENT_KEY)
-#define EthernetClient WiFiClientSecure
-BearSSL::X509List ca_cert(MY_MQTT_CA_CERT);
-BearSSL::X509List client_cert(MY_MQTT_CLIENT_CERT);
-BearSSL::PrivateKey client_key(MY_MQTT_CLIENT_KEY);
-#else
 #define EthernetClient WiFiClient
-#endif /* End of MY_MQTT_CA_CERT && MY_MQTT_CLIENT_CERT && MY_MQTT_CLIENT_KEY */
 #elif defined(MY_GATEWAY_LINUX)
 // Nothing to do here
 #else
@@ -117,7 +110,6 @@ static bool _MQTT_connecting = true;
 static bool _MQTT_available = false;
 static MyMessage _MQTT_msg;
 
-// cppcheck-suppress constParameter
 bool gatewayTransportSend(MyMessage &message)
 {
 	if (!_MQTT_client.connected()) {
@@ -145,17 +137,21 @@ void incomingMQTT(char *topic, uint8_t *payload, unsigned int length)
 bool reconnectMQTT(void)
 {
 	GATEWAY_DEBUG(PSTR("GWT:RMQ:CONNECTING...\n"));
-
 	// Attempt to connect
 	if (_MQTT_client.connect(MY_MQTT_CLIENT_ID, MY_MQTT_USER, MY_MQTT_PASSWORD)) {
 		GATEWAY_DEBUG(PSTR("GWT:RMQ:OK\n"));
 		// Send presentation of locally attached sensors (and node if applicable)
 		presentNode();
 		// Once connected, publish subscribe
-		char inTopic[strlen(MY_MQTT_SUBSCRIBE_TOPIC_PREFIX) + strlen("/+/+/+/+/+")];
-		(void)strncpy(inTopic, MY_MQTT_SUBSCRIBE_TOPIC_PREFIX, strlen(MY_MQTT_SUBSCRIBE_TOPIC_PREFIX) + 1);
-		(void)strcat(inTopic, "/+/+/+/+/+");
-		_MQTT_client.subscribe(inTopic);
+		if (__builtin_constant_p(MY_MQTT_SUBSCRIBE_TOPIC_PREFIX)) {
+			// to save some memory
+			_MQTT_client.subscribe(MY_MQTT_SUBSCRIBE_TOPIC_PREFIX "/+/+/+/+/+");
+		} else {
+			char inTopic[strlen(MY_MQTT_SUBSCRIBE_TOPIC_PREFIX) + strlen("/+/+/+/+/+")];
+			(void)strncpy(inTopic, MY_MQTT_SUBSCRIBE_TOPIC_PREFIX, strlen(MY_MQTT_SUBSCRIBE_TOPIC_PREFIX) + 1);
+			(void)strcat(inTopic, "/+/+/+/+/+");
+			_MQTT_client.subscribe(inTopic);
+		}
 
 		return true;
 	}
@@ -263,11 +259,6 @@ bool gatewayTransportInit(void)
 #endif /* End of MY_IP_ADDRESS */
 	(void)WiFi.begin(MY_WIFI_SSID, MY_WIFI_PASSWORD, 0, MY_WIFI_BSSID);
 #endif
-
-#if defined(MY_MQTT_CA_CERT) && defined(MY_MQTT_CLIENT_CERT) && defined(MY_MQTT_CLIENT_KEY)
-	_MQTT_ethClient.setTrustAnchors(&ca_cert);
-	_MQTT_ethClient.setClientRSACert(&client_cert, &client_key);
-#endif /* End of MY_MQTT_CA_CERT && MY_MQTT_CLIENT_CERT && MY_MQTT_CLIENT_KEY */
 
 	gatewayTransportConnect();
 
