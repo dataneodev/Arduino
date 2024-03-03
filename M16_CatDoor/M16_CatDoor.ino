@@ -350,13 +350,13 @@ void sentMyAllClientOpenDoorDefaultStatus() {
 #if defined(DEBUG_GK)
   Serial.println("sentMyAllClientOpenDoorDefaultStatus");
 #endif
-
+  bool isDoorOpen = EEStorage.isDoorAlwaysOpen();
   int devCount = ScannerGK.getDefindedDevicesCount();
 
-  sentMyClientOpenDoorStatus(1, false);
+  sentMyClientOpenDoorStatus(1, isDoorOpen);
 
   for (int i = 0; i < devCount; i++) {
-    sentMyClientOpenDoorStatus(devices[i].GetId(), false);
+    sentMyClientOpenDoorStatus(devices[i].GetId(), isDoorOpen);
   }
 }
 
