@@ -271,7 +271,7 @@ private:
 
 #include <MySensors.h>
 #include <StateMachine.h>
-#include "24C32.h"
+#include <24C32.h>
 #include "Storage.h"
 #include "BLEScanner.h"
 
