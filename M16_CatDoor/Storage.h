@@ -45,10 +45,6 @@ public:
   }
 
   void setDoorOpen(bool isOpen) {
-    if (!_isInicjalized) {
-      return;
-    }
-
     _isDoorOpen = isOpen;
     EEPROM24C32->writeByte(106, isOpen ? TRUE_VALUE : FALSE_VALUE, false, false);
 
@@ -59,29 +55,17 @@ public:
   }
 
   void setDoorAlwaysOpen(bool isAlwaysOpen) {
-    if (!_isInicjalized) {
-      return;
-    }
-
     _alwaysOpen = isAlwaysOpen;
     EEPROM24C32->writeByte(114, isAlwaysOpen ? TRUE_VALUE : FALSE_VALUE, false, false);
   }
 
 
   void setDoorAlwaysClose(bool isAlwaysClose) {
-    if (!_isInicjalized) {
-      return;
-    }
-
     _alwaysClose = isAlwaysClose;
     EEPROM24C32->writeByte(115, isAlwaysClose ? TRUE_VALUE : FALSE_VALUE, false, false);
   }
 
   void setAthorizationBle(bool bleAuth) {
-    if (!_isInicjalized) {
-      return;
-    }
-
     _useBleAuth = bleAuth;
     EEPROM24C32->writeByte(116, bleAuth ? TRUE_VALUE : FALSE_VALUE, false, false);
   }

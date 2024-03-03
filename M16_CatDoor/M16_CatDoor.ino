@@ -22,8 +22,8 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #include "DeviceDef.h"
 
 DeviceDef devices[] = {
-  DeviceDef(1, new BLEAddress("CB:F7:92:0F:3B:2E"), "Myszka"),
-  DeviceDef(2, new BLEAddress("6b:12:b9:ab:dc:6d"), "Telefon")
+  //DeviceDef(1, new BLEAddress("CB:F7:92:0F:3B:2E"), "Myszka"),
+  //DeviceDef(2, new BLEAddress("6b:12:b9:ab:dc:6d"), "Telefon")
 };
 
 #define ALARM_ENABLED  // w przypadku błędow uruchamiać alarm dzwiękowy
@@ -350,10 +350,7 @@ void sentMyAllClientOpenDoorDefaultStatus() {
 
   int devCount = ScannerGK.getDefindedDevicesCount();
 
-  if (devCount == 0) {
-    sentMyClientOpenDoorStatus(1, false);
-    return;
-  }
+  sentMyClientOpenDoorStatus(1, false);
 
   for (int i = 0; i < devCount; i++) {
     sentMyClientOpenDoorStatus(devices[i].GetId(), false);
@@ -926,8 +923,8 @@ void presentation()  // MySensors
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
 
   present(MS_OPEN_DOOR_COUNT_ID, S_INFO, "Ilość otwarcia drzwi");
-  present(MS_OPEN_DOOR_ID, S_BINARY, "Drzwi zawsze zamknięte");
-  present(MS_CLOSE_DOOR_ID, S_BINARY, "Drzwi zawsze otwarte");
+  present(MS_OPEN_DOOR_ID, S_BINARY, "Drzwi zawsze otwarte");
+  present(MS_CLOSE_DOOR_ID, S_BINARY, "Drzwi zawsze zamknięte");
   present(MS_AUTH_BLE_ID, S_BINARY, "Autoryzacja BLE");
   present(1, S_DOOR, SKETCH_NAME);
 
@@ -977,7 +974,7 @@ void receive(const MyMessage &message) {
   if (message.isAck())
     return;
 
-  if (MS_OPEN_DOOR_ID == message.sensor) {
+  if (MS_OPEN_DOOR_ID == message.sensor && message.getType() == V_STATUS) {
     if (message.getBool() && EEStorage.isDoorAlwaysClose()) {
       EEStorage.setDoorAlwaysClose(false);
       sentMyDoorAlwaysCloseStatus();
@@ -987,7 +984,7 @@ void receive(const MyMessage &message) {
     sentMyDoorAlwaysOpenStatus();
   }
 
-  if (MS_CLOSE_DOOR_ID == message.sensor) {
+  if (MS_CLOSE_DOOR_ID == message.sensor && message.getType() == V_STATUS) {
     if (message.getBool() && EEStorage.isDoorAlwaysOpen()) {
       EEStorage.setDoorAlwaysOpen(false);
       sentMyDoorAlwaysOpenStatus();
@@ -997,7 +994,7 @@ void receive(const MyMessage &message) {
     sentMyDoorAlwaysCloseStatus();
   }
 
-  if (MS_AUTH_BLE_ID == message.sensor) {
+  if (MS_AUTH_BLE_ID == message.sensor && message.getType() == V_STATUS) {
     EEStorage.setAthorizationBle(message.getBool());
     sentMyBleAuthStatus();
   }
