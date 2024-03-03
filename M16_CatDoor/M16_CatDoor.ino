@@ -22,8 +22,8 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #include "DeviceDef.h"
 
 DeviceDef devices[] = {
-  //DeviceDef(1, new BLEAddress("CB:F7:92:0F:3B:2E"), "Myszka"),
-  //DeviceDef(2, new BLEAddress("6b:12:b9:ab:dc:6d"), "Telefon")
+  DeviceDef(1, new BLEAddress("CB:F7:92:0F:3B:2E"), "Myszka"),
+  DeviceDef(2, new BLEAddress("6b:12:b9:ab:dc:6d"), "Telefon")
 };
 
 #define ALARM_ENABLED  // w przypadku błędow uruchamiać alarm dzwiękowy
@@ -320,6 +320,9 @@ void sentMyDoorAlwaysCloseStatus() {
 }
 
 void sentMyBleAuthStatus() {
+  if (ScannerGK.getDefindedDevicesCount() == 0) {
+    return;
+  }
 #if defined(DEBUG_GK)
   Serial.print("sentMyBleAuthStatus");
   Serial.println(EEStorage.useAthorizationBle() ? "1" : "0");
@@ -713,10 +716,10 @@ bool T_S_WAKE_UP_S_MOTION_DETECTION() {
 }
 
 bool T_S_MOTION_DETECTION_S_MOTION_DETECTED() {
-  if(EEStorage.isDoorAlwaysOpen() ){
-     return T.isElapsed(100);
+  if (EEStorage.isDoorAlwaysOpen()) {
+    return T.isElapsed(100);
   }
-  
+
   if (M3.ping() == MOTIONS_DETECTED || M3.ping() == ONE_MOTION_DETECTED) {
     return T.isElapsed(100);
   }
@@ -925,7 +928,10 @@ void presentation()  // MySensors
   present(MS_OPEN_DOOR_COUNT_ID, S_INFO, "Ilość otwarcia drzwi");
   present(MS_OPEN_DOOR_ID, S_BINARY, "Drzwi zawsze otwarte");
   present(MS_CLOSE_DOOR_ID, S_BINARY, "Drzwi zawsze zamknięte");
-  present(MS_AUTH_BLE_ID, S_BINARY, "Autoryzacja BLE");
+  if (ScannerGK.getDefindedDevicesCount() > 0) {
+    present(MS_AUTH_BLE_ID, S_BINARY, "Autoryzacja BLE");
+  }
+
   present(1, S_DOOR, SKETCH_NAME);
 
   if (ScannerGK.getDefindedDevicesCount() > 0) {
@@ -995,6 +1001,10 @@ void receive(const MyMessage &message) {
   }
 
   if (MS_AUTH_BLE_ID == message.sensor && message.getType() == V_STATUS) {
+    if (ScannerGK.getDefindedDevicesCount() == 0) {
+      return;
+    }
+
     EEStorage.setAthorizationBle(message.getBool());
     sentMyBleAuthStatus();
   }
@@ -1013,7 +1023,6 @@ void inicjalizePins() {
 
   pinMode(OUPUT_1_PIN, OUTPUT);
   digitalWrite(OUPUT_1_PIN, LOW);
-  //analogWriteResolution(OUPUT_1_PIN, 8);
   analogWriteFrequency(OUPUT_1_PIN, 1000);
 
   pinMode(OUPUT_2_PIN, OUTPUT);
