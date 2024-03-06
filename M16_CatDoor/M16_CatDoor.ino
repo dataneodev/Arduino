@@ -409,6 +409,13 @@ void allLedOff() {
   Out2.off();
   Out3.off();
 }
+
+const SpeedSetting openingBuzzerSpeedSetting = {
+  .on_ms = 150,
+  .off_ms = 150,
+  .pause_ms = 200,
+  .ending_ms = 400,
+};
 StateMachine SM = StateMachine();
 
 State *S_START_UP = SM.addState(&s_START_UP);
@@ -543,7 +550,7 @@ void s_FATAL_ERROR() {
 #endif
 
 #ifdef ALARM_ENABLED
-    Out3.blink();  // error dla buzzera
+    Out3.blink(SPEED_RAPID);  // error dla buzzera
 #endif
   }
 }
@@ -557,7 +564,12 @@ void s_MOTION_DETECTED() {
 
     T.stateStart();
 
-    allLedOff();
+    Out1.off();
+    Out2.off();
+
+#ifdef ALARM_ENABLED
+    Out3.pattern(2, openingBuzzerSpeedSetting, false);
+#endif
   }
 }
 
@@ -627,7 +639,7 @@ void s_DOOR_TO_LONG_OPEN() {
 #endif
 
 #ifdef ALARM_ENABLED
-    Out3.blink();  // error dla buzzera
+    Out3.blink(SPEED_RAPID);  // error dla buzzera
 #endif
   }
 }
@@ -653,7 +665,10 @@ void s_CLOSING_DOOR() {
     Out1.updateFadeSpeed(FADE_OFF);
     Out1.blink(closingSetting);
     Out2.off();
-    Out3.off();
+
+#ifdef ALARM_ENABLED
+    Out3.pattern(3, openingBuzzerSpeedSetting, false);
+#endif
   }
 }
 
