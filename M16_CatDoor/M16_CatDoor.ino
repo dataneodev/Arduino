@@ -594,7 +594,6 @@ void s_OPENING_DOOR() {
     Out1.blink(openingSetting);
 
     Out2.off();
-    Out3.off();
 
     EEStorage.setDoorOpen(true);
   }
