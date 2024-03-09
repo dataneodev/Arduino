@@ -39,11 +39,11 @@ DeviceDef devices[] = {
 #define MOTION_2_DELAY 4 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a wykryciem uruchamiajacym otwarcie dla sensoru 2,
 #define MOTION_2_DELAY_WAIT 4 * 1000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 2,
 
-#define OPENING_DOOR_TIME 11 * 1000                 // czas otwierania drzwi
-#define OPEN_DOOR_TIME 10 * 1000                    // czas oczekiwania na zamknięcie drzwi od ostatnieo wykrycia ruchu
-#define TO_LONG_OPEN_DOOR_TIME 100 * 1000           // czas zbyt długiego otwarcia drzwi aby włączyc alarm
-#define TIME_SLEEP_AFTER_LAST_DETECTION 120 * 1000  // czas przejscia w deep sleep od ostatniego wykrycia ruchu
-#define DOOR_INTERRUPTED_WAITING 4 * 1000           // czas zatrzymania w przypadku wykrycia ruchy przy zamykaniu - po tym czasie następuje otwarcie
+#define OPENING_DOOR_TIME 11 * 1000                // czas otwierania drzwi
+#define OPEN_DOOR_TIME 10 * 1000                   // czas oczekiwania na zamknięcie drzwi od ostatnieo wykrycia ruchu
+#define TO_LONG_OPEN_DOOR_TIME 100 * 1000          // czas zbyt długiego otwarcia drzwi aby włączyc alarm
+#define TIME_SLEEP_AFTER_LAST_DETECTION 45 * 1000  // czas przejscia w deep sleep od ostatniego wykrycia ruchu
+#define DOOR_INTERRUPTED_WAITING 4 * 1000          // czas zatrzymania w przypadku wykrycia ruchy przy zamykaniu - po tym czasie następuje otwarcie
 
 #define MY_NODE_ID 95  // id wezła dla my sensors
 
@@ -260,6 +260,7 @@ private:
 #pragma endregion TYPES
 
 #pragma region GLOBAL_VARIABLE
+#include "esp_wifi.h"
 #include "driver/gpio.h"
 #include <Wire.h>
 
@@ -502,6 +503,40 @@ void s_MOTION_DETECTION() {
   }
 }
 
+#include "esp_bt_main.h"
+#include "esp_bt.h"
+
+void enableBle() {
+  esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
+  esp_err_t ret = esp_bt_controller_init(&bt_cfg);
+  if (ret) {
+    return;
+  }
+
+  ret = esp_bt_controller_enable(ESP_BT_MODE_BLE);
+  if (ret) {
+    return;
+  }
+
+  ret = esp_bluedroid_init();
+  if (ret) {
+    return;
+  }
+
+  ret = esp_bluedroid_enable();
+  if (ret) {
+    return;
+  }
+}
+
+void disableBle() {
+  esp_bluedroid_disable();
+  esp_bluedroid_deinit();
+  esp_bt_controller_disable();
+  esp_bt_controller_deinit();
+  esp_bt_controller_mem_release(ESP_BT_MODE_BLE);
+}
+
 State *S_SLEEP = SM.addState(&s_SLEEP);
 void s_SLEEP() {
   if (SM.executeOnce) {
@@ -517,11 +552,21 @@ void s_SLEEP() {
 
     digitalWrite(POWER_PIN, LOW);
 
+    if (ScannerGK.getDefindedDevicesCount() > 0) {
+      esp_wifi_stop();
+      disableBle();
+    }
+
     /// sleep
     esp_light_sleep_start();
 
     //wakeup
     digitalWrite(POWER_PIN, HIGH);
+
+    if (ScannerGK.getDefindedDevicesCount() > 0) {
+      esp_wifi_start();
+      enableBle();
+    }
 
 #if defined(DEBUG_GK)
     Serial.println("AWAKE_FROM_SLEEP");
@@ -748,7 +793,8 @@ bool T_S_MOTION_DETECTION_S_MOTION_DETECTED() {
     return false;
   }
 
-  if (EEStorage.useAthorizationBle()) {
+  if (EEStorage.useAthorizationBle())
+  {
     ScannerGK.scan();
     if (!ScannerGK.isAuth()) {
       return false;
@@ -967,8 +1013,14 @@ void setup() {
   inicjalizeI2C();
 
   EEStorage.Inicjalize();
-  ScannerGK.init();
 
+  if (ScannerGK.getDefindedDevicesCount() == 0) {
+    esp_wifi_stop();
+  } else {
+    esp_wifi_start();
+  }
+
+  ScannerGK.init();
   defineTransition();
   setDefaultState();
 }
