@@ -27,6 +27,7 @@ DeviceDef devices[] = {
 };
 
 #define ALARM_ENABLED  // w przypadku błędow uruchamiać alarm dzwiękowy
+#define OPEN_CLOSE_SOUND  // sygnał dzwiekowy przy otwarciu/zamknieciu drzwi
 //#define OUT_2_ENABLED  // czy dioda 2 jest zainstalowana - czerwona błędu - inne zachowanie jak są 2 diody
 
 #define BLE_AUTH  // autoryzacja ble wymagana aby otworzyć drzwi - sterowane przez mysensors, aby zmienic trzeba
@@ -793,8 +794,7 @@ bool T_S_MOTION_DETECTION_S_MOTION_DETECTED() {
     return false;
   }
 
-  if (EEStorage.useAthorizationBle())
-  {
+  if (EEStorage.useAthorizationBle()) {
     ScannerGK.scan();
     if (!ScannerGK.isAuth()) {
       return false;
@@ -985,7 +985,7 @@ void presentation()  // MySensors
 {
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
 
-  present(MS_OPEN_DOOR_COUNT_ID, S_INFO, "Ilość otwarcia drzwi");
+  present(MS_OPEN_DOOR_COUNT_ID, S_INFO, "Liczba czykli otwarcia drzwi");
   present(MS_OPEN_DOOR_ID, S_BINARY, "Drzwi zawsze otwarte");
   present(MS_CLOSE_DOOR_ID, S_BINARY, "Drzwi zawsze zamknięte");
   if (ScannerGK.getDefindedDevicesCount() > 0) {
@@ -1016,11 +1016,13 @@ void setup() {
 
   if (ScannerGK.getDefindedDevicesCount() == 0) {
     esp_wifi_stop();
+    disableBle();
   } else {
     esp_wifi_start();
+    enableBle();
+    ScannerGK.init();
   }
 
-  ScannerGK.init();
   defineTransition();
   setDefaultState();
 }
