@@ -108,6 +108,7 @@ AltSoftSerial _dev;
 #define MY_RS485                // Enable RS485 transport layer
 #define MY_RS485_DE_PIN D3      // Define this to enables DE-pin management on defined pin
 #define MY_RS485_BAUD_RATE 9600 // Set RS485 baud rate to use
+#define MY_RS485_SOH_COUNT 3
 #include <SoftwareSerial.h>     //EspSoftwareSerial - dla płytki esp8266
 SoftwareSerial swESP(D4, D2);   //RX - RO, TX - DI
 #define MY_RS485_ESP swESP

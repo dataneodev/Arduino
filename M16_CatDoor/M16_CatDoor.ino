@@ -72,8 +72,8 @@ DeviceDef devices[] = {
 #define SDA_PIN 6
 #define SCL_PIN 7
 
-#define RX_PIN 21
-#define TX_PIN 23
+#define RX_PIN 21 //RX - RO,
+#define TX_PIN 23 //TX - DI
 #pragma endregion BOARD_PIN_CONFIGURATION
 
 #pragma region MY_SENSORS_CONFIGURATION
@@ -83,6 +83,7 @@ DeviceDef devices[] = {
 #define MY_RS485_DE_PIN 22         // Define this to enables DE-pin management on defined pin
 #define MY_RS485_BAUD_RATE 9600    // Set RS485 baud rate to use
 #define MY_RS485_HWSERIAL Serial1  //
+#define MY_RS485_SOH_COUNT 3
 #define MY_TRANSPORT_WAIT_READY_MS 1
 
 #define MS_OPEN_DOOR_COUNT_ID 20
