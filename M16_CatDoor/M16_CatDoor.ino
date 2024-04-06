@@ -27,23 +27,23 @@ DeviceDef devices[] = {
 };
 
 #define ALARM_ENABLED  // w przypadku błędow uruchamiać alarm dzwiękowy
-#define OPEN_CLOSE_SOUND  // sygnał dzwiekowy przy otwarciu/zamknieciu drzwi
-//#define OUT_2_ENABLED  // czy dioda 2 jest zainstalowana - czerwona błędu - inne zachowanie jak są 2 diody
+//#define OPEN_CLOSE_SOUND  // sygnał dzwiekowy przy otwarciu/zamknieciu drzwi
+#define OUT_2_ENABLED  // czy są 2 diodu - OUT1 -zielona, OUT2 - czerwona
 
 #define BLE_AUTH  // autoryzacja ble wymagana aby otworzyć drzwi - sterowane przez mysensors, aby zmienic trzeba
 
 #define USE_M1_M2_ON_DOOR_CLOSING  // czy wykrycie ruchy przez m1 i m2 także przerywa zamykanie drzwi
 
-#define MOTION_1_DELAY 4 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a kolejnym wykryciem uruchamiajacym otwarcie drzwi dla sensoru 1,
+#define MOTION_1_DELAY 5 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a kolejnym wykryciem uruchamiajacym otwarcie drzwi dla sensoru 1,
 #define MOTION_1_DELAY_WAIT 4 * 1000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 1,
 
-#define MOTION_2_DELAY 4 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a wykryciem uruchamiajacym otwarcie dla sensoru 2,
+#define MOTION_2_DELAY 5 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a wykryciem uruchamiajacym otwarcie dla sensoru 2,
 #define MOTION_2_DELAY_WAIT 4 * 1000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 2,
 
 #define OPENING_DOOR_TIME 11 * 1000                // czas otwierania drzwi
 #define OPEN_DOOR_TIME 10 * 1000                   // czas oczekiwania na zamknięcie drzwi od ostatnieo wykrycia ruchu
 #define TO_LONG_OPEN_DOOR_TIME 100 * 1000          // czas zbyt długiego otwarcia drzwi aby włączyc alarm
-#define TIME_SLEEP_AFTER_LAST_DETECTION 45 * 1000  // czas przejscia w deep sleep od ostatniego wykrycia ruchu
+#define TIME_SLEEP_AFTER_LAST_DETECTION 30 * 1000  // czas przejscia w deep sleep od ostatniego wykrycia ruchu
 #define DOOR_INTERRUPTED_WAITING 4 * 1000          // czas zatrzymania w przypadku wykrycia ruchy przy zamykaniu - po tym czasie następuje otwarcie
 
 #define MY_NODE_ID 95  // id wezła dla my sensors
@@ -614,7 +614,7 @@ void s_MOTION_DETECTED() {
     Out1.off();
     Out2.off();
 
-#ifdef ALARM_ENABLED
+#ifdef OPEN_CLOSE_SOUND
     Out3.pattern(2, openingBuzzerSpeedSetting, false);
 #endif
   }
@@ -712,7 +712,7 @@ void s_CLOSING_DOOR() {
     Out1.blink(closingSetting);
     Out2.off();
 
-#ifdef ALARM_ENABLED
+#ifdef OPEN_CLOSE_SOUND
     Out3.pattern(3, openingBuzzerSpeedSetting, false);
 #endif
   }
