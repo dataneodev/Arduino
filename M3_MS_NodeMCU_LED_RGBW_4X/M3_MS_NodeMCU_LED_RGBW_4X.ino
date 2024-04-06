@@ -79,41 +79,36 @@ AltSoftSerial _dev;
 
 /* #region  user configuration */
 #define SOFTWARE_VERION "1.0"
-#define MIN_LIGHT_LEVEL 0     // minimalna jasnosc
-#define MAX_LIGHT_LEVEL 1000  // maksymalna jasnosc nie moze przekroczyc PWM_PERIOD!!!
-#define STARTUP_LIGHT_LEVEL 5 //0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
+#define MIN_LIGHT_LEVEL 0      // minimalna jasnosc
+#define MAX_LIGHT_LEVEL 1000   // maksymalna jasnosc nie moze przekroczyc PWM_PERIOD!!! 4kHz - 1000
+#define STARTUP_LIGHT_LEVEL 5  //0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
 
 //tylko 1 z poniższych opcji moze być wybrana :
 #define RGBW_MODE
 //#define RGB_MODE
 //#define SINGLE_LED_MODE
 
-#define MY_NODE_ID 32 // id węzła my sensors - każdy sterownik musi miec inny numer
+#define MY_NODE_ID 30  // id węzła my sensors - każdy sterownik musi miec inny numer
 #define DIMMER_ID 1
 #define RGBW_ID 1
 
 /* #endregion */
 
 /* #region  const configuration */
-#define MY_RAM_ROUTING_TABLE_FEATURE
 #define MY_DISABLED_SERIAL
-#define MY_PARENT_NODE_ID 0 //direct connect to gateway
-//#define MY_PARENT_NODE_IS_STATIC //direct connect to gateway
-//#define MY_TRANSPORT_WAIT_READY_MS 10000
-#define MY_TRANSPORT_SANITY_CHECK
-#define MY_TRANSPORT_SANITY_CHECK_INTERVAL_MS 15 * 60 * 1000
-//#define MY_GATEWAY_SERIAL
 //#define MY_DEBUG
+#define MY_TRANSPORT_WAIT_READY_MS 1
+
 //RS485
-#define MY_RS485                // Enable RS485 transport layer
-#define MY_RS485_DE_PIN D3      // Define this to enables DE-pin management on defined pin
-#define MY_RS485_BAUD_RATE 9600 // Set RS485 baud rate to use
+#define MY_RS485                 // Enable RS485 transport layer
+#define MY_RS485_DE_PIN D3       // Define this to enables DE-pin management on defined pin
+#define MY_RS485_BAUD_RATE 9600  // Set RS485 baud rate to use
 #define MY_RS485_SOH_COUNT 3
-#include <SoftwareSerial.h>     //EspSoftwareSerial - dla płytki esp8266
-SoftwareSerial swESP(D4, D2);   //RX - RO, TX - DI
+#include <SoftwareSerial.h>    //EspSoftwareSerial - dla płytki esp8266
+SoftwareSerial swESP(D4, D2);  //RX - RO, TX - DI
 #define MY_RS485_ESP swESP
 
-//realy
+//relay
 #define RELAY_PIN D8
 
 //24C32
@@ -148,30 +143,29 @@ SoftwareSerial swESP(D4, D2);   //RX - RO, TX - DI
 // Period of PWM frequency -> default of SDK: 5000 -> * 200ns ^= 1 kHz
 
 //#define PWM_USE_NMI 1
-#define PWM_PERIOD 1000 //4kH
+#define PWM_PERIOD 1000  //4kH
 #define PWM_CHANNELS 4
 
 uint32 io_info[PWM_CHANNELS][3] = {
-    // MUX, FUNC, PIN
-    {PERIPHS_IO_MUX_GPIO5_U, FUNC_GPIO5, 5},  // D1
-                                              //	{PERIPHS_IO_MUX_GPIO4_U, FUNC_GPIO4,   4}, // D2
-                                              //	{PERIPHS_IO_MUX_GPIO0_U, FUNC_GPIO0,   0}, // D3
-                                              //	{PERIPHS_IO_MUX_GPIO2_U, FUNC_GPIO2,   2}, // D4
-                                              //	{PERIPHS_IO_MUX_MTMS_U,  FUNC_GPIO14, 14}, // D5
-                                              //  {PERIPHS_IO_MUX_MTCK_U, FUNC_GPIO13, 13}, // D7
-                                              //  {PERIPHS_IO_MUX_MTDO_U, FUNC_GPIO15, 15}, // D8
-    {PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO12, 12}, // D6
-    {PERIPHS_IO_MUX_U0RXD_U, FUNC_GPIO3, 3},  // RX
-    {PERIPHS_IO_MUX_U0TXD_U, FUNC_GPIO1, 1}   // TX
+  // MUX, FUNC, PIN
+  { PERIPHS_IO_MUX_GPIO5_U, FUNC_GPIO5, 5 },   // D1
+                                               //	{PERIPHS_IO_MUX_GPIO4_U, FUNC_GPIO4,   4}, // D2
+                                               //	{PERIPHS_IO_MUX_GPIO0_U, FUNC_GPIO0,   0}, // D3
+                                               //	{PERIPHS_IO_MUX_GPIO2_U, FUNC_GPIO2,   2}, // D4
+                                               //	{PERIPHS_IO_MUX_MTMS_U,  FUNC_GPIO14, 14}, // D5
+                                               //  {PERIPHS_IO_MUX_MTCK_U, FUNC_GPIO13, 13}, // D7
+                                               //  {PERIPHS_IO_MUX_MTDO_U, FUNC_GPIO15, 15}, // D8
+  { PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO12, 12 },  // D6
+  { PERIPHS_IO_MUX_U0RXD_U, FUNC_GPIO3, 3 },   // RX
+  { PERIPHS_IO_MUX_U0TXD_U, FUNC_GPIO1, 1 }    // TX
 
-    // D0 - not have PWM :-(
+  // D0 - not have PWM :-(
 };
 
 uint32 pwm_duty_init[PWM_CHANNELS];
 
-extern "C"
-{
-#include "pwm.h" //https://github.com/UweHeinritz/ESP8266_new_pwm
+extern "C" {
+#include "pwm.h"  //https://github.com/UweHeinritz/ESP8266_new_pwm
 #include "user_interface.h"
 }
 
@@ -180,7 +174,7 @@ EE EEPROM24C32;
 MyMessage mMessage;
 
 bool deviceEabled = true;
-uint8_t deviceLightLevel = 50; // 0 -100
+uint8_t deviceLightLevel = 50;  // 0 -100
 
 #if defined(RGBW_MODE)
 #define DEFAULT_CH2 255
@@ -200,7 +194,7 @@ uint8_t deviceLightLevel = 50; // 0 -100
 #define DEFAULT_CH4 0
 #endif
 
-uint8_t channel1Level = 255; // 0-255
+uint8_t channel1Level = 255;  // 0-255
 uint8_t channel2Level = DEFAULT_CH2;
 uint8_t channel3Level = DEFAULT_CH3;
 uint8_t channel4Level = DEFAULT_CH4;
@@ -211,53 +205,48 @@ bool statusChanged = false;
 /* #endregion */
 
 /* #region  basic function */
-void before()
-{
+void before() {
   inicjalizePins();
   inicjalizeWifi();
   inicjalizeI2C();
   readSettingFromEprom();
 }
 
-void setup()
-{
-  presentGlobalVariableToControler(true);
-  calculate();
+void setup() {
+  //calculate();
 }
 
-void presentation() //MySensors
+void presentation()  //MySensors
 {
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
   presentToControler();
   presentGlobalVariableToControler(true);
 }
 
-void loop() {}
+void loop() {
 
-void receive(const MyMessage &message) //MySensors
+}
+
+void receive(const MyMessage &message)  //MySensors
 {
   if (message.isAck())
     return;
 
-  if (message.sensor == DIMMER_ID && message.type == V_STATUS)
-  {
+  if (message.sensor == DIMMER_ID && message.type == V_STATUS) {
     setDeviceEnabledFromControler(message.getBool());
     return;
   }
 
-  if (message.sensor == DIMMER_ID && message.type == V_PERCENTAGE)
-  {
+  if (message.sensor == DIMMER_ID && message.type == V_PERCENTAGE) {
     int val = atoi(message.data);
-    if (val >= 0 && val <= 100)
-    {
+    if (val >= 0 && val <= 100) {
       setLightLevelFromControler(val);
     }
     return;
   }
 
 #if defined(RGBW_MODE)
-  if (message.sensor == RGBW_ID && message.type == V_RGBW)
-  {
+  if (message.sensor == RGBW_ID && message.type == V_RGBW) {
     unsigned long number = (unsigned long)strtoul(message.data, NULL, 16);
     uint8_t red = unsigned(number >> 24 & 0xFF);
     uint8_t green = unsigned(number >> 16 & 0xFF);
@@ -288,8 +277,7 @@ void receive(const MyMessage &message) //MySensors
 #endif
 
 #if defined(RGB_MODE)
-  if (message.sensor == RGBW_ID && message.type == V_RGB)
-  {
+  if (message.sensor == RGBW_ID && message.type == V_RGB) {
     unsigned long number = (unsigned long)strtoul(message.data, NULL, 16);
     uint8_t red = unsigned(number >> 16 & 0xFF);
     uint8_t green = unsigned(number >> 8 & 0xFF);
@@ -303,8 +291,10 @@ void receive(const MyMessage &message) //MySensors
 /* #endregion */
 
 /* #region  inicjalize */
-void inicjalizePins()
-{
+void inicjalizePins() {
+  pinMode(D0, OUTPUT);
+  digitalWrite(D0, LOW);
+
   //PWM
   digitalWrite(PWM_1, LOW);
   pinMode(PWM_1, OUTPUT);
@@ -322,9 +312,7 @@ void inicjalizePins()
   pinMode(PWM_4, OUTPUT);
   digitalWrite(PWM_4, LOW);
 
-  ///analogWriteFreq(4096);
-  for (uint8_t channel = 0; channel < PWM_CHANNELS; channel++)
-  {
+  for (uint8_t channel = 0; channel < PWM_CHANNELS; channel++) {
     pwm_duty_init[channel] = 0;
   }
   // Period
@@ -344,14 +332,14 @@ void inicjalizePins()
   digitalWrite(RELAY_PIN, LOW);
 }
 
-void inicjalizeWifi()
-{
-  WiFi.mode(WIFI_OFF);
-  WiFi.forceSleepBegin(); //15mA
+void inicjalizeWifi() {
+  wifi_set_sleep_type(MODEM_SLEEP_T);
+WiFi.disconnect();
+WiFi.mode(WIFI_OFF);
+WiFi.forceSleepBegin();
 }
 
-void inicjalizeI2C()
-{
+void inicjalizeI2C() {
   Wire.begin(SDA_PIN, SCL_PIN);
   EEPROM24C32.begin(0x50, false);
 }
@@ -370,19 +358,16 @@ void inicjalizeI2C()
 #define CHECK_NUMBER 0x63
 #endif
 
-void readSettingFromEprom()
-{
+void readSettingFromEprom() {
   flashMemory = EEPROM24C32.checkPresence();
-  if (!flashMemory)
-  {
+  if (!flashMemory) {
 #if defined(MY_DEBUG)
     Serial.println("Błąd pamieci 24C32");
 #endif
     return;
   }
 
-  if (EEPROM24C32.readByte(105) != CHECK_NUMBER)
-  {
+  if (EEPROM24C32.readByte(105) != CHECK_NUMBER) {
     setDefaultSetting();
     return;
   }
@@ -401,8 +386,7 @@ void readSettingFromEprom()
 #endif
 }
 
-void setDefaultSetting()
-{
+void setDefaultSetting() {
 #if defined(MY_DEBUG)
   Serial.println("Zapisuje domyslne ustawienia");
 #endif
@@ -415,26 +399,22 @@ void setDefaultSetting()
   setChannelValue(4, channel4Level);
 }
 
-void setDeviceEnableToEeprom(bool deviceEabled)
-{
+void setDeviceEnableToEeprom(bool deviceEabled) {
   EEPROM24C32.writeByte(106, deviceEabled ? 0x05 : 0x06, false, false);
 }
 
-void setLightLevelToEeprom(uint8_t lightLevel)
-{
+void setLightLevelToEeprom(uint8_t lightLevel) {
   EEPROM24C32.writeByte(107, lightLevel, false, false);
 }
 
-void setChannelValue(uint8_t channelNo, uint8_t value)
-{
+void setChannelValue(uint8_t channelNo, uint8_t value) {
   uint8_t channelAdress = 107 + channelNo;
   EEPROM24C32.writeByte(channelAdress, value, false, false);
 }
 /* #endregion */
 
 /* #region  present to controler */
-void presentToControler()
-{
+void presentToControler() {
 #if defined(SINGLE_LED_MODE)
   present(DIMMER_ID, S_DIMMER, "LED dimmer");
 #endif
@@ -448,10 +428,8 @@ void presentToControler()
 #endif
 }
 
-void presentGlobalVariableToControler(bool forceSend)
-{
-  if (forceSend || statusChanged)
-  {
+void presentGlobalVariableToControler(bool forceSend) {
+  if (forceSend || statusChanged) {
     mMessage.setSensor(DIMMER_ID);
     mMessage.setType(V_STATUS);
     send(mMessage.set(deviceEabled));
@@ -501,18 +479,15 @@ void presentGlobalVariableToControler(bool forceSend)
 }
 /* #endregion */
 
-void setDeviceEnabledFromControler(bool deviceEnbledToSet)
-{
+void setDeviceEnabledFromControler(bool deviceEnbledToSet) {
   statusChanged = statusChanged || deviceEabled != deviceEnbledToSet;
   deviceEabled = deviceEnbledToSet;
 
-  if (flashMemory)
-  {
+  if (flashMemory) {
     setDeviceEnableToEeprom(deviceEabled);
   }
 
-  if (deviceEabled && deviceLightLevel == 0)
-  {
+  if (deviceEabled && deviceLightLevel == 0) {
     setLightLevelFromControler(STARTUP_LIGHT_LEVEL);
     return;
   }
@@ -521,23 +496,19 @@ void setDeviceEnabledFromControler(bool deviceEnbledToSet)
   presentGlobalVariableToControler(false);
 }
 
-void setLightLevelFromControler(uint8_t lightLevel)
-{
-  deviceLightLevel = lightLevel; // 0 -100
+void setLightLevelFromControler(uint8_t lightLevel) {
+  deviceLightLevel = lightLevel;  // 0 -100
 
-  if (flashMemory)
-  {
+  if (flashMemory) {
     setLightLevelToEeprom(deviceLightLevel);
   }
 
-  if (deviceLightLevel == 0 && deviceEabled)
-  {
+  if (deviceLightLevel == 0 && deviceEabled) {
     setDeviceEnabledFromControler(false);
     return;
   }
 
-  if (deviceLightLevel > 0 && !deviceEabled)
-  {
+  if (deviceLightLevel > 0 && !deviceEabled) {
     setDeviceEnabledFromControler(true);
     return;
   }
@@ -547,8 +518,7 @@ void setLightLevelFromControler(uint8_t lightLevel)
 }
 
 #if defined(RGBW_MODE)
-void setRGBWvalueFromControler(uint8_t red, uint8_t green, uint8_t blue, uint8_t white)
-{
+void setRGBWvalueFromControler(uint8_t red, uint8_t green, uint8_t blue, uint8_t white) {
   channel1Level = white;
   channel2Level = red;
   channel3Level = green;
@@ -557,8 +527,7 @@ void setRGBWvalueFromControler(uint8_t red, uint8_t green, uint8_t blue, uint8_t
   calculate();
   presentGlobalVariableToControler(false);
 
-  if (flashMemory)
-  {
+  if (flashMemory) {
     setChannelValue(1, channel1Level);
     setChannelValue(2, channel2Level);
     setChannelValue(3, channel3Level);
@@ -568,8 +537,7 @@ void setRGBWvalueFromControler(uint8_t red, uint8_t green, uint8_t blue, uint8_t
 #endif
 
 #if defined(RGB_MODE)
-void setRGBValueFromControler(uint8_t red, uint8_t green, uint8_t blue)
-{
+void setRGBValueFromControler(uint8_t red, uint8_t green, uint8_t blue) {
   channel1Level = red;
   channel2Level = green;
   channel3Level = blue;
@@ -577,8 +545,7 @@ void setRGBValueFromControler(uint8_t red, uint8_t green, uint8_t blue)
   calculate();
   presentGlobalVariableToControler(false);
 
-  if (flashMemory)
-  {
+  if (flashMemory) {
     setChannelValue(1, channel1Level);
     setChannelValue(2, channel2Level);
     setChannelValue(3, channel3Level);
@@ -586,10 +553,8 @@ void setRGBValueFromControler(uint8_t red, uint8_t green, uint8_t blue)
 }
 #endif
 
-void calculate()
-{
-  if (deviceEabled)
-  {
+void calculate() {
+  if (deviceEabled) {
     unsigned int duty_1 = getChannel1Duty();
     unsigned int duty_2 = getChannel2Duty();
     unsigned int duty_3 = getChannel3Duty();
@@ -602,9 +567,7 @@ void calculate()
     pwm_start();
 
     setRelayStatus(duty_1 > 0 || duty_2 > 0 || duty_3 > 0 || duty_4 > 0);
-  }
-  else
-  {
+  } else {
     setRelayStatus(false);
     pwm_set_duty(0, 0);
     pwm_set_duty(0, 1);
@@ -614,18 +577,15 @@ void calculate()
   }
 }
 
-void setRelayStatus(bool enabled)
-{
+void setRelayStatus(bool enabled) {
   digitalWrite(RELAY_PIN, enabled ? HIGH : LOW);
 }
 
-unsigned int getChannel1Duty()
-{
+unsigned int getChannel1Duty() {
   return map(channel1Level * deviceLightLevel / 100, 0, 255, MIN_LIGHT_LEVEL, MAX_LIGHT_LEVEL);
 }
 
-unsigned int getChannel2Duty()
-{
+unsigned int getChannel2Duty() {
 #if defined(RGBW_MODE) || defined(RGB_MODE)
   return map(channel2Level * deviceLightLevel / 100, 0, 255, MIN_LIGHT_LEVEL, MAX_LIGHT_LEVEL);
 #endif
@@ -635,8 +595,7 @@ unsigned int getChannel2Duty()
 #endif
 }
 
-unsigned int getChannel3Duty()
-{
+unsigned int getChannel3Duty() {
 #if defined(RGBW_MODE) || defined(RGB_MODE)
   return map(channel3Level * deviceLightLevel / 100, 0, 255, MIN_LIGHT_LEVEL, MAX_LIGHT_LEVEL);
 #endif
@@ -646,8 +605,7 @@ unsigned int getChannel3Duty()
 #endif
 }
 
-unsigned int getChannel4Duty()
-{
+unsigned int getChannel4Duty() {
 #if defined(RGBW_MODE)
   return map(channel4Level * deviceLightLevel / 100, 0, 255, MIN_LIGHT_LEVEL, MAX_LIGHT_LEVEL);
 #endif

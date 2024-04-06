@@ -26,7 +26,7 @@ DeviceDef devices[] = {
   DeviceDef(2, new BLEAddress("6b:12:b9:ab:dc:6d"), "Telefon")
 };
 
-#define ALARM_ENABLED  // w przypadku błędow uruchamiać alarm dzwiękowy
+#define ALARM_ENABLED     // w przypadku błędow uruchamiać alarm dzwiękowy
 //#define OPEN_CLOSE_SOUND  // sygnał dzwiekowy przy otwarciu/zamknieciu drzwi
 #define OUT_2_ENABLED  // czy są 2 diodu - OUT1 -zielona, OUT2 - czerwona
 
@@ -72,8 +72,8 @@ DeviceDef devices[] = {
 #define SDA_PIN 6
 #define SCL_PIN 7
 
-#define RX_PIN 21 //RX - RO,
-#define TX_PIN 23 //TX - DI
+#define RX_PIN 21  //RX - RO,
+#define TX_PIN 23  //TX - DI
 #pragma endregion BOARD_PIN_CONFIGURATION
 
 #pragma region MY_SENSORS_CONFIGURATION
@@ -641,6 +641,7 @@ void s_OPENING_DOOR() {
     Out1.blink(openingSetting);
 
     Out2.off();
+    Out3.off();
 
     EEStorage.setDoorOpen(true);
   }
