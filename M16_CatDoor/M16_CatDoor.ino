@@ -988,7 +988,7 @@ void presentation()  // MySensors
 {
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
 
-  present(MS_OPEN_DOOR_COUNT_ID, S_INFO, "Liczba czykli otwarcia drzwi");
+  present(MS_OPEN_DOOR_COUNT_ID, S_INFO, "Liczba cykli otwarcia");
   present(MS_OPEN_DOOR_ID, S_BINARY, "Drzwi zawsze otwarte");
   present(MS_CLOSE_DOOR_ID, S_BINARY, "Drzwi zawsze zamknięte");
   if (ScannerGK.getDefindedDevicesCount() > 0) {
