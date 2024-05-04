@@ -21,7 +21,7 @@ static __inline__ void __psRestore(const uint32_t *__s)
 
 #pragma region CONFIGURATION
 DeviceDef devices[] = {
-  //DeviceDef(1, new BLEAddress("CB:F7:92:0F:3B:2E"), "Myszka"),
+  DeviceDef(1, new BLEAddress("CB:F7:92:0F:3B:2E"), "Myszka"),
   //DeviceDef(2, new BLEAddress("6b:12:b9:ab:dc:6d"), "Telefon")
 };
 
@@ -52,7 +52,7 @@ DeviceDef devices[] = {
 #define TIME_SLEEP_AFTER_LAST_DETECTION_M1 MOTION_1_DELAY + MOTION_1_DELAY_WAIT + TIME_SLEEP_AFTER_LAST_DETECTION
 #define TIME_SLEEP_AFTER_LAST_DETECTION_M2 MOTION_2_DELAY + MOTION_2_DELAY_WAIT + TIME_SLEEP_AFTER_LAST_DETECTION
 
-#define CHECK_NUMBER 0x68  //zmienic aby zresetować ustawienia zapisane w pamięci
+#define CHECK_NUMBER 0x67  //zmienic aby zresetować ustawienia zapisane w pamięci
 //#define DEBUG_GK           // for tests
 #define FADE 2
 #define FADE_OFF 100000
@@ -327,14 +327,16 @@ void sentMyDoorAlwaysCloseStatus() {
 }
 
 void sentMyBleAuthStatus() {
+  bool useAuth = EEStorage.useAthorizationBle() && ScannerGK.getDefindedDevicesCount() > 0;
+
 #if defined(DEBUG_GK)
   Serial.print("sentMyBleAuthStatus");
-  Serial.println(EEStorage.useAthorizationBle() ? "1" : "0");
+  Serial.println(useAuth ? "1" : "0");
 #endif
 
   mMessage.setType(V_STATUS);
   mMessage.setSensor(MS_AUTH_BLE_ID);
-  send(mMessage.set(EEStorage.useAthorizationBle() ? "1" : "0"));
+  send(mMessage.set(useAuth ? "1" : "0"));
 }
 
 void sentMyDoorOpenCount() {
@@ -510,6 +512,8 @@ void s_MOTION_DETECTION() {
 #include "esp_bt.h"
 
 void enableBle() {
+  esp_wifi_start();
+  
   esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
   esp_err_t ret = esp_bt_controller_init(&bt_cfg);
   if (ret) {
@@ -533,6 +537,7 @@ void enableBle() {
 }
 
 void disableBle() {
+  esp_wifi_stop();
   esp_bluedroid_disable();
   esp_bluedroid_deinit();
   esp_bt_controller_disable();
@@ -794,7 +799,13 @@ bool T_S_MOTION_DETECTION_S_MOTION_DETECTED() {
   }
 
   if (EEStorage.useAthorizationBle()) {
+    Out1.updateFadeSpeed(FADE_OFF);
+    Out1.on();
+        
+    enableBle();
     ScannerGK.scan();
+    disableBle();
+
     if (!ScannerGK.isAuth()) {
       return false;
     }
@@ -1011,14 +1022,8 @@ void setup() {
 
   EEStorage.Inicjalize();
 
-  if (ScannerGK.getDefindedDevicesCount() == 0) {
-    esp_wifi_stop();
-    disableBle();
-  } else {
-    esp_wifi_start();
-    enableBle();
-    ScannerGK.init();
-  }
+  disableBle();
+ScannerGK.init();
 
   defineTransition();
   setDefaultState();
