@@ -101,11 +101,11 @@ AltSoftSerial _dev;
 
 //RS485
 #define MY_RS485                 // Enable RS485 transport layer
-#define MY_RS485_DE_PIN D3       // Define this to enables DE-pin management on defined pin
+#define MY_RS485_DE_PIN 10       // Define this to enables DE-pin management on defined pin
 #define MY_RS485_BAUD_RATE 9600  // Set RS485 baud rate to use
 #define MY_RS485_SOH_COUNT 3
 #include <SoftwareSerial.h>    //EspSoftwareSerial - dla płytki esp8266
-SoftwareSerial swESP(D4, D2);  //RX - RO, TX - DI
+SoftwareSerial swESP(9, D0);  //RX - RO, TX - DI
 #define MY_RS485_ESP swESP
 
 //relay
@@ -157,7 +157,7 @@ uint32 io_info[PWM_CHANNELS][3] = {
                                                //  {PERIPHS_IO_MUX_MTDO_U, FUNC_GPIO15, 15}, // D8
   { PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO12, 12 },  // D6
   { PERIPHS_IO_MUX_U0RXD_U, FUNC_GPIO3, 3 },   // RX
-  { PERIPHS_IO_MUX_U0TXD_U, FUNC_GPIO1, 1 }    // TX
+  { PERIPHS_IO_MUX_GPIO4_U, FUNC_GPIO4, 4 }    // D2
 
   // D0 - not have PWM :-(
 };
@@ -173,7 +173,7 @@ extern "C" {
 EE EEPROM24C32;
 MyMessage mMessage;
 
-bool deviceEabled = true;
+bool deviceEnabled = true;
 uint8_t deviceLightLevel = 50;  // 0 -100
 
 #if defined(RGBW_MODE)
@@ -204,6 +204,44 @@ bool flashMemory = false;
 bool statusChanged = false;
 /* #endregion */
 
+class StateTime {
+private:
+  unsigned long startState;
+
+public:
+  void stateStart() {
+    startState = millis();
+  }
+
+  bool isElapsed(unsigned long elapsed) {
+    unsigned long current = millis();
+
+    if (startState > current) {
+      startState = current;
+      return false;
+    }
+
+    if (startState + elapsed < current) {
+      return true;
+    }
+
+    return false;
+  }
+};
+
+class StateChangeManager {
+private:
+  bool _states[10];
+
+public:
+  bool isStateChanged(bool state, int index) {
+    bool changed = _states[index] != state;
+    _states[index] = state;
+
+    return changed;
+  }
+};
+
 /* #region  basic function */
 void before() {
   inicjalizePins();
@@ -212,8 +250,10 @@ void before() {
   readSettingFromEprom();
 }
 
+
 void setup() {
-  //calculate();
+  calculate();
+
 }
 
 void presentation()  //MySensors
@@ -222,6 +262,7 @@ void presentation()  //MySensors
   presentToControler();
   presentGlobalVariableToControler(true);
 }
+
 
 void loop() {
 
@@ -372,7 +413,7 @@ void readSettingFromEprom() {
     return;
   }
 
-  deviceEabled = EEPROM24C32.readByte(106) == 0x05;
+  deviceEnabled = EEPROM24C32.readByte(106) == 0x05;
   deviceLightLevel = EEPROM24C32.readByte(107);
   channel1Level = EEPROM24C32.readByte(108);
   channel2Level = EEPROM24C32.readByte(109);
@@ -391,7 +432,7 @@ void setDefaultSetting() {
   Serial.println("Zapisuje domyslne ustawienia");
 #endif
   EEPROM24C32.writeByte(105, CHECK_NUMBER, false, false);
-  setDeviceEnableToEeprom(deviceEabled);
+  setDeviceEnableToEeprom(deviceEnabled);
   setLightLevelToEeprom(deviceLightLevel);
   setChannelValue(1, channel1Level);
   setChannelValue(2, channel2Level);
@@ -432,7 +473,7 @@ void presentGlobalVariableToControler(bool forceSend) {
   if (forceSend || statusChanged) {
     mMessage.setSensor(DIMMER_ID);
     mMessage.setType(V_STATUS);
-    send(mMessage.set(deviceEabled));
+    send(mMessage.set(deviceEnabled));
     statusChanged = false;
   }
 
@@ -480,14 +521,14 @@ void presentGlobalVariableToControler(bool forceSend) {
 /* #endregion */
 
 void setDeviceEnabledFromControler(bool deviceEnbledToSet) {
-  statusChanged = statusChanged || deviceEabled != deviceEnbledToSet;
-  deviceEabled = deviceEnbledToSet;
+  statusChanged = statusChanged || deviceEnabled != deviceEnbledToSet;
+  deviceEnabled = deviceEnbledToSet;
 
   if (flashMemory) {
-    setDeviceEnableToEeprom(deviceEabled);
+    setDeviceEnableToEeprom(deviceEnabled);
   }
 
-  if (deviceEabled && deviceLightLevel == 0) {
+  if (deviceEnabled && deviceLightLevel == 0) {
     setLightLevelFromControler(STARTUP_LIGHT_LEVEL);
     return;
   }
@@ -503,12 +544,12 @@ void setLightLevelFromControler(uint8_t lightLevel) {
     setLightLevelToEeprom(deviceLightLevel);
   }
 
-  if (deviceLightLevel == 0 && deviceEabled) {
+  if (deviceLightLevel == 0 && deviceEnabled) {
     setDeviceEnabledFromControler(false);
     return;
   }
 
-  if (deviceLightLevel > 0 && !deviceEabled) {
+  if (deviceLightLevel > 0 && !deviceEnabled) {
     setDeviceEnabledFromControler(true);
     return;
   }
@@ -554,7 +595,7 @@ void setRGBValueFromControler(uint8_t red, uint8_t green, uint8_t blue) {
 #endif
 
 void calculate() {
-  if (deviceEabled) {
+  if (deviceEnabled) {
     unsigned int duty_1 = getChannel1Duty();
     unsigned int duty_2 = getChannel2Duty();
     unsigned int duty_3 = getChannel3Duty();

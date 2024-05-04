@@ -1,5 +1,5 @@
 #define SOFTWARE_VERION "1.0"
-#define SKETCH_NAME "M15_Cat_Door"
+#define SKETCH_NAME "M16_Cat_Door"
 
 #pragma region INSTALATION
 
@@ -17,22 +17,25 @@ static __inline__ void __psRestore(const uint32_t *__s)
 */
 #pragma endregion INSTALATION
 
-#pragma region CONFIGURATION
-
 #include "DeviceDef.h"
 
+#pragma region CONFIGURATION
 DeviceDef devices[] = {
-  DeviceDef(1, new BLEAddress("CB:F7:92:0F:3B:2E"), "Myszka"),
-  DeviceDef(2, new BLEAddress("6b:12:b9:ab:dc:6d"), "Telefon")
+  //DeviceDef(1, new BLEAddress("CB:F7:92:0F:3B:2E"), "Myszka"),
+  //DeviceDef(2, new BLEAddress("6b:12:b9:ab:dc:6d"), "Telefon")
 };
+
+#define MY_NODE_ID 95  // id wezła dla my sensors
+#define MIN_RSSI -60 // minimalna wartość poziomu sygnału ble do autoryzacji - bliżej zera mocnieszy sygnał/bliżej sterownika
 
 #define ALARM_ENABLED     // w przypadku błędow uruchamiać alarm dzwiękowy
 #define OPEN_CLOSE_SOUND  // sygnał dzwiekowy przy otwarciu/zamknieciu drzwi
-#define OUT_2_ENABLED  // czy są 2 diodu - OUT1 -zielona, OUT2 - czerwona
+#define OUT_2_ENABLED     // czy są 2 diodu - OUT1 -zielona, OUT2 - czerwona
 
 #define BLE_AUTH  // autoryzacja ble wymagana aby otworzyć drzwi - sterowane przez mysensors, aby zmienic trzeba
 
 #define USE_M1_M2_ON_DOOR_CLOSING  // czy wykrycie ruchy przez m1 i m2 także przerywa zamykanie drzwi
+#define USE_M3_ON_DOOR_CLOSING  // czy wykrycie ruchy przez czujnik na sterowniku przerywa zamykanie drzwi
 
 #define MOTION_1_DELAY 5 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a kolejnym wykryciem uruchamiajacym otwarcie drzwi dla sensoru 1,
 #define MOTION_1_DELAY_WAIT 4 * 1000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 1,
@@ -40,19 +43,19 @@ DeviceDef devices[] = {
 #define MOTION_2_DELAY 5 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a wykryciem uruchamiajacym otwarcie dla sensoru 2,
 #define MOTION_2_DELAY_WAIT 4 * 1000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 2,
 
-#define OPENING_DOOR_TIME 11 * 1000                // czas otwierania drzwi
-#define OPEN_DOOR_TIME 10 * 1000                   // czas oczekiwania na zamknięcie drzwi od ostatnieo wykrycia ruchu
-#define TO_LONG_OPEN_DOOR_TIME 100 * 1000          // czas zbyt długiego otwarcia drzwi aby włączyc alarm
-#define TIME_SLEEP_AFTER_LAST_DETECTION 30 * 1000  // czas przejscia w deep sleep od ostatniego wykrycia ruchu
-#define DOOR_INTERRUPTED_WAITING 4 * 1000          // czas zatrzymania w przypadku wykrycia ruchy przy zamykaniu - po tym czasie następuje otwarcie
+#define OPENING_DOOR_TIME 11 * 1000               // czas otwierania drzwi
+#define OPEN_DOOR_TIME 10 * 1000                  // czas oczekiwania na zamknięcie drzwi od ostatnieo wykrycia ruchu
+#define TO_LONG_OPEN_DOOR_TIME 100 * 1000         // czas zbyt długiego otwarcia drzwi aby włączyc alarm
+#define TIME_SLEEP_AFTER_LAST_DETECTION 7 * 1000  // czas przejscia w deep sleep od ostatniego wykrycia ruchu, nie moze byc mniejsze niż MOTION_1_DELAY + MOTION_1_DELAY_WAIT
+#define DOOR_INTERRUPTED_WAITING 6 * 1000         // czas zatrzymania w przypadku wykrycia ruchy przy zamykaniu - po tym czasie następuje otwarcie
 
-#define MY_NODE_ID 95  // id wezła dla my sensors
+#define TIME_SLEEP_AFTER_LAST_DETECTION_M1 MOTION_1_DELAY + MOTION_1_DELAY_WAIT + TIME_SLEEP_AFTER_LAST_DETECTION
+#define TIME_SLEEP_AFTER_LAST_DETECTION_M2 MOTION_2_DELAY + MOTION_2_DELAY_WAIT + TIME_SLEEP_AFTER_LAST_DETECTION
 
 #define CHECK_NUMBER 0x68  //zmienic aby zresetować ustawienia zapisane w pamięci
 //#define DEBUG_GK           // for tests
 #define FADE 2
 #define FADE_OFF 100000
-#define MIN_RSSI -60
 #pragma endregion CONFIGURATION
 
 #pragma region BOARD_PIN_CONFIGURATION
@@ -262,6 +265,7 @@ private:
 #pragma endregion TYPES
 
 #pragma region GLOBAL_VARIABLE
+#include "driver/uart.h"
 #include "esp_wifi.h"
 #include "driver/gpio.h"
 #include <Wire.h>
@@ -323,9 +327,6 @@ void sentMyDoorAlwaysCloseStatus() {
 }
 
 void sentMyBleAuthStatus() {
-  if (ScannerGK.getDefindedDevicesCount() == 0) {
-    return;
-  }
 #if defined(DEBUG_GK)
   Serial.print("sentMyBleAuthStatus");
   Serial.println(EEStorage.useAthorizationBle() ? "1" : "0");
@@ -552,14 +553,16 @@ void s_SLEEP() {
 
     allLedOff();
 
-    digitalWrite(POWER_PIN, LOW);
-
     if (ScannerGK.getDefindedDevicesCount() > 0) {
       esp_wifi_stop();
       disableBle();
     }
 
     /// sleep
+    
+    digitalWrite(POWER_PIN, LOW);
+
+    esp_sleep_enable_gpio_wakeup();
     esp_light_sleep_start();
 
     //wakeup
@@ -613,10 +616,7 @@ void s_MOTION_DETECTED() {
 
     Out1.off();
     Out2.off();
-
-#ifdef OPEN_CLOSE_SOUND
-    Out3.pattern(2, openingBuzzerSpeedSetting, false);
-#endif
+    Out3.off();
   }
 }
 
@@ -641,8 +641,9 @@ void s_OPENING_DOOR() {
     Out1.blink(openingSetting);
 
     Out2.off();
-    Out3.off();
-
+#ifdef OPEN_CLOSE_SOUND
+    Out3.pattern(2, openingBuzzerSpeedSetting, false);
+#endif
     EEStorage.setDoorOpen(true);
   }
 }
@@ -782,10 +783,6 @@ bool T_S_MOTION_DETECTION_S_MOTION_DETECTED() {
     return T.isElapsed(100);
   }
 
-  if (M3.ping() == MOTIONS_DETECTED || M3.ping() == ONE_MOTION_DETECTED) {
-    return T.isElapsed(100);
-  }
-
   if (EEStorage.isDoorAlwaysClose()) {
     return false;
   }
@@ -819,19 +816,11 @@ bool T_S_MOTION_DETECTION_S_SLEEP() {
     return false;
   }
 
-  if (M3.ping() != NO_MOTION) {
+  if (!M1.isElapsedFromLastMotionDetection(TIME_SLEEP_AFTER_LAST_DETECTION_M1)) {
     return false;
   }
 
-  if (!M1.isElapsedFromLastMotionDetection(TIME_SLEEP_AFTER_LAST_DETECTION)) {
-    return false;
-  }
-
-  if (!M2.isElapsedFromLastMotionDetection(TIME_SLEEP_AFTER_LAST_DETECTION)) {
-    return false;
-  }
-
-  if (!M3.isElapsedFromLastMotionDetection(TIME_SLEEP_AFTER_LAST_DETECTION)) {
+  if (!M2.isElapsedFromLastMotionDetection(TIME_SLEEP_AFTER_LAST_DETECTION_M2)) {
     return false;
   }
 
@@ -861,9 +850,11 @@ bool T_S_DOOR_OPEN_S_CLOSING_DOOR() {
   }
 #endif
 
+#ifdef USE_M3_ON_DOOR_CLOSING
   if (!M3.isElapsedFromLastMotionDetection(OPEN_DOOR_TIME)) {
     return false;
   }
+#endif
 
   return T.isElapsed(OPEN_DOOR_TIME);
 }
@@ -888,9 +879,11 @@ bool T_S_DOOR_TO_LONG_OPEN_S_CLOSING_DOOR() {
   }
 #endif
 
+#ifdef USE_M3_ON_DOOR_CLOSING
   if (!M3.isElapsedFromLastMotionDetection(OPEN_DOOR_TIME)) {
     return false;
   }
+#endif
 
   return T.isElapsed(OPEN_DOOR_TIME);
 }
@@ -912,8 +905,10 @@ bool T_S_CLOSING_DOOR_S_CLOSING_DOOR_INTERRUPTED() {
     return true;
 #endif
 
+#ifdef USE_M3_ON_DOOR_CLOSING
   if (M3.ping() != NO_MOTION)
     return true;
+#endif
 
   return false;
 }
@@ -987,7 +982,7 @@ void presentation()  // MySensors
 {
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
 
-  present(MS_OPEN_DOOR_COUNT_ID, S_INFO, "Liczba czykli otwarcia drzwi");
+  present(MS_OPEN_DOOR_COUNT_ID, S_INFO, "Liczba cykli otwarcia");
   present(MS_OPEN_DOOR_ID, S_BINARY, "Drzwi zawsze otwarte");
   present(MS_CLOSE_DOOR_ID, S_BINARY, "Drzwi zawsze zamknięte");
   if (ScannerGK.getDefindedDevicesCount() > 0) {
@@ -1070,12 +1065,15 @@ void receive(const MyMessage &message) {
     sentMyDoorAlwaysCloseStatus();
   }
 
+
   if (MS_AUTH_BLE_ID == message.sensor && message.getType() == V_STATUS) {
+    bool auth = message.getBool();
+
     if (ScannerGK.getDefindedDevicesCount() == 0) {
-      return;
+      auth = false;
     }
 
-    EEStorage.setAthorizationBle(message.getBool());
+    EEStorage.setAthorizationBle(auth);
     sentMyBleAuthStatus();
   }
 }
@@ -1113,6 +1111,7 @@ void inicjalizePins() {
 
   gpio_wakeup_enable(GPIO_NUM_20, GPIO_INTR_HIGH_LEVEL);
   gpio_wakeup_enable(GPIO_NUM_19, GPIO_INTR_HIGH_LEVEL);
+
   esp_sleep_enable_gpio_wakeup();
 }
 #pragma endregion INICJALIZE
