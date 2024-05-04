@@ -27,7 +27,7 @@ DeviceDef devices[] = {
 };
 
 #define ALARM_ENABLED     // w przypadku błędow uruchamiać alarm dzwiękowy
-//#define OPEN_CLOSE_SOUND  // sygnał dzwiekowy przy otwarciu/zamknieciu drzwi
+#define OPEN_CLOSE_SOUND  // sygnał dzwiekowy przy otwarciu/zamknieciu drzwi
 #define OUT_2_ENABLED  // czy są 2 diodu - OUT1 -zielona, OUT2 - czerwona
 
 #define BLE_AUTH  // autoryzacja ble wymagana aby otworzyć drzwi - sterowane przez mysensors, aby zmienic trzeba
@@ -49,7 +49,7 @@ DeviceDef devices[] = {
 #define MY_NODE_ID 95  // id wezła dla my sensors
 
 #define CHECK_NUMBER 0x68  //zmienic aby zresetować ustawienia zapisane w pamięci
-#define DEBUG_GK           // for tests
+//#define DEBUG_GK           // for tests
 #define FADE 2
 #define FADE_OFF 100000
 #define MIN_RSSI -60
