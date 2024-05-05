@@ -26,7 +26,7 @@ DeviceDef devices[] = {
 };
 
 #define MY_NODE_ID 95  // id wezła dla my sensors
-#define MIN_RSSI -60 // minimalna wartość poziomu sygnału ble do autoryzacji - bliżej zera mocnieszy sygnał/bliżej sterownika
+#define MIN_RSSI -60   // minimalna wartość poziomu sygnału ble do autoryzacji - bliżej zera mocnieszy sygnał/bliżej sterownika
 
 #define ALARM_ENABLED     // w przypadku błędow uruchamiać alarm dzwiękowy
 #define OPEN_CLOSE_SOUND  // sygnał dzwiekowy przy otwarciu/zamknieciu drzwi
@@ -35,7 +35,7 @@ DeviceDef devices[] = {
 #define BLE_AUTH  // autoryzacja ble wymagana aby otworzyć drzwi - sterowane przez mysensors, aby zmienic trzeba
 
 #define USE_M1_M2_ON_DOOR_CLOSING  // czy wykrycie ruchy przez m1 i m2 także przerywa zamykanie drzwi
-#define USE_M3_ON_DOOR_CLOSING  // czy wykrycie ruchy przez czujnik na sterowniku przerywa zamykanie drzwi
+#define USE_M3_ON_DOOR_CLOSING     // czy wykrycie ruchy przez czujnik na sterowniku przerywa zamykanie drzwi
 
 #define MOTION_1_DELAY 5 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a kolejnym wykryciem uruchamiajacym otwarcie drzwi dla sensoru 1,
 #define MOTION_1_DELAY_WAIT 4 * 1000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 1,
@@ -513,7 +513,7 @@ void s_MOTION_DETECTION() {
 
 void enableBle() {
   esp_wifi_start();
-  
+
   esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
   esp_err_t ret = esp_bt_controller_init(&bt_cfg);
   if (ret) {
@@ -564,7 +564,7 @@ void s_SLEEP() {
     }
 
     /// sleep
-    
+
     digitalWrite(POWER_PIN, LOW);
 
     esp_sleep_enable_gpio_wakeup();
@@ -798,17 +798,21 @@ bool T_S_MOTION_DETECTION_S_MOTION_DETECTED() {
     return false;
   }
 
-  if (EEStorage.useAthorizationBle()) {
+  if (EEStorage.useAthorizationBle() && ScannerGK.getDefindedDevicesCount() > 0) {
     Out1.updateFadeSpeed(FADE_OFF);
     Out1.on();
-        
+    Out1.update();
+
+#ifdef OUT_2_ENABLED
+    Out2.on();    
+    Out2.update();
+#endif
+
     enableBle();
     ScannerGK.scan();
     disableBle();
 
-    if (!ScannerGK.isAuth()) {
-      return false;
-    }
+    return ScannerGK.isAuth();
   }
 
   return true;
@@ -1023,7 +1027,7 @@ void setup() {
   EEStorage.Inicjalize();
 
   disableBle();
-ScannerGK.init();
+  ScannerGK.init();
 
   defineTransition();
   setDefaultState();
