@@ -511,7 +511,7 @@ void s_MOTION_DETECTION() {
 #include "esp_bt_main.h"
 #include "esp_bt.h"
 
-void enableBle() {
+void initBle() {
   esp_wifi_start();
 
   esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
@@ -536,7 +536,7 @@ void enableBle() {
   }
 }
 
-void disableBle() {
+void deInitBle() {
   esp_wifi_stop();
   esp_bluedroid_disable();
   esp_bluedroid_deinit();
@@ -558,25 +558,22 @@ void s_SLEEP() {
 
     allLedOff();
 
-    if (ScannerGK.getDefindedDevicesCount() > 0) {
-      esp_wifi_stop();
-      disableBle();
+    if (EEStorage.useAthorizationBle() && ScannerGK.getDefindedDevicesCount() > 0) {
+      deInitBle();
     }
 
     /// sleep
-
     digitalWrite(POWER_PIN, LOW);
 
     esp_sleep_enable_gpio_wakeup();
     esp_light_sleep_start();
 
     //wakeup
-    digitalWrite(POWER_PIN, HIGH);
-
-    if (ScannerGK.getDefindedDevicesCount() > 0) {
-      esp_wifi_start();
-      enableBle();
+    if (EEStorage.useAthorizationBle() && ScannerGK.getDefindedDevicesCount() > 0) {
+      initBle();
     }
+
+    digitalWrite(POWER_PIN, HIGH);
 
 #if defined(DEBUG_GK)
     Serial.println("AWAKE_FROM_SLEEP");
@@ -804,13 +801,18 @@ bool T_S_MOTION_DETECTION_S_MOTION_DETECTED() {
     Out1.update();
 
 #ifdef OUT_2_ENABLED
-    Out2.on();    
+    Out2.on();
     Out2.update();
 #endif
 
-    enableBle();
     ScannerGK.scan();
-    disableBle();
+
+    allLedOff();
+    Out1.update();
+    Out2.update();
+
+    T.stateStart();
+    SCM.isStateChanged(false, 0);
 
     return ScannerGK.isAuth();
   }
@@ -1026,8 +1028,13 @@ void setup() {
 
   EEStorage.Inicjalize();
 
-  disableBle();
   ScannerGK.init();
+
+  if (EEStorage.useAthorizationBle() && ScannerGK.getDefindedDevicesCount() > 0) {
+    initBle();
+  } else {
+    deInitBle();
+  }
 
   defineTransition();
   setDefaultState();
@@ -1076,10 +1083,20 @@ void receive(const MyMessage &message) {
 
 
   if (MS_AUTH_BLE_ID == message.sensor && message.getType() == V_STATUS) {
+
+    bool prevAuth = EEStorage.useAthorizationBle() && ScannerGK.getDefindedDevicesCount() > 0;
     bool auth = message.getBool();
 
     if (ScannerGK.getDefindedDevicesCount() == 0) {
       auth = false;
+    }
+
+    if (prevAuth && !auth) {
+      deInitBle();
+    }
+
+    if (!prevAuth && auth) {
+      initBle();
     }
 
     EEStorage.setAthorizationBle(auth);

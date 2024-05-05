@@ -177,7 +177,7 @@ private:
   DeviceDef* _defindedDevices;
 
   int scanPeriod = 7000;  // milisecond
-  int scanTime = 4;       //In seconds
+  int scanTime = 5;       //In seconds
 
   BLEScan* _pBLEScan;
 
