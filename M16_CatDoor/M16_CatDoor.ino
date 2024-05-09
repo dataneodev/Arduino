@@ -25,7 +25,6 @@ DeviceDef devices[] = {
   //DeviceDef(2, new BLEAddress("6b:12:b9:ab:dc:6d"), "Telefon")
 };
 
-#define MY_NODE_ID 95  // id wezła dla my sensors
 #define MIN_RSSI -60   // minimalna wartość poziomu sygnału ble do autoryzacji - bliżej zera mocnieszy sygnał/bliżej sterownika
 
 #define ALARM_ENABLED     // w przypadku błędow uruchamiać alarm dzwiękowy
@@ -93,6 +92,7 @@ DeviceDef devices[] = {
 #define MS_OPEN_DOOR_ID 21
 #define MS_CLOSE_DOOR_ID 22
 #define MS_AUTH_BLE_ID 23
+#define MY_NODE_ID 95  // id wezła dla my sensors
 #pragma endregion MY_SENSORS_CONFIGURATION
 
 #pragma region TYPES
@@ -327,7 +327,7 @@ void sentMyDoorAlwaysCloseStatus() {
 }
 
 void sentMyBleAuthStatus() {
-  bool useAuth = EEStorage.useAthorizationBle() && ScannerGK.getDefindedDevicesCount() > 0;
+  bool useAuth = EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined();
 
 #if defined(DEBUG_GK)
   Serial.print("sentMyBleAuthStatus");
@@ -558,7 +558,7 @@ void s_SLEEP() {
 
     allLedOff();
 
-    if (EEStorage.useAthorizationBle() && ScannerGK.getDefindedDevicesCount() > 0) {
+    if (EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined()) {
       deInitBle();
     }
 
@@ -569,7 +569,7 @@ void s_SLEEP() {
     esp_light_sleep_start();
 
     //wakeup
-    if (EEStorage.useAthorizationBle() && ScannerGK.getDefindedDevicesCount() > 0) {
+    if (EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined()) {
       initBle();
     }
 
@@ -768,8 +768,63 @@ void s_CLOSING_DOOR_INTERRUPTED() {
   }
 }
 
+State *S_AUTH = SM.addState(&s_AUTH);
+void s_AUTH() {
+  if (SM.executeOnce) {
+#if defined(DEBUG_GK)
+    Serial.println("S_AUTH");
+#endif
+    T.stateStart();
+
+    Out1.off();
+#ifdef OUT_2_ENABLED
+    Out2.on();
+#else
+    Out1.updateFadeSpeed(FADE_OFF);
+    Out1.on();
+#endif
+    Out3.off();
+
+    ScannerGK.scan();
+  }
+}
+
+State *S_AUTH_SUCCESS = SM.addState(&s_AUTH_SUCCESS);
+void s_AUTH_SUCCESS() {
+  if (SM.executeOnce) {
+#if defined(DEBUG_GK)
+    Serial.println("S_AUTH_SUCCESS");
+#endif
+    T.stateStart();
+
+    Out1.updateFadeSpeed(FADE_OFF);
+    Out1.blink(SPEED_RAPID);
+
+#ifdef OUT_2_ENABLED
+    Out2.off();
+#endif
+    Out3.off();
+  }
+}
+
+State *S_AUTH_FAILED = SM.addState(&s_AUTH_FAILED);
+void s_AUTH_FAILED() {
+  if (SM.executeOnce) {
+#if defined(DEBUG_GK)
+    Serial.println("S_AUTH_FAILED");
+#endif
+    T.stateStart();
+
+    Out1.off();
+#ifdef OUT_2_ENABLED
+    Out2.blink(SPEED_RAPID);
+#endif
+    Out3.off();
+  }
+}
+
 bool T_S_START_UP_S_MOTION_DETECTION() {
-  return T.isElapsed(1500);
+  return T.isElapsed(1400);
 }
 
 bool T_S_SLEEP_S_WAKE_UP() {
@@ -793,28 +848,6 @@ bool T_S_MOTION_DETECTION_S_MOTION_DETECTED() {
 
   if (!isMotionDetect) {
     return false;
-  }
-
-  if (EEStorage.useAthorizationBle() && ScannerGK.getDefindedDevicesCount() > 0) {
-    Out1.updateFadeSpeed(FADE_OFF);
-    Out1.on();
-    Out1.update();
-
-#ifdef OUT_2_ENABLED
-    Out2.on();
-    Out2.update();
-#endif
-
-    ScannerGK.scan();
-
-    allLedOff();
-    Out1.update();
-    Out2.update();
-
-    T.stateStart();
-    SCM.isStateChanged(false, 0);
-
-    return ScannerGK.isAuth();
   }
 
   return true;
@@ -845,7 +878,51 @@ bool T_S_MOTION_DETECTION_S_SLEEP() {
 }
 
 bool T_S_MOTION_DETECTED_S_OPENING_DOOR() {
+  if (EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined()) {
+    return false;
+  }
+
   return T.isElapsed(100);
+}
+
+bool T_S_MOTION_DETECTED_S_AUTH() {
+  if (!EEStorage.useAthorizationBle() || !ScannerGK.isAnyDeviceDefined()) {
+    return false;
+  }
+
+  return T.isElapsed(100);
+}
+
+bool T_S_AUTH_S_AUTH_SUCCESS() {
+  if (!ScannerGK.isScanComplete()) {
+    return false;
+  }
+
+  return ScannerGK.isAuth();
+}
+
+bool T_S_AUTH_SUCCESS_S_OPENING_DOOR() {
+  return T.isElapsed(1400);
+}
+
+bool T_S_AUTH_S_AUTH_FAILED() {
+  if (!ScannerGK.isScanComplete()) {
+    return false;
+  }
+
+  return !ScannerGK.isAuth();
+}
+
+bool T_S_AUTH_FAILED_S_MOTION_DETECTION() {
+
+  if (T.isElapsed(1500)) {
+    M1.start();
+    M2.start();
+    M3.start();
+
+    return true;
+  }
+  return false;
 }
 
 bool T_S_OPENING_DOOR_S_DOOR_OPEN() {
@@ -910,7 +987,14 @@ bool T_S_CLOSING_DOOR_S_DOOR_CLOSED() {
 }
 
 bool T_S_S_DOOR_CLOSED_S_MOTION_DETECTION() {
-  return T.isElapsed(100);
+  if (T.isElapsed(100)) {
+    M1.start();
+    M2.start();
+    M3.start();
+
+    return true;
+  }
+  return false;
 }
 
 bool T_S_CLOSING_DOOR_S_CLOSING_DOOR_INTERRUPTED() {
@@ -945,6 +1029,13 @@ void defineTransition() {
   S_MOTION_DETECTION->addTransition(&T_S_MOTION_DETECTION_S_SLEEP, S_SLEEP);
 
   S_MOTION_DETECTED->addTransition(&T_S_MOTION_DETECTED_S_OPENING_DOOR, S_OPENING_DOOR);
+  S_MOTION_DETECTED->addTransition(&T_S_MOTION_DETECTED_S_AUTH, S_AUTH);
+
+  S_AUTH->addTransition(&T_S_AUTH_S_AUTH_SUCCESS, S_AUTH_SUCCESS);
+  S_AUTH->addTransition(&T_S_AUTH_S_AUTH_FAILED, S_AUTH_FAILED);
+
+  S_AUTH_SUCCESS->addTransition(&T_S_AUTH_SUCCESS_S_OPENING_DOOR, S_OPENING_DOOR);
+  S_AUTH_FAILED->addTransition(&T_S_AUTH_FAILED_S_MOTION_DETECTION, S_MOTION_DETECTION);
 
   S_OPENING_DOOR->addTransition(&T_S_OPENING_DOOR_S_DOOR_OPEN, S_DOOR_OPEN);
 
@@ -1002,13 +1093,13 @@ void presentation()  // MySensors
   present(MS_OPEN_DOOR_COUNT_ID, S_INFO, "Liczba cykli otwarcia");
   present(MS_OPEN_DOOR_ID, S_BINARY, "Drzwi zawsze otwarte");
   present(MS_CLOSE_DOOR_ID, S_BINARY, "Drzwi zawsze zamknięte");
-  if (ScannerGK.getDefindedDevicesCount() > 0) {
+  if (ScannerGK.isAnyDeviceDefined()) {
     present(MS_AUTH_BLE_ID, S_BINARY, "Autoryzacja BLE");
   }
 
   present(1, S_DOOR, SKETCH_NAME);
 
-  if (ScannerGK.getDefindedDevicesCount() > 0) {
+  if (ScannerGK.isAnyDeviceDefined()) {
     for (int i = 0; i < ScannerGK.getDefindedDevicesCount(); i++) {
       present(devices[i].GetId(), S_DOOR, devices[i].GetName());
     }
@@ -1028,9 +1119,11 @@ void setup() {
 
   EEStorage.Inicjalize();
 
-  ScannerGK.init();
+  if (ScannerGK.isAnyDeviceDefined()) {
+    ScannerGK.init();
+  }
 
-  if (EEStorage.useAthorizationBle() && ScannerGK.getDefindedDevicesCount() > 0) {
+  if (EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined()) {
     initBle();
   } else {
     deInitBle();
@@ -1084,10 +1177,10 @@ void receive(const MyMessage &message) {
 
   if (MS_AUTH_BLE_ID == message.sensor && message.getType() == V_STATUS) {
 
-    bool prevAuth = EEStorage.useAthorizationBle() && ScannerGK.getDefindedDevicesCount() > 0;
+    bool prevAuth = EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined();
     bool auth = message.getBool();
 
-    if (ScannerGK.getDefindedDevicesCount() == 0) {
+    if (!ScannerGK.isAnyDeviceDefined()) {
       auth = false;
     }
 
