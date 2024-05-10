@@ -21,7 +21,7 @@ static __inline__ void __psRestore(const uint32_t *__s)
 
 #pragma region CONFIGURATION
 DeviceDef devices[] = {
-  DeviceDef(1, new BLEAddress("CB:F7:92:0F:3B:2E"), "Myszka"),
+  //DeviceDef(1, new BLEAddress("CB:F7:92:0F:3B:2E"), "Myszka"),
   //DeviceDef(2, new BLEAddress("6b:12:b9:ab:dc:6d"), "Telefon")
 };
 
@@ -461,6 +461,22 @@ void s_WAKE_UP() {
   }
 }
 
+State *S_START_MOTION_DETECTION = SM.addState(&s_START_MOTION_DETECTION);
+void s_START_MOTION_DETECTION() {
+  if (SM.executeOnce) {
+#if defined(DEBUG_GK)
+    Serial.println("S_START_MOTION_DETECTION");
+#endif
+    T.stateStart();
+
+    M1.start();
+    M2.start();
+    M3.start();
+
+    allLedOff();
+  }
+}
+
 State *S_MOTION_DETECTION = SM.addState(&s_MOTION_DETECTION);
 void s_MOTION_DETECTION() {
   if (SM.executeOnce) {
@@ -563,7 +579,7 @@ void s_SLEEP() {
     }
 
     /// sleep
-    digitalWrite(POWER_PIN, LOW);
+    //digitalWrite(POWER_PIN, LOW);
 
     esp_sleep_enable_gpio_wakeup();
     esp_light_sleep_start();
@@ -913,16 +929,8 @@ bool T_S_AUTH_S_AUTH_FAILED() {
   return !ScannerGK.isAuth();
 }
 
-bool T_S_AUTH_FAILED_S_MOTION_DETECTION() {
-
-  if (T.isElapsed(1500)) {
-    M1.start();
-    M2.start();
-    M3.start();
-
-    return true;
-  }
-  return false;
+bool T_S_AUTH_FAILED_S_START_MOTION_DETECTION() {
+  return T.isElapsed(1500);
 }
 
 bool T_S_OPENING_DOOR_S_DOOR_OPEN() {
@@ -986,15 +994,12 @@ bool T_S_CLOSING_DOOR_S_DOOR_CLOSED() {
   return T.isElapsed(OPENING_DOOR_TIME);
 }
 
-bool T_S_S_DOOR_CLOSED_S_MOTION_DETECTION() {
-  if (T.isElapsed(100)) {
-    M1.start();
-    M2.start();
-    M3.start();
+bool T_S_S_DOOR_CLOSED_S_START_MOTION_DETECTION() {
+  return T.isElapsed(25);
+}
 
-    return true;
-  }
-  return false;
+bool T_S_START_MOTION_DETECTION_S_MOTION_DETECTION() {
+  return T.isElapsed(25);
 }
 
 bool T_S_CLOSING_DOOR_S_CLOSING_DOOR_INTERRUPTED() {
@@ -1035,7 +1040,7 @@ void defineTransition() {
   S_AUTH->addTransition(&T_S_AUTH_S_AUTH_FAILED, S_AUTH_FAILED);
 
   S_AUTH_SUCCESS->addTransition(&T_S_AUTH_SUCCESS_S_OPENING_DOOR, S_OPENING_DOOR);
-  S_AUTH_FAILED->addTransition(&T_S_AUTH_FAILED_S_MOTION_DETECTION, S_MOTION_DETECTION);
+  S_AUTH_FAILED->addTransition(&T_S_AUTH_FAILED_S_START_MOTION_DETECTION, S_START_MOTION_DETECTION);
 
   S_OPENING_DOOR->addTransition(&T_S_OPENING_DOOR_S_DOOR_OPEN, S_DOOR_OPEN);
 
@@ -1049,7 +1054,10 @@ void defineTransition() {
 
   S_CLOSING_DOOR_INTERRUPTED->addTransition(&T_S_CLOSING_DOOR_INTERRUPTED_S_OPENING_DOOR, S_OPENING_DOOR);
 
-  S_DOOR_CLOSED->addTransition(&T_S_S_DOOR_CLOSED_S_MOTION_DETECTION, S_MOTION_DETECTION);
+  S_DOOR_CLOSED->addTransition(&T_S_S_DOOR_CLOSED_S_START_MOTION_DETECTION, S_START_MOTION_DETECTION);
+
+  S_START_MOTION_DETECTION->addTransition(&T_S_START_MOTION_DETECTION_S_MOTION_DETECTION, S_MOTION_DETECTION);
+  
 }
 #pragma endregion STATES
 
@@ -1124,9 +1132,11 @@ void setup() {
   }
 
   if (EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined()) {
-    initBle();
+    setCpuFrequencyMhz(160);
+    initBle();    
   } else {
-    deInitBle();
+    setCpuFrequencyMhz(80);
+    deInitBle();    
   }
 
   defineTransition();
@@ -1229,6 +1239,7 @@ void inicjalizePins() {
   pinMode(MOTION_SENSOR_3_PIN, INPUT);
 
   gpio_wakeup_enable(GPIO_NUM_20, GPIO_INTR_HIGH_LEVEL);
+  gpio_wakeup_enable(GPIO_NUM_21, GPIO_INTR_LOW_LEVEL);
   gpio_wakeup_enable(GPIO_NUM_19, GPIO_INTR_HIGH_LEVEL);
 
   esp_sleep_enable_gpio_wakeup();
