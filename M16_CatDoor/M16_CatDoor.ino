@@ -25,7 +25,7 @@ DeviceDef devices[] = {
   //DeviceDef(2, new BLEAddress("6b:12:b9:ab:dc:6d"), "Telefon")
 };
 
-#define MIN_RSSI -60   // minimalna wartość poziomu sygnału ble do autoryzacji - bliżej zera mocnieszy sygnał/bliżej sterownika
+#define MIN_RSSI -60  // minimalna wartość poziomu sygnału ble do autoryzacji - bliżej zera mocnieszy sygnał/bliżej sterownika
 
 #define ALARM_ENABLED     // w przypadku błędow uruchamiać alarm dzwiękowy
 #define OPEN_CLOSE_SOUND  // sygnał dzwiekowy przy otwarciu/zamknieciu drzwi
@@ -561,6 +561,8 @@ void deInitBle() {
   esp_bt_controller_mem_release(ESP_BT_MODE_BLE);
 }
 
+#include "driver/uart.h"
+
 State *S_SLEEP = SM.addState(&s_SLEEP);
 void s_SLEEP() {
   if (SM.executeOnce) {
@@ -580,9 +582,11 @@ void s_SLEEP() {
 
     /// sleep
     //digitalWrite(POWER_PIN, LOW);
+    uart_wait_tx_idle_polling(CONFIG_ESP_CONSOLE_UART_NUM);
 
-    esp_sleep_enable_gpio_wakeup();
+
     esp_light_sleep_start();
+
 
     //wakeup
     if (EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined()) {
@@ -1057,7 +1061,6 @@ void defineTransition() {
   S_DOOR_CLOSED->addTransition(&T_S_S_DOOR_CLOSED_S_START_MOTION_DETECTION, S_START_MOTION_DETECTION);
 
   S_START_MOTION_DETECTION->addTransition(&T_S_START_MOTION_DETECTION_S_MOTION_DETECTION, S_MOTION_DETECTION);
-  
 }
 #pragma endregion STATES
 
@@ -1133,10 +1136,10 @@ void setup() {
 
   if (EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined()) {
     setCpuFrequencyMhz(160);
-    initBle();    
+    initBle();
   } else {
     setCpuFrequencyMhz(80);
-    deInitBle();    
+    deInitBle();
   }
 
   defineTransition();
@@ -1238,8 +1241,12 @@ void inicjalizePins() {
   pinMode(MOTION_SENSOR_2_PIN, INPUT);
   pinMode(MOTION_SENSOR_3_PIN, INPUT);
 
+  //rsx485
+  pinMode(RX_PIN, INPUT);
+  gpio_wakeup_enable(GPIO_NUM_21, GPIO_INTR_LOW_LEVEL);  //rs485 rx line
+  
+
   gpio_wakeup_enable(GPIO_NUM_20, GPIO_INTR_HIGH_LEVEL);
-  gpio_wakeup_enable(GPIO_NUM_21, GPIO_INTR_LOW_LEVEL);
   gpio_wakeup_enable(GPIO_NUM_19, GPIO_INTR_HIGH_LEVEL);
 
   esp_sleep_enable_gpio_wakeup();
