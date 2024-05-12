@@ -68,7 +68,7 @@ AltSoftSerial _dev;
 #define MY_RS485_DE_PIN D6 // DE
 // Set RS485 baud rate to use
 #define MY_RS485_BAUD_RATE 9600
-#define MY_RS485_SOH_COUNT 3
+#define MY_RS485_SOH_COUNT 6
 
 #include <SoftwareSerial.h>
 

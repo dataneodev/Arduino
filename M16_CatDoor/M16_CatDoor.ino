@@ -42,11 +42,12 @@ DeviceDef devices[] = {
 #define MOTION_2_DELAY 5 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a wykryciem uruchamiajacym otwarcie dla sensoru 2,
 #define MOTION_2_DELAY_WAIT 4 * 1000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 2,
 
-#define OPENING_DOOR_TIME 11 * 1000               // czas otwierania drzwi
-#define OPEN_DOOR_TIME 10 * 1000                  // czas oczekiwania na zamknięcie drzwi od ostatnieo wykrycia ruchu
-#define TO_LONG_OPEN_DOOR_TIME 100 * 1000         // czas zbyt długiego otwarcia drzwi aby włączyc alarm
-#define TIME_SLEEP_AFTER_LAST_DETECTION 7 * 1000  // czas przejscia w deep sleep od ostatniego wykrycia ruchu, nie moze byc mniejsze niż MOTION_1_DELAY + MOTION_1_DELAY_WAIT
-#define DOOR_INTERRUPTED_WAITING 6 * 1000         // czas zatrzymania w przypadku wykrycia ruchy przy zamykaniu - po tym czasie następuje otwarcie
+#define OPENING_DOOR_TIME 11 * 1000                // czas otwierania drzwi
+#define OPEN_DOOR_TIME 10 * 1000                   // czas oczekiwania na zamknięcie drzwi od ostatnieo wykrycia ruchu
+#define TO_LONG_OPEN_DOOR_TIME 100 * 1000          // czas zbyt długiego otwarcia drzwi aby włączyc alarm
+#define TIME_SLEEP_AFTER_LAST_DETECTION 8 * 1000  // czas przejscia w light sleep od ostatniego wykrycia ruchu, nie moze byc mniejsze niż MOTION_1_DELAY + MOTION_1_DELAY_WAIT
+#define TIME_SLEEP_AFTER_START 40 * 1000           // czas przejscia w light sleep od startu
+#define DOOR_INTERRUPTED_WAITING 6 * 1000          // czas zatrzymania w przypadku wykrycia ruchy przy zamykaniu - po tym czasie następuje otwarcie
 
 #define TIME_SLEEP_AFTER_LAST_DETECTION_M1 MOTION_1_DELAY + MOTION_1_DELAY_WAIT + TIME_SLEEP_AFTER_LAST_DETECTION
 #define TIME_SLEEP_AFTER_LAST_DETECTION_M2 MOTION_2_DELAY + MOTION_2_DELAY_WAIT + TIME_SLEEP_AFTER_LAST_DETECTION
@@ -74,8 +75,9 @@ DeviceDef devices[] = {
 #define SDA_PIN 6
 #define SCL_PIN 7
 
-#define RX_PIN 21  //RX - RO,
-#define TX_PIN 23  //TX - DI
+#define RX_PIN 21     //RX - RO,
+#define TX_PIN 23     //TX - DI
+#define DE_RE_PIN 22  //RE - DE
 #pragma endregion BOARD_PIN_CONFIGURATION
 
 #pragma region MY_SENSORS_CONFIGURATION
@@ -85,7 +87,7 @@ DeviceDef devices[] = {
 #define MY_RS485_DE_PIN 22         // Define this to enables DE-pin management on defined pin
 #define MY_RS485_BAUD_RATE 9600    // Set RS485 baud rate to use
 #define MY_RS485_HWSERIAL Serial1  //
-#define MY_RS485_SOH_COUNT 3
+#define MY_RS485_SOH_COUNT 6
 #define MY_TRANSPORT_WAIT_READY_MS 1
 
 #define MS_OPEN_DOOR_COUNT_ID 20
@@ -187,6 +189,10 @@ public:
     _motionDelayTotal = motionDelay + motionDelayWait;
   }
 
+  bool getPinState() {
+    return digitalRead(_pin);
+  }
+
   void start() {
     _secondMotionDetected = false;
     _lastState = getPinState();
@@ -258,13 +264,12 @@ public:
   }
 
 private:
-  bool getPinState() {
-    return digitalRead(_pin);
-  }
 };
 #pragma endregion TYPES
 
 #pragma region GLOBAL_VARIABLE
+#include "esp_bt_main.h"
+#include "esp_bt.h"
 #include "driver/uart.h"
 #include "esp_wifi.h"
 #include "driver/gpio.h"
@@ -284,6 +289,40 @@ private:
 
 #include "Blinkenlight.h"
 #include "Fadinglight.h"
+
+void initBle() {
+  esp_wifi_start();
+
+  esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
+  esp_err_t ret = esp_bt_controller_init(&bt_cfg);
+  if (ret) {
+    return;
+  }
+
+  ret = esp_bt_controller_enable(ESP_BT_MODE_BLE);
+  if (ret) {
+    return;
+  }
+
+  ret = esp_bluedroid_init();
+  if (ret) {
+    return;
+  }
+
+  ret = esp_bluedroid_enable();
+  if (ret) {
+    return;
+  }
+}
+
+void deInitBle() {
+  esp_wifi_stop();
+  esp_bluedroid_disable();
+  esp_bluedroid_deinit();
+  esp_bt_controller_disable();
+  esp_bt_controller_deinit();
+  esp_bt_controller_mem_release(ESP_BT_MODE_BLE);
+}
 
 MyMessage mMessage;
 StateChangeManager SCM;
@@ -483,26 +522,24 @@ void s_MOTION_DETECTION() {
 #if defined(DEBUG_GK)
     Serial.println("S_MOTION_DETECTION");
 #endif
-
     T.stateStart();
     Door.end();
 
     allLedOff();
-    return;
+
+    setCpuFrequencyMhz(20);
+
+    if (EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined()) {
+      deInitBle();
+    }
   }
+}
 
-  MotionDetectState m1Ping = M1.ping();
-  MotionDetectState m2Ping = M2.ping();
-
-  bool motionDetected = m1Ping == ONE_MOTION_DETECTED || m2Ping == ONE_MOTION_DETECTED || m1Ping == MOTIONS_DETECTED || m2Ping == MOTIONS_DETECTED;
-
-  if (!SCM.isStateChanged(motionDetected, 0)) {
-    return;
-  }
-
-  if (motionDetected) {
+State *S_ONE_MOTION_DETECTION = SM.addState(&s_ONE_MOTION_DETECTION);
+void s_ONE_MOTION_DETECTION() {
+  if (SM.executeOnce) {
 #if defined(DEBUG_GK)
-    Serial.println("MOTION_DETECTED");
+    Serial.println("S_ONE_MOTION_DETECTION");
 #endif
 
     SpeedSetting waitingFade = {
@@ -514,54 +551,15 @@ void s_MOTION_DETECTION() {
 
     Out1.updateFadeSpeed(FADE);
     Out1.blink(waitingFade);
+    Out2.off();
+    Out3.off();
 
-  } else {
-#if defined(DEBUG_GK)
-    Serial.println("END_MOTION_DETECTED");
-#endif
-
-    Out1.off();
+    if (EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined()) {
+      setCpuFrequencyMhz(160);
+      initBle();
+    }
   }
 }
-
-#include "esp_bt_main.h"
-#include "esp_bt.h"
-
-void initBle() {
-  esp_wifi_start();
-
-  esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
-  esp_err_t ret = esp_bt_controller_init(&bt_cfg);
-  if (ret) {
-    return;
-  }
-
-  ret = esp_bt_controller_enable(ESP_BT_MODE_BLE);
-  if (ret) {
-    return;
-  }
-
-  ret = esp_bluedroid_init();
-  if (ret) {
-    return;
-  }
-
-  ret = esp_bluedroid_enable();
-  if (ret) {
-    return;
-  }
-}
-
-void deInitBle() {
-  esp_wifi_stop();
-  esp_bluedroid_disable();
-  esp_bluedroid_deinit();
-  esp_bt_controller_disable();
-  esp_bt_controller_deinit();
-  esp_bt_controller_mem_release(ESP_BT_MODE_BLE);
-}
-
-#include "driver/uart.h"
 
 State *S_SLEEP = SM.addState(&s_SLEEP);
 void s_SLEEP() {
@@ -581,12 +579,9 @@ void s_SLEEP() {
     }
 
     /// sleep
-    //digitalWrite(POWER_PIN, LOW);
-    uart_wait_tx_idle_polling(CONFIG_ESP_CONSOLE_UART_NUM);
-
+    digitalWrite(POWER_PIN, LOW);
 
     esp_light_sleep_start();
-
 
     //wakeup
     if (EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined()) {
@@ -843,34 +838,60 @@ void s_AUTH_FAILED() {
   }
 }
 
+bool T_S_MOTION_DETECTION_S_ONE_MOTION_DETECTION() {
+  MotionDetectState m1Ping = M1.ping();
+
+  if (m1Ping == ONE_MOTION_DETECTED || m1Ping == MOTIONS_DETECTED) {
+    return true;
+  }
+
+  MotionDetectState m2Ping = M2.ping();
+
+  if (m2Ping == ONE_MOTION_DETECTED || m2Ping == MOTIONS_DETECTED) {
+    return true;
+  }
+
+  return T.isElapsed(25);
+}
+
 bool T_S_START_UP_S_MOTION_DETECTION() {
   return T.isElapsed(1400);
 }
 
 bool T_S_SLEEP_S_WAKE_UP() {
-  return T.isElapsed(100);
+  return T.isElapsed(25) && M1.getPinState() == HIGH || M2.getPinState() == HIGH;
+}
+
+bool T_S_SLEEP_S_START_MOTION_DETECTION() {
+  return T.isElapsed(25) && M1.getPinState() == LOW && M2.getPinState() == LOW;
 }
 
 bool T_S_WAKE_UP_S_MOTION_DETECTION() {
-  return T.isElapsed(100);
+  return T.isElapsed(25);
 }
 
-bool T_S_MOTION_DETECTION_S_MOTION_DETECTED() {
+bool T_S_ONE_MOTION_DETECTION_S_START_MOTION_DETECTION() {
   if (EEStorage.isDoorAlwaysOpen()) {
-    return T.isElapsed(100);
+    return false;
+  }
+
+  if (EEStorage.isDoorAlwaysClose()) {
+    return true;
+  }
+
+  return T.isElapsed(25) && M1.ping() == NO_MOTION && M2.ping() == NO_MOTION;
+}
+
+bool S_ONE_MOTION_DETECTIONN_S_MOTION_DETECTED() {
+  if (EEStorage.isDoorAlwaysOpen()) {
+    return true;
   }
 
   if (EEStorage.isDoorAlwaysClose()) {
     return false;
   }
 
-  bool isMotionDetect = M1.ping() == MOTIONS_DETECTED || M2.ping() == MOTIONS_DETECTED;
-
-  if (!isMotionDetect) {
-    return false;
-  }
-
-  return true;
+  return T.isElapsed(25) && M1.ping() == MOTIONS_DETECTED || M2.ping() == MOTIONS_DETECTED;
 }
 
 bool T_S_MOTION_DETECTION_S_SLEEP() {
@@ -894,23 +915,51 @@ bool T_S_MOTION_DETECTION_S_SLEEP() {
     return false;
   }
 
-  return true;
+  if (millis() < TIME_SLEEP_AFTER_START) {
+    return false;
+  }
+
+  return T.isElapsed(25);
+}
+
+bool T_S_MOTION_DETECTED_S_START_MOTION_DETECTION() {
+  if (EEStorage.isDoorAlwaysClose()) {
+    return true;
+  }
+
+  return false;
 }
 
 bool T_S_MOTION_DETECTED_S_OPENING_DOOR() {
+  if (EEStorage.isDoorAlwaysOpen()) {
+    return true;
+  }
+
+  if (EEStorage.isDoorAlwaysClose()) {
+    return false;
+  }
+
   if (EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined()) {
     return false;
   }
 
-  return T.isElapsed(100);
+  return T.isElapsed(25);
 }
 
 bool T_S_MOTION_DETECTED_S_AUTH() {
+  if (EEStorage.isDoorAlwaysOpen()) {
+    return false;
+  }
+
+  if (EEStorage.isDoorAlwaysClose()) {
+    return false;
+  }
+
   if (!EEStorage.useAthorizationBle() || !ScannerGK.isAnyDeviceDefined()) {
     return false;
   }
 
-  return T.isElapsed(100);
+  return T.isElapsed(25);
 }
 
 bool T_S_AUTH_S_AUTH_SUCCESS() {
@@ -922,7 +971,7 @@ bool T_S_AUTH_S_AUTH_SUCCESS() {
 }
 
 bool T_S_AUTH_SUCCESS_S_OPENING_DOOR() {
-  return T.isElapsed(1400);
+  return T.isElapsed(1200);
 }
 
 bool T_S_AUTH_S_AUTH_FAILED() {
@@ -934,7 +983,7 @@ bool T_S_AUTH_S_AUTH_FAILED() {
 }
 
 bool T_S_AUTH_FAILED_S_START_MOTION_DETECTION() {
-  return T.isElapsed(1500);
+  return T.isElapsed(1200);
 }
 
 bool T_S_OPENING_DOOR_S_DOOR_OPEN() {
@@ -967,7 +1016,6 @@ bool T_S_DOOR_OPEN_S_CLOSING_DOOR() {
 
 bool T_S_DOOR_OPEN_S_DOOR_TO_LONG_OPEN() {
   if (EEStorage.isDoorAlwaysOpen()) {
-    T.stateStart();
     return false;
   }
 
@@ -1031,14 +1079,21 @@ void defineTransition() {
   S_START_UP->addTransition(&T_S_START_UP_S_MOTION_DETECTION, S_MOTION_DETECTION);
 
   S_SLEEP->addTransition(&T_S_SLEEP_S_WAKE_UP, S_WAKE_UP);
+  S_SLEEP->addTransition(&T_S_SLEEP_S_START_MOTION_DETECTION, S_START_MOTION_DETECTION);
 
   S_WAKE_UP->addTransition(&T_S_WAKE_UP_S_MOTION_DETECTION, S_MOTION_DETECTION);
 
-  S_MOTION_DETECTION->addTransition(&T_S_MOTION_DETECTION_S_MOTION_DETECTED, S_MOTION_DETECTED);
+  S_START_MOTION_DETECTION->addTransition(&T_S_START_MOTION_DETECTION_S_MOTION_DETECTION, S_MOTION_DETECTION);
+
+  S_MOTION_DETECTION->addTransition(&T_S_MOTION_DETECTION_S_ONE_MOTION_DETECTION, S_ONE_MOTION_DETECTION);
   S_MOTION_DETECTION->addTransition(&T_S_MOTION_DETECTION_S_SLEEP, S_SLEEP);
+
+  S_ONE_MOTION_DETECTION->addTransition(&S_ONE_MOTION_DETECTIONN_S_MOTION_DETECTED, S_MOTION_DETECTED);
+  S_ONE_MOTION_DETECTION->addTransition(&T_S_ONE_MOTION_DETECTION_S_START_MOTION_DETECTION, S_START_MOTION_DETECTION);
 
   S_MOTION_DETECTED->addTransition(&T_S_MOTION_DETECTED_S_OPENING_DOOR, S_OPENING_DOOR);
   S_MOTION_DETECTED->addTransition(&T_S_MOTION_DETECTED_S_AUTH, S_AUTH);
+  S_MOTION_DETECTED->addTransition(&T_S_MOTION_DETECTED_S_START_MOTION_DETECTION, S_START_MOTION_DETECTION);
 
   S_AUTH->addTransition(&T_S_AUTH_S_AUTH_SUCCESS, S_AUTH_SUCCESS);
   S_AUTH->addTransition(&T_S_AUTH_S_AUTH_FAILED, S_AUTH_FAILED);
@@ -1058,9 +1113,7 @@ void defineTransition() {
 
   S_CLOSING_DOOR_INTERRUPTED->addTransition(&T_S_CLOSING_DOOR_INTERRUPTED_S_OPENING_DOOR, S_OPENING_DOOR);
 
-  S_DOOR_CLOSED->addTransition(&T_S_S_DOOR_CLOSED_S_START_MOTION_DETECTION, S_START_MOTION_DETECTION);
-
-  S_START_MOTION_DETECTION->addTransition(&T_S_START_MOTION_DETECTION_S_MOTION_DETECTION, S_MOTION_DETECTION);
+  S_DOOR_CLOSED->addTransition(&T_S_S_DOOR_CLOSED_S_START_MOTION_DETECTION, S_START_MOTION_DETECTION);  
 }
 #pragma endregion STATES
 
@@ -1069,6 +1122,7 @@ void defineTransition() {
 #pragma endregion EEPROM
 
 #pragma region MAIN
+
 void setDefaultState() {
   if (!EEStorage.IsInicjalized()) {
 #if defined(DEBUG_GK)
@@ -1104,9 +1158,7 @@ void presentation()  // MySensors
   present(MS_OPEN_DOOR_COUNT_ID, S_INFO, "Liczba cykli otwarcia");
   present(MS_OPEN_DOOR_ID, S_BINARY, "Drzwi zawsze otwarte");
   present(MS_CLOSE_DOOR_ID, S_BINARY, "Drzwi zawsze zamknięte");
-  if (ScannerGK.isAnyDeviceDefined()) {
-    present(MS_AUTH_BLE_ID, S_BINARY, "Autoryzacja BLE");
-  }
+  present(MS_AUTH_BLE_ID, S_BINARY, "Autoryzacja BLE");
 
   present(1, S_DOOR, SKETCH_NAME);
 
@@ -1134,20 +1186,13 @@ void setup() {
     ScannerGK.init();
   }
 
-  if (EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined()) {
-    setCpuFrequencyMhz(160);
-    initBle();
-  } else {
-    setCpuFrequencyMhz(80);
-    deInitBle();
-  }
+  deInitBle();
 
   defineTransition();
   setDefaultState();
 }
 
 void loop() {
-
   M1.ping();
   M2.ping();
   M3.ping();
@@ -1241,10 +1286,10 @@ void inicjalizePins() {
   pinMode(MOTION_SENSOR_2_PIN, INPUT);
   pinMode(MOTION_SENSOR_3_PIN, INPUT);
 
-  //rsx485
-  pinMode(RX_PIN, INPUT);
-  gpio_wakeup_enable(GPIO_NUM_21, GPIO_INTR_LOW_LEVEL);  //rs485 rx line
-  
+  gpio_sleep_set_direction(GPIO_NUM_21, GPIO_MODE_INPUT);
+  gpio_sleep_set_pull_mode(GPIO_NUM_21, GPIO_PULLUP_ONLY);
+  uart_set_wakeup_threshold(UART_NUM_1, 3);
+  esp_sleep_enable_uart_wakeup(UART_NUM_1);
 
   gpio_wakeup_enable(GPIO_NUM_20, GPIO_INTR_HIGH_LEVEL);
   gpio_wakeup_enable(GPIO_NUM_19, GPIO_INTR_HIGH_LEVEL);
