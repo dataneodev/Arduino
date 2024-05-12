@@ -21,7 +21,7 @@ static __inline__ void __psRestore(const uint32_t *__s)
 
 #pragma region CONFIGURATION
 DeviceDef devices[] = {
-  //DeviceDef(1, new BLEAddress("CB:F7:92:0F:3B:2E"), "Myszka"),
+  DeviceDef(1, new BLEAddress("CB:F7:92:0F:3B:2E"), "Myszka"),
   //DeviceDef(2, new BLEAddress("6b:12:b9:ab:dc:6d"), "Telefon")
 };
 
@@ -42,17 +42,20 @@ DeviceDef devices[] = {
 #define MOTION_2_DELAY 5 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a wykryciem uruchamiajacym otwarcie dla sensoru 2,
 #define MOTION_2_DELAY_WAIT 4 * 1000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 2,
 
-#define OPENING_DOOR_TIME 11 * 1000                // czas otwierania drzwi
-#define OPEN_DOOR_TIME 10 * 1000                   // czas oczekiwania na zamknięcie drzwi od ostatnieo wykrycia ruchu
-#define TO_LONG_OPEN_DOOR_TIME 100 * 1000          // czas zbyt długiego otwarcia drzwi aby włączyc alarm
+#define OPENING_DOOR_TIME 11 * 1000               // czas otwierania drzwi
+#define OPEN_DOOR_TIME 10 * 1000                  // czas oczekiwania na zamknięcie drzwi od ostatnieo wykrycia ruchu
+#define TO_LONG_OPEN_DOOR_TIME 100 * 1000         // czas zbyt długiego otwarcia drzwi aby włączyc alarm
 #define TIME_SLEEP_AFTER_LAST_DETECTION 8 * 1000  // czas przejscia w light sleep od ostatniego wykrycia ruchu, nie moze byc mniejsze niż MOTION_1_DELAY + MOTION_1_DELAY_WAIT
-#define TIME_SLEEP_AFTER_START 40 * 1000           // czas przejscia w light sleep od startu
-#define DOOR_INTERRUPTED_WAITING 6 * 1000          // czas zatrzymania w przypadku wykrycia ruchy przy zamykaniu - po tym czasie następuje otwarcie
+#define TIME_SLEEP_AFTER_START 40 * 1000          // czas przejscia w light sleep od startu
+#define DOOR_INTERRUPTED_WAITING 6 * 1000         // czas zatrzymania w przypadku wykrycia ruchy przy zamykaniu - po tym czasie następuje otwarcie
 
 #define TIME_SLEEP_AFTER_LAST_DETECTION_M1 MOTION_1_DELAY + MOTION_1_DELAY_WAIT + TIME_SLEEP_AFTER_LAST_DETECTION
 #define TIME_SLEEP_AFTER_LAST_DETECTION_M2 MOTION_2_DELAY + MOTION_2_DELAY_WAIT + TIME_SLEEP_AFTER_LAST_DETECTION
 
-#define CHECK_NUMBER 0x67  //zmienic aby zresetować ustawienia zapisane w pamięci
+#define LOW_CPU 20
+#define BLE_CPU 160
+
+#define CHECK_NUMBER 0x62  //zmienic aby zresetować ustawienia zapisane w pamięci
 //#define DEBUG_GK           // for tests
 #define FADE 2
 #define FADE_OFF 100000
@@ -508,6 +511,8 @@ void s_START_MOTION_DETECTION() {
 #endif
     T.stateStart();
 
+    Door.end();
+
     M1.start();
     M2.start();
     M3.start();
@@ -525,12 +530,11 @@ void s_MOTION_DETECTION() {
     T.stateStart();
     Door.end();
 
-    allLedOff();
-
-    setCpuFrequencyMhz(20);
+    allLedOff();    
 
     if (EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined()) {
       deInitBle();
+      setCpuFrequencyMhz(LOW_CPU);
     }
   }
 }
@@ -555,9 +559,22 @@ void s_ONE_MOTION_DETECTION() {
     Out3.off();
 
     if (EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined()) {
-      setCpuFrequencyMhz(160);
+      setCpuFrequencyMhz(BLE_CPU);
       initBle();
     }
+  }
+}
+
+
+State *S_MOTION_DETECTED = SM.addState(&s_MOTION_DETECTED);
+void s_MOTION_DETECTED() {
+  if (SM.executeOnce) {
+#if defined(DEBUG_GK)
+    Serial.println("S_MOTION_DETECTED");
+#endif
+    T.stateStart();
+
+    allLedOff();
   }
 }
 
@@ -569,24 +586,14 @@ void s_SLEEP() {
 #endif
 
     T.stateStart();
-
+    
     Door.end();
-
     allLedOff();
-
-    if (EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined()) {
-      deInitBle();
-    }
 
     /// sleep
     digitalWrite(POWER_PIN, LOW);
 
     esp_light_sleep_start();
-
-    //wakeup
-    if (EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined()) {
-      initBle();
-    }
 
     digitalWrite(POWER_PIN, HIGH);
 
@@ -622,20 +629,6 @@ void s_FATAL_ERROR() {
   }
 }
 
-State *S_MOTION_DETECTED = SM.addState(&s_MOTION_DETECTED);
-void s_MOTION_DETECTED() {
-  if (SM.executeOnce) {
-#if defined(DEBUG_GK)
-    Serial.println("S_MOTION_DETECTED");
-#endif
-
-    T.stateStart();
-
-    Out1.off();
-    Out2.off();
-    Out3.off();
-  }
-}
 
 State *S_OPENING_DOOR = SM.addState(&s_OPENING_DOOR);
 void s_OPENING_DOOR() {
@@ -851,7 +844,7 @@ bool T_S_MOTION_DETECTION_S_ONE_MOTION_DETECTION() {
     return true;
   }
 
-  return T.isElapsed(25);
+  return false;
 }
 
 bool T_S_START_UP_S_MOTION_DETECTION() {
@@ -862,21 +855,25 @@ bool T_S_SLEEP_S_WAKE_UP() {
   return T.isElapsed(25) && M1.getPinState() == HIGH || M2.getPinState() == HIGH;
 }
 
-bool T_S_SLEEP_S_START_MOTION_DETECTION() {
-  return T.isElapsed(25) && M1.getPinState() == LOW && M2.getPinState() == LOW;
-}
-
 bool T_S_WAKE_UP_S_MOTION_DETECTION() {
   return T.isElapsed(25);
 }
 
-bool T_S_ONE_MOTION_DETECTION_S_START_MOTION_DETECTION() {
-  if (EEStorage.isDoorAlwaysOpen()) {
-    return false;
-  }
+bool T_S_SLEEP_S_START_MOTION_DETECTION() {
+  return T.isElapsed(25) && M1.getPinState() == LOW && M2.getPinState() == LOW;
+}
 
+bool T_S_ONE_MOTION_DETECTION_S_START_MOTION_DETECTION() {
   if (EEStorage.isDoorAlwaysClose()) {
     return true;
+  }
+
+  return false;
+}
+
+bool T_S_ONE_MOTION_DETECTION_S_MOTION_DETECTION() {
+  if (EEStorage.isDoorAlwaysOpen()) {
+    return false;
   }
 
   return T.isElapsed(25) && M1.ping() == NO_MOTION && M2.ping() == NO_MOTION;
@@ -919,7 +916,7 @@ bool T_S_MOTION_DETECTION_S_SLEEP() {
     return false;
   }
 
-  return T.isElapsed(25);
+  return true;
 }
 
 bool T_S_MOTION_DETECTED_S_START_MOTION_DETECTION() {
@@ -1090,6 +1087,7 @@ void defineTransition() {
 
   S_ONE_MOTION_DETECTION->addTransition(&S_ONE_MOTION_DETECTIONN_S_MOTION_DETECTED, S_MOTION_DETECTED);
   S_ONE_MOTION_DETECTION->addTransition(&T_S_ONE_MOTION_DETECTION_S_START_MOTION_DETECTION, S_START_MOTION_DETECTION);
+  S_ONE_MOTION_DETECTION->addTransition(&T_S_ONE_MOTION_DETECTION_S_MOTION_DETECTION, S_MOTION_DETECTION);
 
   S_MOTION_DETECTED->addTransition(&T_S_MOTION_DETECTED_S_OPENING_DOOR, S_OPENING_DOOR);
   S_MOTION_DETECTED->addTransition(&T_S_MOTION_DETECTED_S_AUTH, S_AUTH);
@@ -1113,7 +1111,7 @@ void defineTransition() {
 
   S_CLOSING_DOOR_INTERRUPTED->addTransition(&T_S_CLOSING_DOOR_INTERRUPTED_S_OPENING_DOOR, S_OPENING_DOOR);
 
-  S_DOOR_CLOSED->addTransition(&T_S_S_DOOR_CLOSED_S_START_MOTION_DETECTION, S_START_MOTION_DETECTION);  
+  S_DOOR_CLOSED->addTransition(&T_S_S_DOOR_CLOSED_S_START_MOTION_DETECTION, S_START_MOTION_DETECTION);
 }
 #pragma endregion STATES
 
@@ -1129,7 +1127,7 @@ void setDefaultState() {
     Serial.println("EEStorage check presence failed");
 #endif
 
-    SM.transitionTo(S_FATAL_ERROR);
+     SM.transitionTo(S_FATAL_ERROR);
     return;
   }
 
@@ -1187,6 +1185,7 @@ void setup() {
   }
 
   deInitBle();
+  setCpuFrequencyMhz(LOW_CPU);
 
   defineTransition();
   setDefaultState();
@@ -1244,9 +1243,11 @@ void receive(const MyMessage &message) {
 
     if (prevAuth && !auth) {
       deInitBle();
+      setCpuFrequencyMhz(LOW_CPU);
     }
 
     if (!prevAuth && auth) {
+      setCpuFrequencyMhz(BLE_CPU);
       initBle();
     }
 
