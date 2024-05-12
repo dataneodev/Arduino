@@ -31,7 +31,7 @@ DeviceDef devices[] = {
 #define OPEN_CLOSE_SOUND  // sygnał dzwiekowy przy otwarciu/zamknieciu drzwi
 #define OUT_2_ENABLED     // czy są 2 diodu - OUT1 -zielona, OUT2 - czerwona
 
-#define BLE_AUTH  // autoryzacja ble wymagana aby otworzyć drzwi - sterowane przez mysensors, aby zmienic trzeba
+//#define BLE_AUTH  // autoryzacja ble wymagana aby otworzyć drzwi - sterowane przez mysensors, aby zmienic trzeba
 
 #define USE_M1_M2_ON_DOOR_CLOSING  // czy wykrycie ruchy przez m1 i m2 także przerywa zamykanie drzwi
 #define USE_M3_ON_DOOR_CLOSING     // czy wykrycie ruchy przez czujnik na sterowniku przerywa zamykanie drzwi
@@ -45,15 +45,14 @@ DeviceDef devices[] = {
 #define OPENING_DOOR_TIME 11 * 1000               // czas otwierania drzwi
 #define OPEN_DOOR_TIME 10 * 1000                  // czas oczekiwania na zamknięcie drzwi od ostatnieo wykrycia ruchu
 #define TO_LONG_OPEN_DOOR_TIME 100 * 1000         // czas zbyt długiego otwarcia drzwi aby włączyc alarm
-#define TIME_SLEEP_AFTER_LAST_DETECTION 8 * 1000  // czas przejscia w light sleep od ostatniego wykrycia ruchu, nie moze byc mniejsze niż MOTION_1_DELAY + MOTION_1_DELAY_WAIT
+#define TIME_SLEEP_AFTER_LAST_DETECTION 5 * 1000  // czas przejscia w light sleep od ostatniego wykrycia ruchu, nie moze byc mniejsze niż MOTION_1_DELAY + MOTION_1_DELAY_WAIT
 #define TIME_SLEEP_AFTER_START 40 * 1000          // czas przejscia w light sleep od startu
 #define DOOR_INTERRUPTED_WAITING 6 * 1000         // czas zatrzymania w przypadku wykrycia ruchy przy zamykaniu - po tym czasie następuje otwarcie
 
 #define TIME_SLEEP_AFTER_LAST_DETECTION_M1 MOTION_1_DELAY + MOTION_1_DELAY_WAIT + TIME_SLEEP_AFTER_LAST_DETECTION
 #define TIME_SLEEP_AFTER_LAST_DETECTION_M2 MOTION_2_DELAY + MOTION_2_DELAY_WAIT + TIME_SLEEP_AFTER_LAST_DETECTION
 
-#define LOW_CPU 20
-#define BLE_CPU 160
+#define CPU_SPEED 160
 
 #define CHECK_NUMBER 0x62  //zmienic aby zresetować ustawienia zapisane w pamięci
 //#define DEBUG_GK           // for tests
@@ -530,11 +529,10 @@ void s_MOTION_DETECTION() {
     T.stateStart();
     Door.end();
 
-    allLedOff();    
+    allLedOff();
 
     if (EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined()) {
       deInitBle();
-      setCpuFrequencyMhz(LOW_CPU);
     }
   }
 }
@@ -559,7 +557,6 @@ void s_ONE_MOTION_DETECTION() {
     Out3.off();
 
     if (EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined()) {
-      setCpuFrequencyMhz(BLE_CPU);
       initBle();
     }
   }
@@ -586,7 +583,7 @@ void s_SLEEP() {
 #endif
 
     T.stateStart();
-    
+
     Door.end();
     allLedOff();
 
@@ -1127,7 +1124,7 @@ void setDefaultState() {
     Serial.println("EEStorage check presence failed");
 #endif
 
-     SM.transitionTo(S_FATAL_ERROR);
+    SM.transitionTo(S_FATAL_ERROR);
     return;
   }
 
@@ -1175,6 +1172,9 @@ void setup() {
 #if defined(DEBUG_GK)
   Serial.println(SKETCH_NAME);
 #endif
+
+  setCpuFrequencyMhz(CPU_SPEED);
+
   inicjalizePins();
   inicjalizeI2C();
 
@@ -1185,7 +1185,6 @@ void setup() {
   }
 
   deInitBle();
-  setCpuFrequencyMhz(LOW_CPU);
 
   defineTransition();
   setDefaultState();
@@ -1243,11 +1242,9 @@ void receive(const MyMessage &message) {
 
     if (prevAuth && !auth) {
       deInitBle();
-      setCpuFrequencyMhz(LOW_CPU);
     }
 
     if (!prevAuth && auth) {
-      setCpuFrequencyMhz(BLE_CPU);
       initBle();
     }
 
