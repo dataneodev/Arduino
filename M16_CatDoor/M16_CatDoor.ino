@@ -829,6 +829,10 @@ void s_AUTH_FAILED() {
 }
 
 bool T_S_MOTION_DETECTION_S_ONE_MOTION_DETECTION() {
+  if (EEStorage.isDoorAlwaysOpen()) {
+    return true;
+  }
+
   MotionDetectState m1Ping = M1.ping();
 
   if (m1Ping == ONE_MOTION_DETECTED || m1Ping == MOTIONS_DETECTED) {
@@ -858,14 +862,6 @@ bool T_S_WAKE_UP_S_MOTION_DETECTION() {
 
 bool T_S_SLEEP_S_START_MOTION_DETECTION() {
   return T.isElapsed(25) && M1.getPinState() == LOW && M2.getPinState() == LOW;
-}
-
-bool T_S_ONE_MOTION_DETECTION_S_START_MOTION_DETECTION() {
-  if (EEStorage.isDoorAlwaysClose()) {
-    return true;
-  }
-
-  return false;
 }
 
 bool T_S_ONE_MOTION_DETECTION_S_MOTION_DETECTION() {
@@ -1083,7 +1079,6 @@ void defineTransition() {
   S_MOTION_DETECTION->addTransition(&T_S_MOTION_DETECTION_S_SLEEP, S_SLEEP);
 
   S_ONE_MOTION_DETECTION->addTransition(&S_ONE_MOTION_DETECTIONN_S_MOTION_DETECTED, S_MOTION_DETECTED);
-  S_ONE_MOTION_DETECTION->addTransition(&T_S_ONE_MOTION_DETECTION_S_START_MOTION_DETECTION, S_START_MOTION_DETECTION);
   S_ONE_MOTION_DETECTION->addTransition(&T_S_ONE_MOTION_DETECTION_S_MOTION_DETECTION, S_MOTION_DETECTION);
 
   S_MOTION_DETECTED->addTransition(&T_S_MOTION_DETECTED_S_OPENING_DOOR, S_OPENING_DOOR);
