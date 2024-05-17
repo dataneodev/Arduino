@@ -80,6 +80,7 @@ private:
   bool _alwaysClose = false;
   bool _alwaysOpen = false;
   bool _useBleAuth = false;
+  bool _useLight = true;
 
   void readAll() {
     if (EEPROM24C32->readByte(105) != CHECK_NUMBER) {
@@ -99,6 +100,7 @@ private:
 #else
       EEPROM24C32->writeByte(116, FALSE_VALUE, false, false);  // auth
 #endif
+EEPROM24C32->writeByte(117, FALSE_VALUE, false, false);  // light
     }
 
 #if defined(DEBUG_GK)
@@ -110,6 +112,7 @@ private:
     _alwaysOpen = EEPROM24C32->readByte(114) == TRUE_VALUE;
     _alwaysClose = EEPROM24C32->readByte(115) == TRUE_VALUE;
     _useBleAuth = EEPROM24C32->readByte(116) == TRUE_VALUE;
+    _useLight = EEPROM24C32->readByte(117) == TRUE_VALUE;
 
 #if defined(DEBUG_GK)
     Serial.print("Door open count:");
