@@ -39,6 +39,7 @@ public:
 #endif
 
         int devId = getDeviceId(adress);
+
         if (devId == 0) {
           continue;
         }
