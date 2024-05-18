@@ -30,9 +30,6 @@ DeviceDef devices[] = {
 #define ALARM_ENABLED     // w przypadku błędow uruchamiać alarm dzwiękowy
 #define OPEN_CLOSE_SOUND  // sygnał dzwiekowy przy otwarciu/zamknieciu drzwi
 #define OUT_2_ENABLED     // czy są 2 diodu - OUT1 -zielona, OUT2 - czerwona
-
-//#define BLE_AUTH  // autoryzacja ble wymagana aby otworzyć drzwi - sterowane przez mysensors, aby zmienic trzeba
-
 #define USE_M1_M2_ON_DOOR_CLOSING  // czy wykrycie ruchy przez m1 i m2 także przerywa zamykanie drzwi
 #define USE_M3_ON_DOOR_CLOSING     // czy wykrycie ruchy przez czujnik na sterowniku przerywa zamykanie drzwi
 
@@ -96,6 +93,8 @@ DeviceDef devices[] = {
 #define MS_OPEN_DOOR_ID 21
 #define MS_CLOSE_DOOR_ID 22
 #define MS_AUTH_BLE_ID 23
+#define MS_LIGHT_ID 24
+#define MS_TEMP_ID 25
 #define MY_NODE_ID 95  // id wezła dla my sensors
 #pragma endregion MY_SENSORS_CONFIGURATION
 
@@ -270,6 +269,8 @@ private:
 #pragma endregion TYPES
 
 #pragma region GLOBAL_VARIABLE
+#include "driver/ledc.h"
+#include "driver/temperature_sensor.h"
 #include "esp_bt_main.h"
 #include "esp_bt.h"
 #include "driver/uart.h"
@@ -380,6 +381,41 @@ void sentMyBleAuthStatus() {
   send(mMessage.set(useAuth ? "1" : "0"));
 }
 
+void sentLightStatus() {
+  bool useLight = EEStorage.useLight();
+
+#if defined(DEBUG_GK)
+  Serial.print("sentLightStatus");
+  Serial.println(useLight ? "1" : "0");
+#endif
+
+  mMessage.setType(V_STATUS);
+  mMessage.setSensor(MS_LIGHT_ID);
+  send(mMessage.set(useLight ? "1" : "0"));
+}
+
+void sentTempStatus() {
+  temperature_sensor_handle_t temp_sensor = NULL;
+  temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(10, 50);
+
+  temperature_sensor_install(&temp_sensor_config, &temp_sensor);
+  temperature_sensor_enable(temp_sensor);
+
+  float tsens_value;
+  temperature_sensor_get_celsius(temp_sensor, &tsens_value);
+
+  temperature_sensor_disable(temp_sensor);
+
+#if defined(DEBUG_GK)
+  Serial.print("sentTempStatus");
+  Serial.println(tsens_value);
+#endif
+
+  mMessage.setType(V_TEMP);
+  mMessage.setSensor(MS_TEMP_ID);
+  send(mMessage.set(tsens_value, 1));
+}
+
 void sentMyDoorOpenCount() {
 #if defined(DEBUG_GK)
   Serial.print("sentMyDoorOpenCount");
@@ -438,6 +474,7 @@ void sentDoorClose() {
   }
 
   sentMyClientOpenDoorStatus(lastOpenClientId, false);
+  sentTempStatus();
 }
 
 void sendAllMySensorsStatus() {
@@ -446,6 +483,8 @@ void sendAllMySensorsStatus() {
   sentMyDoorAlwaysOpenStatus();
   sentMyDoorAlwaysCloseStatus();
   sentMyBleAuthStatus();
+  sentLightStatus();
+  sentTempStatus();
 }
 
 #pragma endregion MY_SENSORS
@@ -455,6 +494,16 @@ void allLedOff() {
   Out1.off();
   Out2.off();
   Out3.off();
+}
+
+void setLightOn() {
+  if (EEStorage.useLight()) {
+    digitalWrite(POWER_PIN, HIGH);
+  }
+}
+
+void setLightOff() {
+  digitalWrite(POWER_PIN, LOW);
 }
 
 const SpeedSetting openingBuzzerSpeedSetting = {
@@ -586,13 +635,10 @@ void s_SLEEP() {
 
     Door.end();
     allLedOff();
+    setLightOff();
 
     /// sleep
-    digitalWrite(POWER_PIN, LOW);
-
     esp_light_sleep_start();
-
-    digitalWrite(POWER_PIN, HIGH);
 
 #if defined(DEBUG_GK)
     Serial.println("AWAKE_FROM_SLEEP");
@@ -651,6 +697,9 @@ void s_OPENING_DOOR() {
 #ifdef OPEN_CLOSE_SOUND
     Out3.pattern(2, openingBuzzerSpeedSetting, false);
 #endif
+
+    setLightOn();
+
     EEStorage.setDoorOpen(true);
   }
 }
@@ -666,10 +715,21 @@ void s_DOOR_OPEN() {
 
     Door.end();
 
-    Out1.updateFadeSpeed(FADE_OFF);
-    Out1.on();
+    if (EEStorage.isDoorAlwaysOpen()) {
+      Out1.off();
+    } else {
+      Out1.updateFadeSpeed(FADE_OFF);
+      Out1.on();
+    }
+
     Out2.off();
     Out3.off();
+
+    if (EEStorage.useLight() && !EEStorage.isDoorAlwaysOpen()) {
+      setLightOn();
+    } else {
+      setLightOff();
+    }
 
     sentDoorOpen();
   }
@@ -739,6 +799,7 @@ void s_DOOR_CLOSED() {
     Door.end();
 
     allLedOff();
+    setLightOff();
 
     M1.start();
     M2.start();
@@ -853,15 +914,27 @@ bool T_S_START_UP_S_MOTION_DETECTION() {
 }
 
 bool T_S_SLEEP_S_WAKE_UP() {
+  if (EEStorage.isDoorOpen()) {
+    return false;
+  }
+
   return T.isElapsed(25) && M1.getPinState() == HIGH || M2.getPinState() == HIGH;
+}
+
+bool T_S_SLEEP_S_START_MOTION_DETECTION() {
+  if (EEStorage.isDoorOpen()) {
+    return false;
+  }
+
+  return T.isElapsed(25) && M1.getPinState() == LOW && M2.getPinState() == LOW;
+}
+
+bool T_S_SLEEP_S_DOOR_OPEN() {
+  return T.isElapsed(25) && EEStorage.isDoorOpen();
 }
 
 bool T_S_WAKE_UP_S_MOTION_DETECTION() {
   return T.isElapsed(25);
-}
-
-bool T_S_SLEEP_S_START_MOTION_DETECTION() {
-  return T.isElapsed(25) && M1.getPinState() == LOW && M2.getPinState() == LOW;
 }
 
 bool T_S_ONE_MOTION_DETECTION_S_MOTION_DETECTION() {
@@ -1012,6 +1085,38 @@ bool T_S_DOOR_OPEN_S_DOOR_TO_LONG_OPEN() {
   return T.isElapsed(TO_LONG_OPEN_DOOR_TIME);
 }
 
+bool T_S_DOOR_OPEN_S_SLEEP() {
+  if (!EEStorage.isDoorAlwaysOpen()) {
+    return false;
+  }
+
+  if (!T.isElapsed(TIME_SLEEP_AFTER_LAST_DETECTION)) {
+    return false;
+  }
+
+  if (M1.ping() != NO_MOTION) {
+    return false;
+  }
+
+  if (M2.ping() != NO_MOTION) {
+    return false;
+  }
+
+  if (!M1.isElapsedFromLastMotionDetection(TIME_SLEEP_AFTER_LAST_DETECTION_M1)) {
+    return false;
+  }
+
+  if (!M2.isElapsedFromLastMotionDetection(TIME_SLEEP_AFTER_LAST_DETECTION_M2)) {
+    return false;
+  }
+
+  if (millis() < TIME_SLEEP_AFTER_START) {
+    return false;
+  }
+
+  return true;
+}
+
 bool T_S_DOOR_TO_LONG_OPEN_S_CLOSING_DOOR() {
 #ifdef USE_M1_M2_ON_DOOR_CLOSING
   if (!M1.isElapsedFromLastMotionDetection(OPEN_DOOR_TIME)) {
@@ -1070,6 +1175,7 @@ void defineTransition() {
 
   S_SLEEP->addTransition(&T_S_SLEEP_S_WAKE_UP, S_WAKE_UP);
   S_SLEEP->addTransition(&T_S_SLEEP_S_START_MOTION_DETECTION, S_START_MOTION_DETECTION);
+  S_SLEEP->addTransition(&T_S_SLEEP_S_DOOR_OPEN, S_DOOR_OPEN);
 
   S_WAKE_UP->addTransition(&T_S_WAKE_UP_S_MOTION_DETECTION, S_MOTION_DETECTION);
 
@@ -1095,6 +1201,7 @@ void defineTransition() {
 
   S_DOOR_OPEN->addTransition(&T_S_DOOR_OPEN_S_CLOSING_DOOR, S_CLOSING_DOOR);
   S_DOOR_OPEN->addTransition(&T_S_DOOR_OPEN_S_DOOR_TO_LONG_OPEN, S_DOOR_TO_LONG_OPEN);
+  S_DOOR_OPEN->addTransition(&T_S_DOOR_OPEN_S_SLEEP, S_SLEEP);
 
   S_DOOR_TO_LONG_OPEN->addTransition(&T_S_DOOR_TO_LONG_OPEN_S_CLOSING_DOOR, S_CLOSING_DOOR);
 
@@ -1149,6 +1256,8 @@ void presentation()  // MySensors
   present(MS_OPEN_DOOR_ID, S_BINARY, "Drzwi zawsze otwarte");
   present(MS_CLOSE_DOOR_ID, S_BINARY, "Drzwi zawsze zamknięte");
   present(MS_AUTH_BLE_ID, S_BINARY, "Autoryzacja BLE");
+  present(MS_LIGHT_ID, S_BINARY, "Swiatło");
+  present(MS_TEMP_ID, S_TEMP, "Temperatura");
 
   present(1, S_DOOR, SKETCH_NAME);
 
@@ -1161,8 +1270,6 @@ void presentation()  // MySensors
   isPresentedToController = true;
 }
 
-#include "driver/ledc.h"
-
 void setup() {
 #if defined(DEBUG_GK)
   Serial.println(SKETCH_NAME);
@@ -1174,6 +1281,8 @@ void setup() {
   inicjalizeI2C();
 
   EEStorage.Inicjalize();
+
+  setLightOff();
 
   if (ScannerGK.isAnyDeviceDefined()) {
     ScannerGK.init();
@@ -1246,6 +1355,11 @@ void receive(const MyMessage &message) {
     EEStorage.setAthorizationBle(auth);
     sentMyBleAuthStatus();
   }
+
+  if (MS_LIGHT_ID == message.sensor && message.getType() == V_STATUS) {
+    EEStorage.setLight(message.getBool());
+    sentLightStatus();
+  }
 }
 #pragma endregion MAIN
 
@@ -1257,7 +1371,7 @@ void inicjalizeI2C() {
 
 void inicjalizePins() {
   pinMode(POWER_PIN, OUTPUT);
-  digitalWrite(POWER_PIN, HIGH);
+  digitalWrite(POWER_PIN, LOW);
 
   pinMode(OUPUT_1_PIN, OUTPUT);
   digitalWrite(OUPUT_1_PIN, LOW);

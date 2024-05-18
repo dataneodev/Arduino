@@ -1,6 +1,5 @@
 #include "24C32.h"
-
-
+#include "DeviceStorage.h"
 
 #define TRUE_VALUE 0x55
 #define FALSE_VALUE 0x45
@@ -44,6 +43,10 @@ public:
     return _doorOpenCount;
   }
 
+  bool useLight() {
+    return _useLight;
+  }
+
   void setDoorOpen(bool isOpen) {
     _isDoorOpen = isOpen;
     EEPROM24C32->writeByte(106, isOpen ? TRUE_VALUE : FALSE_VALUE, false, false);
@@ -70,6 +73,11 @@ public:
     EEPROM24C32->writeByte(116, bleAuth ? TRUE_VALUE : FALSE_VALUE, false, false);
   }
 
+  void setLight(bool light) {
+    _useLight = light;
+    EEPROM24C32->writeByte(117, light ? TRUE_VALUE : FALSE_VALUE, false, false);
+  }
+
 private:
   EE *EEPROM24C32;
 
@@ -81,6 +89,7 @@ private:
   bool _alwaysOpen = false;
   bool _useBleAuth = false;
   bool _useLight = true;
+  DeviceStorage _devices[5];
 
   void readAll() {
     if (EEPROM24C32->readByte(105) != CHECK_NUMBER) {
@@ -94,13 +103,8 @@ private:
 
       EEPROM24C32->writeByte(114, FALSE_VALUE, false, false);  // open always door
       EEPROM24C32->writeByte(115, FALSE_VALUE, false, false);  // close always door
-
-#ifdef BLE_AUTH
-      EEPROM24C32->writeByte(116, TRUE_VALUE, false, false);  // auth
-#else
       EEPROM24C32->writeByte(116, FALSE_VALUE, false, false);  // auth
-#endif
-EEPROM24C32->writeByte(117, FALSE_VALUE, false, false);  // light
+      EEPROM24C32->writeByte(117, FALSE_VALUE, false, false);  // light
     }
 
 #if defined(DEBUG_GK)
@@ -108,7 +112,7 @@ EEPROM24C32->writeByte(117, FALSE_VALUE, false, false);  // light
 #endif
 
     _isDoorOpen = EEPROM24C32->readByte(106) == TRUE_VALUE;
-    _doorOpenCount = EEPROM24C32->readUInt32(110) ;
+    _doorOpenCount = EEPROM24C32->readUInt32(110);
     _alwaysOpen = EEPROM24C32->readByte(114) == TRUE_VALUE;
     _alwaysClose = EEPROM24C32->readByte(115) == TRUE_VALUE;
     _useBleAuth = EEPROM24C32->readByte(116) == TRUE_VALUE;
