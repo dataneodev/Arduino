@@ -30,8 +30,6 @@ public:
     esp_bd_addr_t addr = { a1, a2, a3, a4, a5, a6 };
 
     _address = new BLEAddress(addr);
-
-    free(addr);
   }
 
   void setEnabled(bool enable) {

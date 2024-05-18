@@ -2,17 +2,8 @@ class BLEScanner {
 public:
   static int scanTime;  //In seconds
 
-  BLEScanner(DeviceDef* dev, int deviceCount) {
-    _defindedDevices = dev;
-    _defindedDevicesCount = deviceCount;
-  }
-
-  static bool isAnyDeviceDefined() {
-    return _defindedDevicesCount > 0;
-  }
-
-  int getDefindedDevicesCount() {
-    return _defindedDevicesCount;
+  BLEScanner(Storage* storage) {
+    _storage = storage;
   }
 
   bool isScanComplete() {
@@ -50,7 +41,7 @@ public:
           continue;
         }
 
-        if (rssi < MIN_RSSI) {
+        if (rssi < _storage->getMinRSSI() * -1) {
 #if defined(DEBUG_GK)
           Serial.print("Found match device with weak RSSI Id: ");
           Serial.println(devId);
@@ -93,7 +84,7 @@ public:
     _lastRssi = 0;
     _lastDeviceId = 0;
 
-    if (!BLEScanner::isAnyDeviceDefined()) {
+    if (!_storage->isAuth()) {
       return;
     }
 
@@ -108,7 +99,7 @@ public:
   }
 
   bool isAuth() {
-    if (!BLEScanner::isAnyDeviceDefined()) {
+    if (!_storage->isAuth()) {
       return true;
     }
 
@@ -116,33 +107,16 @@ public:
   }
 
   int getAuthDeviceId() {
-    if (!BLEScanner::isAnyDeviceDefined() || _lastDeviceId < 2) {
+    if (!_storage->isAuth() || _lastDeviceId < 2) {
       return 1;
     }
 
     return _lastDeviceId;
   }
 
-  const char* getAuthDeviceName() {
-    if (!BLEScanner::isAnyDeviceDefined() || _lastDeviceId < 2) {
-      return SKETCH_NAME;
-    }
-
-    for (int i = 0; i < _defindedDevicesCount; i++) {
-      DeviceDef curr = _defindedDevices[i];
-
-      if (curr.GetId() == _lastDeviceId) {
-        return curr.GetName();
-      }
-    }
-
-    return SKETCH_NAME;
-  }
 
 private:
-  static int _defindedDevicesCount;
-  static DeviceDef* _defindedDevices;
-
+  static Storage* _storage;
   static BLEScan* _pBLEScan;
 
   static bool _scanComplete;
@@ -150,25 +124,12 @@ private:
   static int _lastRssi;
 
   static int getDeviceId(BLEAddress address) {
-    if (!BLEScanner::isAnyDeviceDefined()) {
-      return 0;
-    }
-
-    for (int i = 0; i < BLEScanner::_defindedDevicesCount; i++) {
-      DeviceDef curr = BLEScanner::_defindedDevices[i];
-
-      if (curr.IsEquals(&address)) {
-        return curr.GetId();
-      }
-    }
-
-    return 0;
+    return _storage->getBleDeviceId(&address);
   }
 };
 
 int BLEScanner::scanTime = 5;
-int BLEScanner::_defindedDevicesCount = 0;
-DeviceDef* BLEScanner::_defindedDevices = nullptr;
+Storage* BLEScanner::_storage = nullptr;
 BLEScan* BLEScanner::_pBLEScan = nullptr;
 bool BLEScanner::_scanComplete = false;
 int BLEScanner::_lastDeviceId = 0;

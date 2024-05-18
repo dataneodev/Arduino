@@ -77,6 +77,23 @@ public:
     EEPROM24C32->writeByte(117, light ? TRUE_VALUE : FALSE_VALUE, false, false);
   }
 
+  void setMinRSSI(uint8_t minRssi) {
+    if(minRssi > 100){
+      minRssi = 100;
+    }
+
+    if(minRssi < 5){
+      minRssi = 5;
+    }
+
+    _minRSSI = minRssi;
+    EEPROM24C32->writeByte(118, minRssi, false, false);
+  }
+
+  uint8_t getBleDevicesCount() {
+    return _deviceCount;
+  }
+
   uint8_t getBleDeviceId(BLEAddress* address) {
     for (int i = 0; i < _deviceCount; i++) {
       if (!_devices[i].isEquals(address) || !_devices[i].isEnabled()) {
@@ -93,7 +110,7 @@ public:
     for (int i = 0; i < _deviceCount; i++) {
       if (_devices[i].isEquals(address)) {
 
-        if (!_devices[i].isEnabled()) {
+        if (!isBleEnabled(i)) {
           _devices[i].setEnabled(true);
           writeBleEnabled(i, true);
         }
@@ -117,18 +134,20 @@ public:
 
     writeBleAddress(availableId, a[0], a[1], a[2], a[3], a[4], a[5]);
     writeBleEnabled(availableId, true);
-
-    free(a);
   }
 
-  void deleteNewBleAddress(BLEAddress* address) {
+  void deleteBleDevice(uint8_t id) {
     for (int i = 0; i < _deviceCount; i++) {
-      if (_devices[i].isEquals(address) && _devices[i].isEnabled()) {
-        _devices[i].setEnabled(false);
-        writeBleEnabled(i, false);
+      if (_devices[i].getId() != id) {
+        continue;
+      }
 
+      if (!isBleEnabled(i)) {
         return;
       }
+
+      _devices[i].setEnabled(false);
+      writeBleEnabled(i, false);
     }
   }
 
@@ -162,6 +181,14 @@ public:
     return false;
   }
 
+  bool isAuth() {
+    return useAthorizationBle() && isAnyDeviceDefined();
+  }
+
+  uint8_t getMinRSSI() {
+    return _minRSSI ;
+  }
+
 private:
   EE* EEPROM24C32;
 
@@ -173,10 +200,11 @@ private:
   bool _alwaysOpen = false;
   bool _useBleAuth = false;
   bool _useLight = true;
+  uint8_t _minRSSI = 60;
+
   static const uint8_t _deviceCount = 10;
 
   DeviceStorage _devices[_deviceCount] = {
-    DeviceStorage(1, false, new BLEAddress("FF:FF:FF:FF:FF:FF")),
     DeviceStorage(2, false, new BLEAddress("FF:FF:FF:FF:FF:FF")),
     DeviceStorage(3, false, new BLEAddress("FF:FF:FF:FF:FF:FF")),
     DeviceStorage(4, false, new BLEAddress("FF:FF:FF:FF:FF:FF")),
@@ -186,6 +214,7 @@ private:
     DeviceStorage(8, false, new BLEAddress("FF:FF:FF:FF:FF:FF")),
     DeviceStorage(9, false, new BLEAddress("FF:FF:FF:FF:FF:FF")),
     DeviceStorage(10, false, new BLEAddress("FF:FF:FF:FF:FF:FF")),
+    DeviceStorage(11, false, new BLEAddress("FF:FF:FF:FF:FF:FF")),
   };
 
   void readAll() {
@@ -201,7 +230,8 @@ private:
       EEPROM24C32->writeByte(114, FALSE_VALUE, false, false);  // open always door
       EEPROM24C32->writeByte(115, FALSE_VALUE, false, false);  // close always door
       EEPROM24C32->writeByte(116, FALSE_VALUE, false, false);  // auth
-      EEPROM24C32->writeByte(117, FALSE_VALUE, false, false);  // light
+      EEPROM24C32->writeByte(117, TRUE_VALUE, false, false);  // light
+      EEPROM24C32->writeByte(118, 60, false, false);  // min RSSI
 
       writeDefaultBle();  //ble
     }
@@ -216,6 +246,7 @@ private:
     _alwaysClose = EEPROM24C32->readByte(115) == TRUE_VALUE;
     _useBleAuth = EEPROM24C32->readByte(116) == TRUE_VALUE;
     _useLight = EEPROM24C32->readByte(117) == TRUE_VALUE;
+    _minRSSI = EEPROM24C32->readByte(118);
 
     readBleAllAddress();
 

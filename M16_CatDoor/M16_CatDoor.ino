@@ -20,16 +20,9 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #include "DeviceDef.h"
 
 #pragma region CONFIGURATION
-DeviceDef devices[] = {
-  DeviceDef(1, new BLEAddress("CB:F7:92:0F:3B:2E"), "Myszka"),
-  //DeviceDef(2, new BLEAddress("6b:12:b9:ab:dc:6d"), "Telefon")
-};
-
-#define MIN_RSSI -60  // minimalna wartość poziomu sygnału ble do autoryzacji - bliżej zera mocnieszy sygnał/bliżej sterownika
-
-#define ALARM_ENABLED     // w przypadku błędow uruchamiać alarm dzwiękowy
-#define OPEN_CLOSE_SOUND  // sygnał dzwiekowy przy otwarciu/zamknieciu drzwi
-#define OUT_2_ENABLED     // czy są 2 diodu - OUT1 -zielona, OUT2 - czerwona
+#define ALARM_ENABLED              // w przypadku błędow uruchamiać alarm dzwiękowy
+#define OPEN_CLOSE_SOUND           // sygnał dzwiekowy przy otwarciu/zamknieciu drzwi
+#define OUT_2_ENABLED              // czy są 2 diodu - OUT1 -zielona, OUT2 - czerwona
 #define USE_M1_M2_ON_DOOR_CLOSING  // czy wykrycie ruchy przez m1 i m2 także przerywa zamykanie drzwi
 #define USE_M3_ON_DOOR_CLOSING     // czy wykrycie ruchy przez czujnik na sterowniku przerywa zamykanie drzwi
 
@@ -51,7 +44,7 @@ DeviceDef devices[] = {
 
 #define CPU_SPEED 160
 
-#define CHECK_NUMBER 0x62  //zmienic aby zresetować ustawienia zapisane w pamięci
+#define CHECK_NUMBER 0x59  //zmienic aby zresetować ustawienia zapisane w pamięci
 //#define DEBUG_GK           // for tests
 #define FADE 2
 #define FADE_OFF 100000
@@ -89,12 +82,14 @@ DeviceDef devices[] = {
 #define MY_RS485_SOH_COUNT 6
 #define MY_TRANSPORT_WAIT_READY_MS 1
 
+#define MS_DOOR_STATUS_ID 1
 #define MS_OPEN_DOOR_COUNT_ID 20
 #define MS_OPEN_DOOR_ID 21
 #define MS_CLOSE_DOOR_ID 22
 #define MS_AUTH_BLE_ID 23
 #define MS_LIGHT_ID 24
 #define MS_TEMP_ID 25
+#define MS_MIN_RSSI_ID 26
 #define MY_NODE_ID 95  // id wezła dla my sensors
 #pragma endregion MY_SENSORS_CONFIGURATION
 
@@ -331,7 +326,7 @@ MyMessage mMessage;
 StateChangeManager SCM;
 EE EE24C32;
 Storage EEStorage(&EE24C32);
-BLEScanner ScannerGK(&devices[0], sizeof(devices) / sizeof(*devices));
+BLEScanner ScannerGK(&EEStorage);
 
 DoorManager Door(OPEN_DOOR_PIN, CLOSE_DOOR_PIN);
 StateTime T;
@@ -342,6 +337,9 @@ MotionDetect M3(MOTION_SENSOR_3_PIN, 5 * 1000, 1);
 Fadinglight Out1(OUPUT_1_PIN, false, 2);
 Blinkenlight Out2(OUPUT_2_PIN);
 Blinkenlight Out3(OUPUT_3_PIN);
+
+temperature_sensor_handle_t temp_sensor = NULL;
+temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(-40, 50);
 
 #pragma endregion GLOBAL_VARIABLE
 
@@ -369,7 +367,7 @@ void sentMyDoorAlwaysCloseStatus() {
 }
 
 void sentMyBleAuthStatus() {
-  bool useAuth = EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined();
+  bool useAuth = EEStorage.isAuth();
 
 #if defined(DEBUG_GK)
   Serial.print("sentMyBleAuthStatus");
@@ -392,13 +390,10 @@ void sentLightStatus() {
   mMessage.setType(V_STATUS);
   mMessage.setSensor(MS_LIGHT_ID);
   send(mMessage.set(useLight ? "1" : "0"));
-}
+} 
 
 void sentTempStatus() {
-  temperature_sensor_handle_t temp_sensor = NULL;
-  temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(10, 50);
-
-  temperature_sensor_install(&temp_sensor_config, &temp_sensor);
+  
   temperature_sensor_enable(temp_sensor);
 
   float tsens_value;
@@ -433,17 +428,28 @@ void sentMyAllClientOpenDoorDefaultStatus() {
 #if defined(DEBUG_GK)
   Serial.println("sentMyAllClientOpenDoorDefaultStatus");
 #endif
-  bool isDoorOpen = EEStorage.isDoorAlwaysOpen();
-  int devCount = ScannerGK.getDefindedDevicesCount();
+  int devCount = EEStorage.getBleDevicesCount();
 
-  sentMyClientOpenDoorStatus(1, isDoorOpen);
+  sentMyClientOpenDoorStatusMy(1, EEStorage.isDoorOpen());
 
   for (int i = 0; i < devCount; i++) {
-    sentMyClientOpenDoorStatus(devices[i].GetId(), isDoorOpen);
+    if (!EEStorage.isBleEnabled(i)) {
+      continue;
+    }
+
+    sentMyClientOpenDoorStatusMy(EEStorage.getBleId(i), EEStorage.isDoorAlwaysOpen());
   }
 }
 
 void sentMyClientOpenDoorStatus(int clientId, bool status) {
+  sentMyClientOpenDoorStatusMy(1, status);
+
+  if (clientId > 1) {
+    sentMyClientOpenDoorStatusMy(clientId, status);
+  }
+}
+
+void sentMyClientOpenDoorStatusMy(int clientId, bool status) {
 #if defined(DEBUG_GK)
   Serial.println("sentMyClientOpenDoorStatus");
 
@@ -477,6 +483,19 @@ void sentDoorClose() {
   sentTempStatus();
 }
 
+void sentMinRssi() {
+#if defined(DEBUG_GK)
+  Serial.print("sentMinRssi");
+  Serial.println(EEStorage.getMinRSSI());
+#endif
+
+  uint32_t minRSSI = EEStorage.getMinRSSI();
+
+  mMessage.setType(V_TEXT);
+  mMessage.setSensor(MS_MIN_RSSI_ID);
+  send(mMessage.set(minRSSI));
+}
+
 void sendAllMySensorsStatus() {
   sentMyAllClientOpenDoorDefaultStatus();
   sentMyDoorOpenCount();
@@ -485,6 +504,7 @@ void sendAllMySensorsStatus() {
   sentMyBleAuthStatus();
   sentLightStatus();
   sentTempStatus();
+  sentMinRssi();
 }
 
 #pragma endregion MY_SENSORS
@@ -580,7 +600,7 @@ void s_MOTION_DETECTION() {
 
     allLedOff();
 
-    if (EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined()) {
+    if (EEStorage.isAuth()) {
       deInitBle();
     }
   }
@@ -605,7 +625,7 @@ void s_ONE_MOTION_DETECTION() {
     Out2.off();
     Out3.off();
 
-    if (EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined()) {
+    if (EEStorage.isAuth()) {
       initBle();
     }
   }
@@ -672,7 +692,6 @@ void s_FATAL_ERROR() {
   }
 }
 
-
 State *S_OPENING_DOOR = SM.addState(&s_OPENING_DOOR);
 void s_OPENING_DOOR() {
   if (SM.executeOnce) {
@@ -701,6 +720,7 @@ void s_OPENING_DOOR() {
     setLightOn();
 
     EEStorage.setDoorOpen(true);
+     sentDoorOpen();
   }
 }
 
@@ -729,9 +749,7 @@ void s_DOOR_OPEN() {
       setLightOn();
     } else {
       setLightOff();
-    }
-
-    sentDoorOpen();
+    }   
   }
 }
 
@@ -1002,7 +1020,7 @@ bool T_S_MOTION_DETECTED_S_OPENING_DOOR() {
     return false;
   }
 
-  if (EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined()) {
+  if (EEStorage.isAuth()) {
     return false;
   }
 
@@ -1018,7 +1036,7 @@ bool T_S_MOTION_DETECTED_S_AUTH() {
     return false;
   }
 
-  if (!EEStorage.useAthorizationBle() || !ScannerGK.isAnyDeviceDefined()) {
+  if (!EEStorage.isAuth()) {
     return false;
   }
 
@@ -1258,16 +1276,33 @@ void presentation()  // MySensors
   present(MS_AUTH_BLE_ID, S_BINARY, "Autoryzacja BLE");
   present(MS_LIGHT_ID, S_BINARY, "Swiatło");
   present(MS_TEMP_ID, S_TEMP, "Temperatura");
+  present(MS_MIN_RSSI_ID, S_INFO, "Min RSSI");
 
-  present(1, S_DOOR, SKETCH_NAME);
-
-  if (ScannerGK.isAnyDeviceDefined()) {
-    for (int i = 0; i < ScannerGK.getDefindedDevicesCount(); i++) {
-      present(devices[i].GetId(), S_DOOR, devices[i].GetName());
-    }
-  }
+  presentBleDevices();
 
   isPresentedToController = true;
+}
+
+void presentBleDevices() {
+  present(1, S_DOOR, SKETCH_NAME);
+
+  for (int i = 0; i < EEStorage.getBleDevicesCount(); i++) {
+    if (!EEStorage.isBleEnabled(i)) {
+      continue;
+    }
+
+    esp_bd_addr_t *adr = EEStorage.getBleAddress(i)->getNative();
+    uint8_t a[6];
+    memcpy(&a, adr, 6);
+
+    auto size = 18;
+    char *namech = (char *)malloc(size);
+    snprintf(namech, size, "%02X:%02X:%02X:%02X:%02X:%02X", a[0], a[1], a[2], a[3], a[4], a[5]);
+
+    present(EEStorage.getBleId(i), S_DOOR, namech);
+
+    free(namech);
+  }
 }
 
 void setup() {
@@ -1282,9 +1317,11 @@ void setup() {
 
   EEStorage.Inicjalize();
 
+  temperature_sensor_install(&temp_sensor_config, &temp_sensor);
+
   setLightOff();
 
-  if (ScannerGK.isAnyDeviceDefined()) {
+  if (EEStorage.isAnyDeviceDefined()) {
     ScannerGK.init();
   }
 
@@ -1336,11 +1373,10 @@ void receive(const MyMessage &message) {
 
 
   if (MS_AUTH_BLE_ID == message.sensor && message.getType() == V_STATUS) {
-
-    bool prevAuth = EEStorage.useAthorizationBle() && ScannerGK.isAnyDeviceDefined();
+    bool prevAuth = EEStorage.isAuth();
     bool auth = message.getBool();
 
-    if (!ScannerGK.isAnyDeviceDefined()) {
+    if (!EEStorage.isAnyDeviceDefined()) {
       auth = false;
     }
 
@@ -1359,6 +1395,34 @@ void receive(const MyMessage &message) {
   if (MS_LIGHT_ID == message.sensor && message.getType() == V_STATUS) {
     EEStorage.setLight(message.getBool());
     sentLightStatus();
+  }
+
+  if (1 == message.sensor && message.getType() == V_VAR1) {
+    const char *mess = message.getString();
+
+    uint8_t data[6];
+    sscanf(mess, "%x:%x:%x:%x:%x:%x", &data[0], &data[1], &data[2], &data[3], &data[4], &data[5]);
+
+    BLEAddress bleAddress(data);
+
+    EEStorage.addNewBleAddress(&bleAddress);
+
+    presentBleDevices();
+    sentMyAllClientOpenDoorDefaultStatus();
+  }
+
+  if (message.sensor > 1 && message.sensor < 12 && message.getType() == V_VAR1) {
+    if (message.getBool()) {
+      EEStorage.deleteBleDevice(message.sensor);
+    }
+
+    presentBleDevices();
+    sentMyAllClientOpenDoorDefaultStatus();
+  }
+
+  if (MS_MIN_RSSI_ID == message.sensor && message.getType() == V_TEXT) {
+    EEStorage.setMinRSSI(message.getByte());
+    sentMinRssi();
   }
 }
 #pragma endregion MAIN
