@@ -288,40 +288,6 @@ private:
 #include "Blinkenlight.h"
 #include "Fadinglight.h"
 
-void initBle() {
-  esp_wifi_start();
-
-  esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
-  esp_err_t ret = esp_bt_controller_init(&bt_cfg);
-  if (ret) {
-    return;
-  }
-
-  ret = esp_bt_controller_enable(ESP_BT_MODE_BLE);
-  if (ret) {
-    return;
-  }
-
-  ret = esp_bluedroid_init();
-  if (ret) {
-    return;
-  }
-
-  ret = esp_bluedroid_enable();
-  if (ret) {
-    return;
-  }
-}
-
-void deInitBle() {
-  esp_wifi_stop();
-  esp_bluedroid_disable();
-  esp_bluedroid_deinit();
-  esp_bt_controller_disable();
-  esp_bt_controller_deinit();
-  esp_bt_controller_mem_release(ESP_BT_MODE_BLE);
-}
-
 MyMessage mMessage;
 StateChangeManager SCM;
 EE EE24C32;
@@ -340,174 +306,7 @@ Blinkenlight Out3(OUPUT_3_PIN);
 
 temperature_sensor_handle_t temp_sensor = NULL;
 temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(-40, 50);
-
 #pragma endregion GLOBAL_VARIABLE
-
-#pragma region MY_SENSORS
-void sentMyDoorAlwaysOpenStatus() {
-#if defined(DEBUG_GK)
-  Serial.print("sentMyDoorAlwaysOpenStatus");
-  Serial.println(EEStorage.isDoorAlwaysOpen() ? "1" : "0");
-#endif
-
-  mMessage.setType(V_STATUS);
-  mMessage.setSensor(MS_OPEN_DOOR_ID);
-  send(mMessage.set(EEStorage.isDoorAlwaysOpen() ? "1" : "0"));
-}
-
-void sentMyDoorAlwaysCloseStatus() {
-#if defined(DEBUG_GK)
-  Serial.print("sentMyDoorAlwaysCloseStatus");
-  Serial.println(EEStorage.isDoorAlwaysClose() ? "1" : "0");
-#endif
-
-  mMessage.setType(V_STATUS);
-  mMessage.setSensor(MS_CLOSE_DOOR_ID);
-  send(mMessage.set(EEStorage.isDoorAlwaysClose() ? "1" : "0"));
-}
-
-void sentMyBleAuthStatus() {
-  bool useAuth = EEStorage.isAuth();
-
-#if defined(DEBUG_GK)
-  Serial.print("sentMyBleAuthStatus");
-  Serial.println(useAuth ? "1" : "0");
-#endif
-
-  mMessage.setType(V_STATUS);
-  mMessage.setSensor(MS_AUTH_BLE_ID);
-  send(mMessage.set(useAuth ? "1" : "0"));
-}
-
-void sentLightStatus() {
-  bool useLight = EEStorage.useLight();
-
-#if defined(DEBUG_GK)
-  Serial.print("sentLightStatus");
-  Serial.println(useLight ? "1" : "0");
-#endif
-
-  mMessage.setType(V_STATUS);
-  mMessage.setSensor(MS_LIGHT_ID);
-  send(mMessage.set(useLight ? "1" : "0"));
-} 
-
-void sentTempStatus() {
-  
-  temperature_sensor_enable(temp_sensor);
-
-  float tsens_value;
-  temperature_sensor_get_celsius(temp_sensor, &tsens_value);
-
-  temperature_sensor_disable(temp_sensor);
-
-#if defined(DEBUG_GK)
-  Serial.print("sentTempStatus");
-  Serial.println(tsens_value);
-#endif
-
-  mMessage.setType(V_TEMP);
-  mMessage.setSensor(MS_TEMP_ID);
-  send(mMessage.set(tsens_value, 1));
-}
-
-void sentMyDoorOpenCount() {
-#if defined(DEBUG_GK)
-  Serial.print("sentMyDoorOpenCount");
-  Serial.println(EEStorage.getDoorOpenCount());
-#endif
-
-  uint32_t openCount = EEStorage.getDoorOpenCount();
-
-  mMessage.setType(V_TEXT);
-  mMessage.setSensor(MS_OPEN_DOOR_COUNT_ID);
-  send(mMessage.set(openCount));
-}
-
-void sentMyAllClientOpenDoorDefaultStatus() {
-#if defined(DEBUG_GK)
-  Serial.println("sentMyAllClientOpenDoorDefaultStatus");
-#endif
-  int devCount = EEStorage.getBleDevicesCount();
-
-  sentMyClientOpenDoorStatusMy(1, EEStorage.isDoorOpen());
-
-  for (int i = 0; i < devCount; i++) {
-    if (!EEStorage.isBleEnabled(i)) {
-      continue;
-    }
-
-    sentMyClientOpenDoorStatusMy(EEStorage.getBleId(i), EEStorage.isDoorAlwaysOpen());
-  }
-}
-
-void sentMyClientOpenDoorStatus(int clientId, bool status) {
-  sentMyClientOpenDoorStatusMy(1, status);
-
-  if (clientId > 1) {
-    sentMyClientOpenDoorStatusMy(clientId, status);
-  }
-}
-
-void sentMyClientOpenDoorStatusMy(int clientId, bool status) {
-#if defined(DEBUG_GK)
-  Serial.println("sentMyClientOpenDoorStatus");
-
-  Serial.print("Client ID: ");
-  Serial.println(clientId);
-
-  Serial.print("Status: ");
-  Serial.println(status ? "1" : "0");
-#endif
-
-  mMessage.setType(V_STATUS);
-  mMessage.setSensor(clientId);
-  send(mMessage.set(status ? "1" : "0"));
-}
-
-int lastOpenClientId = 0;
-
-void sentDoorOpen() {
-  lastOpenClientId = ScannerGK.getAuthDeviceId();
-
-  sentMyClientOpenDoorStatus(lastOpenClientId, true);
-  sentMyDoorOpenCount();
-}
-
-void sentDoorClose() {
-  if (lastOpenClientId == 0) {
-    lastOpenClientId = 1;
-  }
-
-  sentMyClientOpenDoorStatus(lastOpenClientId, false);
-  sentTempStatus();
-}
-
-void sentMinRssi() {
-#if defined(DEBUG_GK)
-  Serial.print("sentMinRssi");
-  Serial.println(EEStorage.getMinRSSI());
-#endif
-
-  uint32_t minRSSI = EEStorage.getMinRSSI();
-
-  mMessage.setType(V_TEXT);
-  mMessage.setSensor(MS_MIN_RSSI_ID);
-  send(mMessage.set(minRSSI));
-}
-
-void sendAllMySensorsStatus() {
-  sentMyAllClientOpenDoorDefaultStatus();
-  sentMyDoorOpenCount();
-  sentMyDoorAlwaysOpenStatus();
-  sentMyDoorAlwaysCloseStatus();
-  sentMyBleAuthStatus();
-  sentLightStatus();
-  sentTempStatus();
-  sentMinRssi();
-}
-
-#pragma endregion MY_SENSORS
 
 #pragma region STATES
 void allLedOff() {
@@ -1232,39 +1031,7 @@ void defineTransition() {
 }
 #pragma endregion STATES
 
-#pragma region EEPROM
-
-#pragma endregion EEPROM
-
-#pragma region MAIN
-
-void setDefaultState() {
-  if (!EEStorage.IsInicjalized()) {
-#if defined(DEBUG_GK)
-    Serial.println("EEStorage check presence failed");
-#endif
-
-    SM.transitionTo(S_FATAL_ERROR);
-    return;
-  }
-
-  if (EEStorage.isDoorOpen()) {
-    SM.transitionTo(S_DOOR_OPEN);
-    return;
-  }
-
-  SM.transitionTo(S_START_UP);
-}
-
-void preHwInit() {
-#if defined(DEBUG_GK)
-  Serial.begin(115200);
-#endif
-  Serial1.begin(MY_RS485_BAUD_RATE, SERIAL_8N1, RX_PIN, TX_PIN);
-}
-
-void before() {}
-
+#pragma region MY_SENSORS
 bool isPresentedToController = false;
 void presentation()  // MySensors
 {
@@ -1304,6 +1071,201 @@ void presentBleDevices() {
     free(namech);
   }
 }
+
+void sentMyDoorAlwaysOpenStatus() {
+#if defined(DEBUG_GK)
+  Serial.print("sentMyDoorAlwaysOpenStatus");
+  Serial.println(EEStorage.isDoorAlwaysOpen() ? "1" : "0");
+#endif
+
+  mMessage.setType(V_STATUS);
+  mMessage.setSensor(MS_OPEN_DOOR_ID);
+  send(mMessage.set(EEStorage.isDoorAlwaysOpen() ? "1" : "0"));
+}
+
+void sentMyDoorAlwaysCloseStatus() {
+#if defined(DEBUG_GK)
+  Serial.print("sentMyDoorAlwaysCloseStatus");
+  Serial.println(EEStorage.isDoorAlwaysClose() ? "1" : "0");
+#endif
+
+  mMessage.setType(V_STATUS);
+  mMessage.setSensor(MS_CLOSE_DOOR_ID);
+  send(mMessage.set(EEStorage.isDoorAlwaysClose() ? "1" : "0"));
+}
+
+void sentMyBleAuthStatus() {
+  bool useAuth = EEStorage.isAuth();
+
+#if defined(DEBUG_GK)
+  Serial.print("sentMyBleAuthStatus");
+  Serial.println(useAuth ? "1" : "0");
+#endif
+
+  mMessage.setType(V_STATUS);
+  mMessage.setSensor(MS_AUTH_BLE_ID);
+  send(mMessage.set(useAuth ? "1" : "0"));
+}
+
+void sentLightStatus() {
+  bool useLight = EEStorage.useLight();
+
+#if defined(DEBUG_GK)
+  Serial.print("sentLightStatus");
+  Serial.println(useLight ? "1" : "0");
+#endif
+
+  mMessage.setType(V_STATUS);
+  mMessage.setSensor(MS_LIGHT_ID);
+  send(mMessage.set(useLight ? "1" : "0"));
+} 
+
+void sentTempStatus() {
+  
+  temperature_sensor_enable(temp_sensor);
+
+  float tsens_value;
+  temperature_sensor_get_celsius(temp_sensor, &tsens_value);
+
+  temperature_sensor_disable(temp_sensor);
+
+#if defined(DEBUG_GK)
+  Serial.print("sentTempStatus");
+  Serial.println(tsens_value);
+#endif
+
+  mMessage.setType(V_TEMP);
+  mMessage.setSensor(MS_TEMP_ID);
+  send(mMessage.set(tsens_value, 1));
+}
+
+void sentMyDoorOpenCount() {
+#if defined(DEBUG_GK)
+  Serial.print("sentMyDoorOpenCount");
+  Serial.println(EEStorage.getDoorOpenCount());
+#endif
+
+  uint32_t openCount = EEStorage.getDoorOpenCount();
+
+  mMessage.setType(V_TEXT);
+  mMessage.setSensor(MS_OPEN_DOOR_COUNT_ID);
+  send(mMessage.set(openCount));
+}
+
+void sentMyAllClientOpenDoorDefaultStatus() {
+#if defined(DEBUG_GK)
+  Serial.println("sentMyAllClientOpenDoorDefaultStatus");
+#endif
+  int devCount = EEStorage.getBleDevicesCount();
+
+  sentMyClientOpenDoorStatusMy(1, EEStorage.isDoorOpen());
+
+  for (int i = 0; i < devCount; i++) {
+    if (!EEStorage.isBleEnabled(i)) {
+      continue;
+    }
+
+    sentMyClientOpenDoorStatusMy(EEStorage.getBleId(i), EEStorage.isDoorAlwaysOpen());
+  }
+}
+
+void sentMyClientOpenDoorStatus(int clientId, bool status) {
+  sentMyClientOpenDoorStatusMy(1, status);
+
+  if (clientId > 1) {
+    sentMyClientOpenDoorStatusMy(clientId, status);
+  }
+}
+
+void sentMyClientOpenDoorStatusMy(int clientId, bool status) {
+#if defined(DEBUG_GK)
+  Serial.println("sentMyClientOpenDoorStatus");
+
+  Serial.print("Client ID: ");
+  Serial.println(clientId);
+
+  Serial.print("Status: ");
+  Serial.println(status ? "1" : "0");
+#endif
+
+  mMessage.setType(V_STATUS);
+  mMessage.setSensor(clientId);
+  send(mMessage.set(status ? "1" : "0"));
+}
+
+int lastOpenClientId = 0;
+
+void sentDoorOpen() {
+  lastOpenClientId = ScannerGK.getAuthDeviceId();
+
+  sentMyClientOpenDoorStatus(lastOpenClientId, true);
+  sentMyDoorOpenCount();
+}
+
+void sentDoorClose() {
+  if (lastOpenClientId == 0) {
+    lastOpenClientId = 1;
+  }
+
+  sentMyClientOpenDoorStatus(lastOpenClientId, false);
+  sentTempStatus();
+}
+
+void sentMinRssi() {
+#if defined(DEBUG_GK)
+  Serial.print("sentMinRssi");
+  Serial.println(EEStorage.getMinRSSI());
+#endif
+
+  uint32_t minRSSI = EEStorage.getMinRSSI();
+
+  mMessage.setType(V_TEXT);
+  mMessage.setSensor(MS_MIN_RSSI_ID);
+  send(mMessage.set(minRSSI));
+}
+
+void sendAllMySensorsStatus() {
+  sentMyAllClientOpenDoorDefaultStatus();
+  sentMyDoorOpenCount();
+  sentMyDoorAlwaysOpenStatus();
+  sentMyDoorAlwaysCloseStatus();
+  sentMyBleAuthStatus();
+  sentLightStatus();
+  sentTempStatus();
+  sentMinRssi();
+}
+
+#pragma endregion MY_SENSORS
+
+#pragma region MAIN
+void setDefaultState() {
+  if (!EEStorage.IsInicjalized()) {
+#if defined(DEBUG_GK)
+    Serial.println("EEStorage check presence failed");
+#endif
+
+    SM.transitionTo(S_FATAL_ERROR);
+    return;
+  }
+
+  if (EEStorage.isDoorOpen()) {
+    SM.transitionTo(S_DOOR_OPEN);
+    return;
+  }
+
+  SM.transitionTo(S_START_UP);
+}
+
+void preHwInit() {
+#if defined(DEBUG_GK)
+  Serial.begin(115200);
+#endif
+  Serial1.begin(MY_RS485_BAUD_RATE, SERIAL_8N1, RX_PIN, TX_PIN);
+}
+
+void before() {}
+
+
 
 void setup() {
 #if defined(DEBUG_GK)
@@ -1428,6 +1390,40 @@ void receive(const MyMessage &message) {
 #pragma endregion MAIN
 
 #pragma region INICJALIZE
+void initBle() {
+  esp_wifi_start();
+
+  esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
+  esp_err_t ret = esp_bt_controller_init(&bt_cfg);
+  if (ret) {
+    return;
+  }
+
+  ret = esp_bt_controller_enable(ESP_BT_MODE_BLE);
+  if (ret) {
+    return;
+  }
+
+  ret = esp_bluedroid_init();
+  if (ret) {
+    return;
+  }
+
+  ret = esp_bluedroid_enable();
+  if (ret) {
+    return;
+  }
+}
+
+void deInitBle() {
+  esp_wifi_stop();
+  esp_bluedroid_disable();
+  esp_bluedroid_deinit();
+  esp_bt_controller_disable();
+  esp_bt_controller_deinit();
+  esp_bt_controller_mem_release(ESP_BT_MODE_BLE);
+}
+
 void inicjalizeI2C() {
   Wire.begin(SDA_PIN, SCL_PIN);
   Wire.setClock(400000);
