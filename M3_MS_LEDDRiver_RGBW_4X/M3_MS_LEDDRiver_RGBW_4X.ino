@@ -17,65 +17,17 @@ Konfiguracja podłączenia kabli
 -Single
   - 1 kanał - white
 */
-/* Instalacja SoftwareSerial (EspSoftwareSerial) dla bibloteki MySensors
-Podmienić w pliku MySensors\MySensors.h :
+/* Instalacja 
+Zainstalować  Arduino SAM Boards
 
-<-----
-#elif defined(MY_RS485)
-#if !defined(MY_RS485_HWSERIAL)
-#if defined(__linux__)
-#error You must specify MY_RS485_HWSERIAL for RS485 transport
-#endif
-#include "drivers/AltSoftSerial/AltSoftSerial.cpp"
-#endif
-#include "hal/transport/RS485/MyTransportRS485.cpp"
-#elif defined(MY_RADIO_RFM69) 
------>
+MySensors 
+  działa z oryginalnym boardem: https://github.com/rogerclarkmelbourne/Arduino_STM32
+  nie działa natomiast z: https://github.com/stm32duino/Arduino_Core_STM32  (https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json)
 
-na :
-
-<-----
-#elif defined(MY_RS485)
-#if !defined(MY_RS485_HWSERIAL)
-#if defined(__linux__)
-#error You must specify MY_RS485_HWSERIAL for RS485 transport
-#endif
-#if defined(MY_RS485_ESP)
-#include <SoftwareSerial.h>
-#else
-#include "drivers/AltSoftSerial/AltSoftSerial.cpp"
-#endif
-#endif
-#include "hal/transport/RS485/MyTransportRS485.cpp"
-#elif defined(MY_RADIO_RFM69)
------>
-
-Podmienić w pliku MySensors\hal\transport\RS485\MyTransportRS485.cpp:
-<-----
-#if defined(__linux__)
-SerialPort _dev = SerialPort(MY_RS485_HWSERIAL);
-#elif defined(MY_RS485_HWSERIAL)
-HardwareSerial& _dev = MY_RS485_HWSERIAL;
-#else
-AltSoftSerial _dev;
-#endif
------>
-
-na : 
-
-<-----
-#if defined(__linux__)
-SerialPort _dev = SerialPort(MY_RS485_HWSERIAL);
-#elif defined(MY_RS485_HWSERIAL)
-HardwareSerial& _dev = MY_RS485_HWSERIAL;
-#elif defined(MY_RS485_ESP)
-SoftwareSerial& _dev = MY_RS485_ESP;
-#else
-AltSoftSerial _dev;
-#endif
------>
+ Skopiować folder do c:\Users\Smith\AppData\Local\Arduino15\packages\Arduino_STM32\
 */
 /* #endregion */
+//#include <libmaple/iwdg.h>
 
 /* #region  user configuration */
 #define SOFTWARE_VERION "1.0"
@@ -88,38 +40,41 @@ AltSoftSerial _dev;
 //#define RGB_MODE
 //#define SINGLE_LED_MODE
 
-#define MY_NODE_ID 30  // id węzła my sensors - każdy sterownik musi miec inny numer
+#define MY_NODE_ID 60  // id węzła my sensors - każdy sterownik musi miec inny numer
 #define DIMMER_ID 1
 #define RGBW_ID 1
 
 /* #endregion */
 
 /* #region  const configuration */
-#define MY_DISABLED_SERIAL
-//#define MY_DEBUG
+
+// RS485
+#define MY_DISABLED_SERIAL         // manual configure Serial1
+#define MY_RS485                   // Enable RS485 transport layer
+#define MY_RS485_DE_PIN PA1         // Define this to enables DE-pin management on defined pin
+#define MY_RS485_BAUD_RATE 9600    // Set RS485 baud rate to use
+#define MY_RS485_HWSERIAL Serial2  //
+#define MY_RS485_SOH_COUNT 6
 #define MY_TRANSPORT_WAIT_READY_MS 1
 
-//RS485
-#define MY_RS485                 // Enable RS485 transport layer
-#define MY_RS485_DE_PIN 10       // Define this to enables DE-pin management on defined pin
-#define MY_RS485_BAUD_RATE 9600  // Set RS485 baud rate to use
-#define MY_RS485_SOH_COUNT 3
-#include <SoftwareSerial.h>    //EspSoftwareSerial - dla płytki esp8266
-SoftwareSerial swESP(9, D0);  //RX - RO, TX - DI
-#define MY_RS485_ESP swESP
+//24C32
+#define SCL_PIN PB10
+#define SDA_PIN PB11
 
 //relay
-#define RELAY_PIN D8
-
-//24C32
-#define SCL_PIN D5
-#define SDA_PIN D7
+#define RELAY_PIN PB7
 
 //pwm
-#define PWM_1 D1
-#define PWM_2 D6
-#define PWM_3 3
-#define PWM_4 1
+#define PWM_1 PA10
+#define PWM_2 PB6
+#define PWM_3 PA8
+#define PWM_4 PA9
+
+//INPUT 
+#define IN_1 PB1
+#define IN_2 PB0
+#define IN_3 PA5
+#define IN_4 PA4
 
 #if defined(RGBW_MODE)
 #define SKETCH_NAME "RGBW_LED"
@@ -134,11 +89,9 @@ SoftwareSerial swESP(9, D0);  //RX - RO, TX - DI
 #endif
 /* #endregion */
 
-#include <Wire.h>
-#define ARDUINO_ARCH_STM32
-#define ARDUINO_ARCH_STM32F1
 #include <MySensors.h>
-#include <24C32.h>
+#include "24C32.h"
+
 
 //#define PWM_USE_NMI 1
 #define PWM_PERIOD 1000  //4kH
@@ -218,18 +171,83 @@ public:
   }
 };
 
+#include  "ew_bsp_system.c"
+
 /* #region  basic function */
+/**
+* Max reduction
+* 
+*  Reduced frequences, but some peripheral of APB1 can't work
+* and USB MHz reduced to 8 but for full speed USB you need 48
+* @brief  System Clock Configuration Reduced
+*         The system Clock is configured as follow :
+*            System Clock source            = PLL (HSE)
+*            SYSCLK(Hz)                     = 72000000 --> 8000000
+*            HCLK(Hz)                       = 72000000 --> 8000000
+*            AHB Prescaler                  = 1
+*            APB1 Prescaler                 = 2
+*            APB2 Prescaler                 = 1
+*            PLL_Source                     = HSE     --> HSE Pre DIV2
+*            PLL_Mul                        = 9       --> 2
+*            Flash Latency(WS)              = 0
+*            ADC Prescaler                  = 6       --> 2
+*            USB Prescaler                  = 1.5     --> 1
+* @param  None
+* @retval None
+*/
+extern "C" void SystemClock_Config(void)
+{
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+ 
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
+  */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV2;
+  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL2;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+ 
+  /** Initializes the CPU, AHB and APB buses clocks
+  */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+ 
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USB;
+  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+  PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
 void before() {
+  Serial2.begin(9600);
   inicjalizePins();
-  inicjalizeWifi();
   inicjalizeI2C();
   readSettingFromEprom();
 }
 
-
 void setup() {
   calculate();
-
 }
 
 void presentation()  //MySensors
@@ -239,9 +257,7 @@ void presentation()  //MySensors
   presentGlobalVariableToControler(true);
 }
 
-
 void loop() {
-
 }
 
 void receive(const MyMessage &message)  //MySensors
@@ -309,9 +325,6 @@ void receive(const MyMessage &message)  //MySensors
 
 /* #region  inicjalize */
 void inicjalizePins() {
-  pinMode(D0, OUTPUT);
-  digitalWrite(D0, LOW);
-
   //PWM
   digitalWrite(PWM_1, LOW);
   pinMode(PWM_1, OUTPUT);
@@ -329,35 +342,19 @@ void inicjalizePins() {
   pinMode(PWM_4, OUTPUT);
   digitalWrite(PWM_4, LOW);
 
-  for (uint8_t channel = 0; channel < PWM_CHANNELS; channel++) {
-    pwm_duty_init[channel] = 0;
-  }
-  // Period
-
-  uint32_t period = PWM_PERIOD;
-
-  // Initialize
-
-  pwm_init(period, pwm_duty_init, PWM_CHANNELS, io_info);
-
-  // Commit
-
-  pwm_start();
-
   digitalWrite(RELAY_PIN, LOW);
   pinMode(RELAY_PIN, OUTPUT);
   digitalWrite(RELAY_PIN, LOW);
-}
 
-void inicjalizeWifi() {
-  wifi_set_sleep_type(MODEM_SLEEP_T);
-WiFi.disconnect();
-WiFi.mode(WIFI_OFF);
-WiFi.forceSleepBegin();
+  pinMode(MY_RS485_DE_PIN, OUTPUT);
+
+  pinMode(IN_1, INPUT);
+  pinMode(IN_2, INPUT);
+  pinMode(IN_3, INPUT);
+  pinMode(IN_4, INPUT);
 }
 
 void inicjalizeI2C() {
-  Wire.begin(SDA_PIN, SCL_PIN);
   EEPROM24C32.begin(0x50, false);
 }
 /* #endregion */
@@ -376,25 +373,25 @@ void inicjalizeI2C() {
 #endif
 
 void readSettingFromEprom() {
-  flashMemory = EEPROM24C32.checkPresence();
-  if (!flashMemory) {
-#if defined(MY_DEBUG)
-    Serial.println("Błąd pamieci 24C32");
-#endif
-    return;
-  }
+//   flashMemory = EEPROM24C32.checkPresence();
+//   if (!flashMemory) {
+// #if defined(MY_DEBUG)
+//     Serial.println("Błąd pamieci 24C32");
+// #endif
+//     return;
+//   }
 
-  if (EEPROM24C32.readByte(105) != CHECK_NUMBER) {
-    setDefaultSetting();
-    return;
-  }
+  // if (EEPROM24C32.readByte(105) != CHECK_NUMBER) {
+  //   setDefaultSetting();
+  //   return;
+  // }
 
-  deviceEnabled = EEPROM24C32.readByte(106) == 0x05;
-  deviceLightLevel = EEPROM24C32.readByte(107);
-  channel1Level = EEPROM24C32.readByte(108);
-  channel2Level = EEPROM24C32.readByte(109);
-  channel3Level = EEPROM24C32.readByte(110);
-  channel4Level = EEPROM24C32.readByte(111);
+  // deviceEnabled = EEPROM24C32.readByte(106) == 0x05;
+  // deviceLightLevel = EEPROM24C32.readByte(107);
+  // channel1Level = EEPROM24C32.readByte(108);
+  // channel2Level = EEPROM24C32.readByte(109);
+  // channel3Level = EEPROM24C32.readByte(110);
+  // channel4Level = EEPROM24C32.readByte(111);
 
 #if defined(MY_DEBUG)
   Serial.println("Odczytano wartosci:");
@@ -407,7 +404,7 @@ void setDefaultSetting() {
 #if defined(MY_DEBUG)
   Serial.println("Zapisuje domyslne ustawienia");
 #endif
-  EEPROM24C32.writeByte(105, CHECK_NUMBER, false, false);
+//  EEPROM24C32.writeByte(105, CHECK_NUMBER, false, false);
   setDeviceEnableToEeprom(deviceEnabled);
   setLightLevelToEeprom(deviceLightLevel);
   setChannelValue(1, channel1Level);
@@ -417,16 +414,16 @@ void setDefaultSetting() {
 }
 
 void setDeviceEnableToEeprom(bool deviceEabled) {
-  EEPROM24C32.writeByte(106, deviceEabled ? 0x05 : 0x06, false, false);
+ // EEPROM24C32.writeByte(106, deviceEabled ? 0x05 : 0x06, false, false);
 }
 
 void setLightLevelToEeprom(uint8_t lightLevel) {
-  EEPROM24C32.writeByte(107, lightLevel, false, false);
+ // EEPROM24C32.writeByte(107, lightLevel, false, false);
 }
 
 void setChannelValue(uint8_t channelNo, uint8_t value) {
   uint8_t channelAdress = 107 + channelNo;
-  EEPROM24C32.writeByte(channelAdress, value, false, false);
+ // EEPROM24C32.writeByte(channelAdress, value, false, false);
 }
 /* #endregion */
 
@@ -577,20 +574,22 @@ void calculate() {
     unsigned int duty_3 = getChannel3Duty();
     unsigned int duty_4 = getChannel4Duty();
 
-    pwm_set_duty(duty_1, 0);
-    pwm_set_duty(duty_2, 1);
-    pwm_set_duty(duty_3, 2);
-    pwm_set_duty(duty_4, 3);
-    pwm_start();
+  //analogWrite
+    // pwm_set_duty(duty_1, 0);
+    // pwm_set_duty(duty_2, 1);
+    // pwm_set_duty(duty_3, 2);
+    // pwm_set_duty(duty_4, 3);
+    // pwm_start();
 
     setRelayStatus(duty_1 > 0 || duty_2 > 0 || duty_3 > 0 || duty_4 > 0);
   } else {
     setRelayStatus(false);
-    pwm_set_duty(0, 0);
-    pwm_set_duty(0, 1);
-    pwm_set_duty(0, 2);
-    pwm_set_duty(0, 3);
-    pwm_start();
+    
+    // pwm_set_duty(0, 0);
+    // pwm_set_duty(0, 1);
+    // pwm_set_duty(0, 2);
+    // pwm_set_duty(0, 3);
+    // pwm_start();
   }
 }
 
