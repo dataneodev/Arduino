@@ -6,7 +6,7 @@
  * network topology allowing messages to be routed to nodes.
  *
  * Created by Henrik Ekblad <henrik.ekblad@mysensors.org>
- * Copyright (C) 2013-2019 Sensnology AB
+ * Copyright (C) 2013-2022 Sensnology AB
  * Full contributor list: https://github.com/mysensors/MySensors/graphs/contributors
  *
  * Documentation: http://www.mysensors.org
@@ -27,7 +27,7 @@
  * <henrik.ekblad@gmail.com> Vera Arduino Sensor project.
  * Developed by Bruce Lacey, inspired by Hek's MySensor's example sketches.
  *
- * The circuit uses a MOSFET for Pulse-Wave-Modulation to dim the attached LED or LED strip.
+ * The circuit uses a MOSFET for Pulse-Width-Modulation (PWM) to dim the attached LED or LED strip.
  * The MOSFET Gate pin is connected to Arduino pin 3 (LED_PIN), the MOSFET Drain pin is connected
  * to the LED negative terminal and the MOSFET Source pin is connected to ground.
  *
@@ -43,6 +43,7 @@
 //#define MY_RADIO_NRF5_ESB
 //#define MY_RADIO_RFM69
 //#define MY_RADIO_RFM95
+//#define MY_PJON
 
 #include <MySensors.h>
 

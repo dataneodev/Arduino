@@ -6,7 +6,7 @@
  * network topology allowing messages to be routed to nodes.
  *
  * Created by Henrik Ekblad <henrik.ekblad@mysensors.org>
- * Copyright (C) 2013-2019 Sensnology AB
+ * Copyright (C) 2013-2022 Sensnology AB
  * Full contributor list: https://github.com/mysensors/MySensors/graphs/contributors
  *
  * Documentation: http://www.mysensors.org
@@ -310,7 +310,7 @@ controllerConfig_t getControllerConfig(void)
 	return _coreConfig.controllerConfig;
 }
 
-
+// cppcheck-suppress constParameter
 bool _sendRoute(MyMessage &message)
 {
 #if defined(MY_CORE_ONLY)
@@ -625,6 +625,15 @@ void doYield(void)
 #endif
 }
 
+#if !defined(MY_SLEEP_HANDLER)
+void sleepHandler(bool sleep)
+{
+	(void)sleep;
+	// empty function, resolves AVR-specific GCC optimization bug (<5.5) if handler not used
+	// see here: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=77326
+}
+#endif
+
 int8_t _sleep(const uint32_t sleepingMS, const bool smartSleep, const uint8_t interrupt1,
               const uint8_t mode1, const uint8_t interrupt2, const uint8_t mode2)
 {
@@ -707,6 +716,9 @@ int8_t _sleep(const uint32_t sleepingMS, const bool smartSleep, const uint8_t in
 	}
 #endif
 
+	// Call the sleep handler to turn off peripherals optimally
+	sleepHandler(true);
+
 	int8_t result = MY_SLEEP_NOT_POSSIBLE;	// default
 	if (interrupt1 != INTERRUPT_NOT_DEFINED && interrupt2 != INTERRUPT_NOT_DEFINED) {
 		// both IRQs
@@ -718,6 +730,10 @@ int8_t _sleep(const uint32_t sleepingMS, const bool smartSleep, const uint8_t in
 		// no IRQ
 		result = hwSleep(sleepingTimeMS);
 	}
+
+	// Call the sleep handler to turn on peripherals optimally
+	sleepHandler(false);
+
 	setIndication(INDICATION_WAKEUP);
 	CORE_DEBUG(PSTR("MCO:SLP:WUP=%" PRIi8 "\n"), result);	// sleep wake-up
 #if defined(MY_SENSOR_NETWORK)

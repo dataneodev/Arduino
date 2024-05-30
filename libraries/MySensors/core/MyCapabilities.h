@@ -6,7 +6,7 @@
  * network topology allowing messages to be routed to nodes.
  *
  * Created by Henrik Ekblad <henrik.ekblad@mysensors.org>
- * Copyright (C) 2013-2019 Sensnology AB
+ * Copyright (C) 2013-2022 Sensnology AB
  * Full contributor list: https://github.com/mysensors/MySensors/graphs/contributors
  *
  * Documentation: http://www.mysensors.org
@@ -141,15 +141,16 @@
  * @def MY_CAP_ARCH
  * @brief Indicate the architecture.
  *
- * @see ARDUINO_ARCH_SAMD, ARDUINO_ARCH_NRF5, ARDUINO_ARCH_ESP8266, ARDUINO_ARCH_AVR, ARDUINO_ARCH_STM32F1, TEENSYDUINO
+ * @see ARDUINO_ARCH_SAMD, ARDUINO_ARCH_NRF5, ARDUINO_ARCH_ESP8266, ARDUINO_ARCH_ESP32, ARDUINO_ARCH_AVR, ARDUINO_ARCH_STM32F1, TEENSYDUINO
  *
  * | Architecture | Indicator
  * |--------------|----------
  * | SAMD         | S
  * | nRF5         | N
  * | ESP8266      | E
+ * | ESP32        | F
  * | AVR          | A
- * | STM32F1      | F
+ * | STM32F1      | M
  * | TEENSY       | T
  * | Linux        | L
  * | Unknown      | -
@@ -162,10 +163,10 @@
 #define MY_CAP_ARCH "E"
 #elif defined(ARDUINO_ARCH_ESP32)
 #define MY_CAP_ARCH "F"
-#elif defined(ARDUINO_ARCH_AVR)
+#elif defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_MEGAAVR)
 #define MY_CAP_ARCH "A"
 #elif defined(ARDUINO_ARCH_STM32F1)
-#define MY_CAP_ARCH "F"
+#define MY_CAP_ARCH "M"
 #elif defined(__arm__) && defined(TEENSYDUINO)
 #define MY_CAP_ARCH "T"
 #elif defined(__linux__)

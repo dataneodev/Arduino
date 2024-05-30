@@ -220,11 +220,15 @@ var types = {
 
 //mysgw: Client 0: 0;0;3;0;18;PING
 var rprefix =  "(?:\\d+ )?(?:mysgw: )?(?:Client 0: )?";
+var prefilter = /(?=[!?]?(MCO|TSM|TSF|THA|SGN))(?<result>.*)/;
 var match = [
+
+	// MySensors core
+
 	{ re: "MCO:BGN:INIT CP=([^,]+)", d: "Core initialization with capabilities <b>$1</b>" },
 	{ re: "MCO:BGN:INIT (\\w+),CP=([^,]+),VER=(.*)", d: "Core initialization of <b>$1</b>, with capabilities <b>$2</b>, library version <b>$3</b>" },
 	{ re: "MCO:BGN:INIT (\\w+),CP=([^,]+),REL=(.*),VER=(.*)", d: "Core initialization of <b>$1</b>, with capabilities <b>$2</b>, library version <b>$4</b>, release <b>$3</b>" },
-	{ re: "MCO:BGN:INIT (\\w+),CP=([^,]+),FQ=(\\d+),REL=(.*),VER=(.*)", d: "Core initialization of <b>$1</b>, with capabilities <b>$2</b>, CPU frequency <b>$4</b> MHz, library version <b>$5</b>, release <b>$4</b>" },
+	{ re: "MCO:BGN:INIT (\\w+),CP=([^,]+),FQ=(\\d+),REL=(.*),VER=(.*)", d: "Core initialization of <b>$1</b>, with capabilities <b>$2</b>, CPU frequency <b>$3</b> MHz, library version <b>$5</b>, release <b>$4</b>" },
 	{ re: "MCO:BGN:BFR", d: "Callback before()" },
 	{ re: "MCO:BGN:STP", d: "Callback setup()" },
 	{ re: "MCO:BGN:INIT OK,TSP=(.*)", d: "Core initialized, transport status <b>$1</b>, (1=initialized, 0=not initialized, NA=not available)" },
@@ -244,6 +248,11 @@ var match = [
 	{ re: "!MCO:SLP:TNR", d: " Transport not ready, attempt to reconnect until timeout" },
 	{ re: "MCO:NLK:NODE LOCKED. UNLOCK: GND PIN (\\d+) AND RESET", d: "Node locked during booting, see signing documentation for additional information" },
 	{ re: "MCO:NLK:TPD", d: "Powerdown transport" },
+	{ re: "!MCO:PRO:RC=(-?\\d+)", d: "Recursive call detected in _process(), call level=<b>$1</b>" },
+	{ re: "!MCO:WAI:RC=(-?\\d+)", d: "Recursive call detected in wait(), call level=<b>$1</b>" },
+	
+	// transport state machine
+	
 	{ re: "TSM:INIT", d: "Transition to <b>Init</b> state" },
 	{ re: "TSM:INIT:STATID=(\\d+)", d: "Init static node id <b>$1</b>" },
 	{ re: "TSM:INIT:TSP OK", d: "Transport device configured and fully operational" },
@@ -272,6 +281,9 @@ var match = [
 	{ re: "TSM:FAIL:CNT=(\\d+)", d: "Transition to <b>Failure</b> state, consecutive failure counter is <b>$1</b>" },
 	{ re: "TSM:FAIL:PDT", d: "Power-down transport" },
 	{ re: "TSM:FAIL:RE-INIT", d: "Attempt to re-initialize transport" },
+	
+	// transport support functions
+	
 	{ re: "TSF:CKU:OK,FCTRL", d: "Uplink OK, flood control prevents pinging GW in too short intervals" },
 	{ re: "TSF:CKU:OK", d: "Uplink OK" },
 	{ re: "TSF:CKU:DGWC,O=(\\d+),N=(\\d+)", d: "Uplink check revealed changed network topology, old distance <b>$1</b>, new distance <b>$2</b>" },
@@ -309,7 +321,7 @@ var match = [
 	{ re: "TSF:LRT:OK", d: "Loading routing table successful" },
 	{ re: "TSF:SRT:OK", d: "Saving routing table successful" },
 	{ re: "!TSF:RTE:FPAR ACTIVE", d: "Finding parent active, message not sent" },
-	{ re: "!TSF:RTE:DST (\\d+) UNKNOWN", d: "Routing for destination <b>$1</b> unknown, sending message to parent" },
+	{ re: "!TSF:RTE:(\\d+) UNKNOWN", d: "Routing for destination <b>$1</b> unknown, sending message to parent" },
 	{ re: "!TSF:RTE:N2N FAIL", d: "Direct node-to-node communication failed - handing over to parent" },
 	{ re: "TSF:RRT:ROUTE N=(\\d+),R=(\\d+)", d: "Routing table, messages to node (<b>$1</b>) are routed via node (<b>$2</b>)"},
 	{ re: "!TSF:SND:TNR", d: "Transport not ready, message cannot be sent" },
@@ -449,8 +461,9 @@ var match = [
 
 // Init regexes
 for (var i=0, len=match.length;i<len; i++) {
-	match[i].re = new RegExp("^" + rprefix + match[i].re);
+	match[i].re = new RegExp("^" + match[i].re);
 }
+
 var stripPrefix = new RegExp("^" + rprefix + "(.*)");
 
 function getQueryVariable(variable)
@@ -527,18 +540,25 @@ new Vue({
 			var t = types[this.selector(cmd)]
 			return t !== undefined ? t[type] || "Undefined" : "Undefined";
 		},
-		match: function(msg) {
+		decodeLog: function(msg) {
 			var self = this;
 			var found = false;
+
+			filtered = msg.match(prefilter);
+ 			if (filtered) {
+ 				msg = filtered.groups.result;
+ 			} else {
+ 				return;
+ 			}
 			for (var i=0, len=match.length;!found &&  i<len; i++) {
 				var r = match[i];
 				if (r.re.test(msg)) {
 					msg = msg.replace(r.re, r.d);
+					// lookup and replace numerical constants with their symbols
 					msg = msg.replace(/{command:(\d+)}/g, function(match, m1) { return types.command[m1] });
 					msg = msg.replace(/{pt:(\d+)}/g, function(match, m1) { return types.payloadtype[m1] });
-					return msg.replace(/{type:(\d+):(\d+)}/g, function(match, cmd, type) {
-						return self.type(cmd, type);
-					});
+					msg = msg.replace(/{type:(\d+):(\d+)}/g, function(match, cmd, type) { return self.type(cmd, type) });
+					return msg;
 				}
 			}
 		},
@@ -547,17 +567,17 @@ new Vue({
 			var self = this;
 			var rows = this.source.split("\n");
 			this.parsed = _.map(rows, function(r) {
-				//var p = r.split(";");
+				// attempt decode of serial protocol (e.g. `12;6;0;0;3;My Light\n`)
 				var p = splitWithTail(r, ";", 6);
 				if (p.length !== 6) {
-					var desc = self.match(r);
-
+					// probably not serial protocol, maybe debug log?
+					var desc = self.decodeLog(r);
 					return ["","","","",desc?"":"Unknown", r,  desc];
 				}
 				var sel = self.selector(p[2]);
 				var desc = "";
 				if (p[2] == "3" && p[4] == "9") {
-					desc = self.match(p[5]);
+					desc = self.decodeLog(p[5]);
 
 				}
 				var node = stripPrefix.exec(p[0]);
