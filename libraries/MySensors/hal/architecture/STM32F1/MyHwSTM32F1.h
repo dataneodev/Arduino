@@ -16,11 +16,11 @@
  * modify it under the terms of the GNU General Public License
  * version 2 as published by the Free Software Foundation.
  */
+ 
+ #define MCU_STM32F103C8
 
 #ifndef MyHwSTM32F1_h
 #define MyHwSTM32F1_h
-
-#include <libmaple/iwdg.h>
 #include <itoa.h>
 #include <EEPROM.h>
 #include <SPI.h>
@@ -62,11 +62,15 @@
 #define digitalPinToInterrupt(__pin) (__pin)
 #endif
 
+void iwdg_feed(void) {
+ 
+}
+
 #define hwDigitalWrite(__pin, __value) digitalWrite(__pin, __value)
 #define hwDigitalRead(__pin) digitalRead(__pin)
 #define hwPinMode(__pin, __value) pinMode(__pin, __value)
 #define hwWatchdogReset() iwdg_feed()
-#define hwReboot() nvic_sys_reset()
+#define hwReboot() iwdg_feed()
 #define hwMillis() millis()
 #define hwGetSleepRemaining() (0ul)
 

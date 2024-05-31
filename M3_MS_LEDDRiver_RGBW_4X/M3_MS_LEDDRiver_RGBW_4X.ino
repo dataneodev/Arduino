@@ -18,13 +18,10 @@ Konfiguracja podłączenia kabli
   - 1 kanał - white
 */
 /* Instalacja 
+Dodać board https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json
+Zainstalować board STM32
 Zainstalować  Arduino SAM Boards
-
-MySensors 
-  działa z oryginalnym boardem: https://github.com/rogerclarkmelbourne/Arduino_STM32
-  nie działa natomiast z: https://github.com/stm32duino/Arduino_Core_STM32  (https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json)
-
- Skopiować folder do c:\Users\Smith\AppData\Local\Arduino15\packages\Arduino_STM32\
+Podmienić pliki w MySensors dla STM32F1 libraries\MySensors\hal\architecture\STM32F1\
 */
 /* #endregion */
 //#include <libmaple/iwdg.h>
@@ -48,10 +45,14 @@ MySensors
 
 /* #region  const configuration */
 
+//                      RX    TX
+///HardwareSerial Serial2(PA3, PA2);
+
 // RS485
+#define ARDUINO_ARCH_STM32F1
 #define MY_DISABLED_SERIAL         // manual configure Serial1
 #define MY_RS485                   // Enable RS485 transport layer
-#define MY_RS485_DE_PIN PA1         // Define this to enables DE-pin management on defined pin
+#define MY_RS485_DE_PIN PA1        // Define this to enables DE-pin management on defined pin
 #define MY_RS485_BAUD_RATE 9600    // Set RS485 baud rate to use
 #define MY_RS485_HWSERIAL Serial2  //
 #define MY_RS485_SOH_COUNT 6
@@ -70,7 +71,7 @@ MySensors
 #define PWM_3 PA8
 #define PWM_4 PA9
 
-//INPUT 
+//INPUT
 #define IN_1 PB1
 #define IN_2 PB0
 #define IN_3 PA5
@@ -89,16 +90,34 @@ MySensors
 #endif
 /* #endregion */
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 #include <MySensors.h>
-#include "24C32.h"
-
-
+#include <24C32.h>
+#include <Wire.h>
 //#define PWM_USE_NMI 1
 #define PWM_PERIOD 1000  //4kH
 #define PWM_CHANNELS 4
 
 
 /* #region  global variable */
+
+
+
+
+
+
 EE EEPROM24C32;
 MyMessage mMessage;
 
@@ -171,73 +190,6 @@ public:
   }
 };
 
-#include  "ew_bsp_system.c"
-
-/* #region  basic function */
-/**
-* Max reduction
-* 
-*  Reduced frequences, but some peripheral of APB1 can't work
-* and USB MHz reduced to 8 but for full speed USB you need 48
-* @brief  System Clock Configuration Reduced
-*         The system Clock is configured as follow :
-*            System Clock source            = PLL (HSE)
-*            SYSCLK(Hz)                     = 72000000 --> 8000000
-*            HCLK(Hz)                       = 72000000 --> 8000000
-*            AHB Prescaler                  = 1
-*            APB1 Prescaler                 = 2
-*            APB2 Prescaler                 = 1
-*            PLL_Source                     = HSE     --> HSE Pre DIV2
-*            PLL_Mul                        = 9       --> 2
-*            Flash Latency(WS)              = 0
-*            ADC Prescaler                  = 6       --> 2
-*            USB Prescaler                  = 1.5     --> 1
-* @param  None
-* @retval None
-*/
-extern "C" void SystemClock_Config(void)
-{
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
- 
-  /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV2;
-  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL2;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
- 
-  /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
- 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USB;
-  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
-  PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
-  {
-    Error_Handler();
-  }
-}
 
 void before() {
   Serial2.begin(9600);
@@ -246,7 +198,9 @@ void before() {
   readSettingFromEprom();
 }
 
+
 void setup() {
+
   calculate();
 }
 
@@ -355,6 +309,10 @@ void inicjalizePins() {
 }
 
 void inicjalizeI2C() {
+  Wire.setSDA(PB11);  // using pin name PY_n
+  Wire.setSCL(PB10);  // using pin number PYn
+  Wire.begin();
+  Wire.setClock(100000);
   EEPROM24C32.begin(0x50, false);
 }
 /* #endregion */
@@ -381,17 +339,17 @@ void readSettingFromEprom() {
 //     return;
 //   }
 
-  // if (EEPROM24C32.readByte(105) != CHECK_NUMBER) {
-  //   setDefaultSetting();
-  //   return;
-  // }
+//   if (EEPROM24C32.readByte(105) != CHECK_NUMBER) {
+//     setDefaultSetting();
+//     return;
+//   }
 
-  // deviceEnabled = EEPROM24C32.readByte(106) == 0x05;
-  // deviceLightLevel = EEPROM24C32.readByte(107);
-  // channel1Level = EEPROM24C32.readByte(108);
-  // channel2Level = EEPROM24C32.readByte(109);
-  // channel3Level = EEPROM24C32.readByte(110);
-  // channel4Level = EEPROM24C32.readByte(111);
+  deviceEnabled = EEPROM24C32.readByte(106) == 0x05;
+  deviceLightLevel = EEPROM24C32.readByte(107);
+  channel1Level = EEPROM24C32.readByte(108);
+  channel2Level = EEPROM24C32.readByte(109);
+  channel3Level = EEPROM24C32.readByte(110);
+  channel4Level = EEPROM24C32.readByte(111);
 
 #if defined(MY_DEBUG)
   Serial.println("Odczytano wartosci:");
@@ -404,7 +362,7 @@ void setDefaultSetting() {
 #if defined(MY_DEBUG)
   Serial.println("Zapisuje domyslne ustawienia");
 #endif
-//  EEPROM24C32.writeByte(105, CHECK_NUMBER, false, false);
+  EEPROM24C32.writeByte(105, CHECK_NUMBER, false, false);
   setDeviceEnableToEeprom(deviceEnabled);
   setLightLevelToEeprom(deviceLightLevel);
   setChannelValue(1, channel1Level);
@@ -414,16 +372,16 @@ void setDefaultSetting() {
 }
 
 void setDeviceEnableToEeprom(bool deviceEabled) {
- // EEPROM24C32.writeByte(106, deviceEabled ? 0x05 : 0x06, false, false);
+  EEPROM24C32.writeByte(106, deviceEabled ? 0x05 : 0x06, false, false);
 }
 
 void setLightLevelToEeprom(uint8_t lightLevel) {
- // EEPROM24C32.writeByte(107, lightLevel, false, false);
+  EEPROM24C32.writeByte(107, lightLevel, false, false);
 }
 
 void setChannelValue(uint8_t channelNo, uint8_t value) {
   uint8_t channelAdress = 107 + channelNo;
- // EEPROM24C32.writeByte(channelAdress, value, false, false);
+  EEPROM24C32.writeByte(channelAdress, value, false, false);
 }
 /* #endregion */
 
@@ -541,7 +499,8 @@ void setRGBWvalueFromControler(uint8_t red, uint8_t green, uint8_t blue, uint8_t
   calculate();
   presentGlobalVariableToControler(false);
 
-  if (flashMemory) {
+  //if (flashMemory)
+   {
     setChannelValue(1, channel1Level);
     setChannelValue(2, channel2Level);
     setChannelValue(3, channel3Level);
@@ -574,7 +533,7 @@ void calculate() {
     unsigned int duty_3 = getChannel3Duty();
     unsigned int duty_4 = getChannel4Duty();
 
-  //analogWrite
+    //analogWrite
     // pwm_set_duty(duty_1, 0);
     // pwm_set_duty(duty_2, 1);
     // pwm_set_duty(duty_3, 2);
@@ -584,7 +543,7 @@ void calculate() {
     setRelayStatus(duty_1 > 0 || duty_2 > 0 || duty_3 > 0 || duty_4 > 0);
   } else {
     setRelayStatus(false);
-    
+
     // pwm_set_duty(0, 0);
     // pwm_set_duty(0, 1);
     // pwm_set_duty(0, 2);
