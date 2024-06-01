@@ -19,12 +19,11 @@ Konfiguracja podłączenia kabli
 */
 /* Instalacja 
 Dodać board https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json
-Zainstalować board STM32
+Zainstalować board STM32 MCU based boards
 Zainstalować  Arduino SAM Boards
 Podmienić pliki w MySensors dla STM32F1 libraries\MySensors\hal\architecture\STM32F1\
 */
 /* #endregion */
-//#include <libmaple/iwdg.h>
 
 /* #region  user configuration */
 #define SOFTWARE_VERION "1.0"
@@ -44,9 +43,6 @@ Podmienić pliki w MySensors dla STM32F1 libraries\MySensors\hal\architecture\ST
 /* #endregion */
 
 /* #region  const configuration */
-
-//                      RX    TX
-///HardwareSerial Serial2(PA3, PA2);
 
 // RS485
 #define ARDUINO_ARCH_STM32F1
@@ -90,68 +86,6 @@ Podmienić pliki w MySensors dla STM32F1 libraries\MySensors\hal\architecture\ST
 #endif
 /* #endregion */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-#include <MySensors.h>
-#include <24C32.h>
-#include <Wire.h>
-//#define PWM_USE_NMI 1
-#define PWM_PERIOD 1000  //4kH
-#define PWM_CHANNELS 4
-
-
-/* #region  global variable */
-
-
-
-
-
-
-EE EEPROM24C32;
-MyMessage mMessage;
-
-bool deviceEnabled = true;
-uint8_t deviceLightLevel = 50;  // 0 -100
-
-#if defined(RGBW_MODE)
-#define DEFAULT_CH2 255
-#define DEFAULT_CH3 255
-#define DEFAULT_CH4 255
-#endif
-
-#if defined(RGB_MODE)
-#define DEFAULT_CH2 255
-#define DEFAULT_CH3 255
-#define DEFAULT_CH4 0
-#endif
-
-#if defined(SINGLE_LED_MODE)
-#define DEFAULT_CH2 0
-#define DEFAULT_CH3 0
-#define DEFAULT_CH4 0
-#endif
-
-uint8_t channel1Level = 255;  // 0-255
-uint8_t channel2Level = DEFAULT_CH2;
-uint8_t channel3Level = DEFAULT_CH3;
-uint8_t channel4Level = DEFAULT_CH4;
-
-//unsigned long lastMessageRevice;
-bool flashMemory = false;
-bool statusChanged = false;
-/* #endregion */
-
 class StateTime {
 private:
   unsigned long startState;
@@ -191,6 +125,48 @@ public:
 };
 
 
+
+#include <MySensors.h>
+#include <24C32.h>
+#include <Wire.h>
+/* #region  global variable */
+
+EE EEPROM24C32;
+MyMessage mMessage;
+StateChangeManager SCM;
+
+bool deviceEnabled = true;
+uint8_t deviceLightLevel = 50;  // 0 -100
+
+#if defined(RGBW_MODE)
+#define DEFAULT_CH2 255
+#define DEFAULT_CH3 255
+#define DEFAULT_CH4 255
+#endif
+
+#if defined(RGB_MODE)
+#define DEFAULT_CH2 255
+#define DEFAULT_CH3 255
+#define DEFAULT_CH4 0
+#endif
+
+#if defined(SINGLE_LED_MODE)
+#define DEFAULT_CH2 0
+#define DEFAULT_CH3 0
+#define DEFAULT_CH4 0
+#endif
+
+uint8_t channel1Level = 255;  // 0-255
+uint8_t channel2Level = DEFAULT_CH2;
+uint8_t channel3Level = DEFAULT_CH3;
+uint8_t channel4Level = DEFAULT_CH4;
+
+//unsigned long lastMessageRevice;
+/* #endregion */
+
+
+
+
 void before() {
   Serial2.begin(9600);
   inicjalizePins();
@@ -204,14 +180,20 @@ void setup() {
   calculate();
 }
 
+
+bool isPresentedToController = false;
 void presentation()  //MySensors
 {
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
   presentToControler();
-  presentGlobalVariableToControler(true);
+  isPresentedToController = true;
 }
 
 void loop() {
+
+  if (SCM.isStateChanged(isPresentedToController, 0)) {
+    sendAllMySensorsStatus();
+  }
 }
 
 void receive(const MyMessage &message)  //MySensors
@@ -309,17 +291,17 @@ void inicjalizePins() {
 }
 
 void inicjalizeI2C() {
-  Wire.setSDA(PB11);  // using pin name PY_n
-  Wire.setSCL(PB10);  // using pin number PYn
+  Wire.setSDA(SDA_PIN);
+  Wire.setSCL(SCL_PIN);
   Wire.begin();
-  Wire.setClock(100000);
+  Wire.setClock(400000);
   EEPROM24C32.begin(0x50, false);
 }
 /* #endregion */
 
 /* #region  data read / save */
 #if defined(RGBW_MODE)
-#define CHECK_NUMBER 0x64
+#define CHECK_NUMBER 0x65
 #endif
 
 #if defined(RGB_MODE)
@@ -331,18 +313,10 @@ void inicjalizeI2C() {
 #endif
 
 void readSettingFromEprom() {
-//   flashMemory = EEPROM24C32.checkPresence();
-//   if (!flashMemory) {
-// #if defined(MY_DEBUG)
-//     Serial.println("Błąd pamieci 24C32");
-// #endif
-//     return;
-//   }
-
-//   if (EEPROM24C32.readByte(105) != CHECK_NUMBER) {
-//     setDefaultSetting();
-//     return;
-//   }
+  if (EEPROM24C32.readByte(105) != CHECK_NUMBER) {
+    setDefaultSetting();
+    return;
+  }
 
   deviceEnabled = EEPROM24C32.readByte(106) == 0x05;
   deviceLightLevel = EEPROM24C32.readByte(107);
@@ -400,17 +374,18 @@ void presentToControler() {
 #endif
 }
 
-void presentGlobalVariableToControler(bool forceSend) {
-  if (forceSend || statusChanged) {
-    mMessage.setSensor(DIMMER_ID);
-    mMessage.setType(V_STATUS);
-    send(mMessage.set(deviceEnabled));
-    statusChanged = false;
-  }
+void sendEnabledStatus() {
+  mMessage.setSensor(DIMMER_ID);
+  mMessage.setType(V_STATUS);
+  send(mMessage.set(deviceEnabled));
+}
 
+void sendPercentageStatus() {
   mMessage.setType(V_PERCENTAGE);
   send(mMessage.set(deviceLightLevel));
+}
 
+void sendColor() {
 #if defined(RGBW_MODE)
 #if defined(MY_DEBUG)
   Serial.println("Wysyłam RGBW.");
@@ -449,44 +424,53 @@ void presentGlobalVariableToControler(bool forceSend) {
   send(mMessage.set(str));
 #endif
 }
+
+void sendAllMySensorsStatus() {
+
+  sendEnabledStatus();
+  sendPercentageStatus();
+  sendColor();
+}
 /* #endregion */
 
 void setDeviceEnabledFromControler(bool deviceEnbledToSet) {
-  statusChanged = statusChanged || deviceEnabled != deviceEnbledToSet;
   deviceEnabled = deviceEnbledToSet;
 
-  if (flashMemory) {
-    setDeviceEnableToEeprom(deviceEnabled);
-  }
+  setDeviceEnableToEeprom(deviceEnabled);
 
   if (deviceEnabled && deviceLightLevel == 0) {
     setLightLevelFromControler(STARTUP_LIGHT_LEVEL);
+    sendAllMySensorsStatus();
     return;
   }
 
   calculate();
-  presentGlobalVariableToControler(false);
+  if (deviceEnabled) {
+    sendAllMySensorsStatus();
+  } else {
+    sendEnabledStatus();
+  }
 }
 
 void setLightLevelFromControler(uint8_t lightLevel) {
   deviceLightLevel = lightLevel;  // 0 -100
 
-  if (flashMemory) {
-    setLightLevelToEeprom(deviceLightLevel);
-  }
+  setLightLevelToEeprom(deviceLightLevel);
 
   if (deviceLightLevel == 0 && deviceEnabled) {
     setDeviceEnabledFromControler(false);
+    sendEnabledStatus();
     return;
   }
 
   if (deviceLightLevel > 0 && !deviceEnabled) {
     setDeviceEnabledFromControler(true);
+    sendEnabledStatus();
     return;
   }
 
   calculate();
-  presentGlobalVariableToControler(false);
+  sendPercentageStatus();
 }
 
 #if defined(RGBW_MODE)
@@ -497,15 +481,13 @@ void setRGBWvalueFromControler(uint8_t red, uint8_t green, uint8_t blue, uint8_t
   channel4Level = blue;
 
   calculate();
-  presentGlobalVariableToControler(false);
+  sendColor();
 
-  //if (flashMemory)
-   {
-    setChannelValue(1, channel1Level);
-    setChannelValue(2, channel2Level);
-    setChannelValue(3, channel3Level);
-    setChannelValue(4, channel4Level);
-  }
+
+  setChannelValue(1, channel1Level);
+  setChannelValue(2, channel2Level);
+  setChannelValue(3, channel3Level);
+  setChannelValue(4, channel4Level);
 }
 #endif
 
@@ -516,13 +498,12 @@ void setRGBValueFromControler(uint8_t red, uint8_t green, uint8_t blue) {
   channel3Level = blue;
 
   calculate();
-  presentGlobalVariableToControler(false);
+  sendColor();
 
-  if (flashMemory) {
-    setChannelValue(1, channel1Level);
-    setChannelValue(2, channel2Level);
-    setChannelValue(3, channel3Level);
-  }
+
+  setChannelValue(1, channel1Level);
+  setChannelValue(2, channel2Level);
+  setChannelValue(3, channel3Level);
 }
 #endif
 
