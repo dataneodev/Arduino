@@ -42,6 +42,7 @@
 * IRQ	NA
 *
 */
+
 bool hwInit(void)
 {
 #if !defined(MY_DISABLED_SERIAL)
@@ -50,7 +51,7 @@ bool hwInit(void)
 	while (!MY_SERIALDEVICE) {}
 #endif
 #endif
-	if (EEPROM.init() == EEPROM_OK) {
+/*	if (EEPROM.init() == EEPROM_OK) {
 		uint16 cnt;
 		EEPROM.count(&cnt);
 		if(cnt>=EEPROM.maxcount()) {
@@ -60,6 +61,9 @@ bool hwInit(void)
 		return true;
 	}
 	return false;
+	*/
+	
+	return true;
 }
 
 void hwReadConfigBlock(void *buf, void *addr, size_t length)
@@ -124,28 +128,7 @@ int8_t hwSleep(const uint8_t interrupt1, const uint8_t mode1, const uint8_t inte
 
 void hwRandomNumberInit(void)
 {
-	// use internal temperature sensor as noise source
-	adc_reg_map *regs = ADC1->regs;
-	regs->CR2 |= ADC_CR2_TSVREFE;
-	regs->SMPR1 |= ADC_SMPR1_SMP16;
-
-	uint32_t seed = 0;
-	uint16_t currentValue = 0;
-	uint16_t newValue = 0;
-
-	for (uint8_t i = 0; i < 32; i++) {
-		const uint32_t timeout = hwMillis() + 20;
-		while (timeout >= hwMillis()) {
-			newValue = adc_read(ADC1, 16);
-			if (newValue != currentValue) {
-				currentValue = newValue;
-				break;
-			}
-		}
-		seed ^= ( (newValue + hwMillis()) & 7) << i;
-	}
-	randomSeed(seed);
-	regs->CR2 &= ~ADC_CR2_TSVREFE; // disable VREFINT and temp sensor
+	randomSeed(random(22223232323));
 }
 
 bool hwUniqueID(unique_id_t *uniqueID)
@@ -156,14 +139,7 @@ bool hwUniqueID(unique_id_t *uniqueID)
 
 uint16_t hwCPUVoltage(void)
 {
-	adc_reg_map *regs = ADC1->regs;
-	regs->CR2 |= ADC_CR2_TSVREFE; // enable VREFINT and temp sensor
-	regs->SMPR1 =  ADC_SMPR1_SMP17; // sample rate for VREFINT ADC channel
-	adc_calibrate(ADC1);
-
-	const uint16_t vdd = adc_read(ADC1, 17);
-	regs->CR2 &= ~ADC_CR2_TSVREFE; // disable VREFINT and temp sensor
-	return (uint16_t)(1200u * 4096u / vdd);
+	return FUNCTION_NOT_SUPPORTED;
 }
 
 uint16_t hwCPUFrequency(void)
@@ -173,18 +149,7 @@ uint16_t hwCPUFrequency(void)
 
 int8_t hwCPUTemperature(void)
 {
-	adc_reg_map *regs = ADC1->regs;
-	regs->CR2 |= ADC_CR2_TSVREFE; // enable VREFINT and Temperature sensor
-	regs->SMPR1 |= ADC_SMPR1_SMP16 | ADC_SMPR1_SMP17;
-	adc_calibrate(ADC1);
-
-	//const uint16_t adc_temp = adc_read(ADC1, 16);
-	//const uint16_t vref = 1200 * 4096 / adc_read(ADC1, 17);
-	// calibrated at 25°C, ADC output = 1430mV, avg slope = 4.3mV / °C, increasing temp ~ lower voltage
-	const int8_t temp = static_cast<int8_t>((1430.0 - (adc_read(ADC1, 16) * 1200 / adc_read(ADC1,
-	                                        17))) / 4.3 + 25.0);
-	regs->CR2 &= ~ADC_CR2_TSVREFE; // disable VREFINT and temp sensor
-	return (temp - MY_STM32F1_TEMPERATURE_OFFSET) / MY_STM32F1_TEMPERATURE_GAIN;
+	return FUNCTION_NOT_SUPPORTED;
 }
 
 uint16_t hwFreeMem(void)
