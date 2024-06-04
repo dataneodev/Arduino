@@ -6,7 +6,7 @@
  * network topology allowing messages to be routed to nodes.
  *
  * Created by Henrik Ekblad <henrik.ekblad@mysensors.org>
- * Copyright (C) 2013-2022 Sensnology AB
+ * Copyright (C) 2013-2019 Sensnology AB
  * Full contributor list: https://github.com/mysensors/MySensors/graphs/contributors
  *
  * Documentation: http://www.mysensors.org
@@ -101,7 +101,7 @@ void hwPowerDown(const uint8_t wdto)
 	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 	cli();
 	sleep_enable();
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
+#if defined(__AVR_ATmega328P__)
 	sleep_bod_disable();
 #endif
 	// Enable interrupts & sleep until WDT or ext. interrupt
@@ -289,7 +289,7 @@ bool hwUniqueID(unique_id_t *uniqueID)
 uint16_t hwCPUVoltage(void)
 {
 	// Measure Vcc against 1.1V Vref
-#if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega1284P__)
+#if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
 	ADMUX = (_BV(REFS0) | _BV(MUX4) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1));
 #elif defined (__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__)
 	ADMUX = (_BV(MUX5) | _BV(MUX0));
@@ -347,7 +347,7 @@ uint16_t hwCPUFrequency(void)
 
 int8_t hwCPUTemperature(void)
 {
-#if defined(__AVR_ATmega168A__) || defined(__AVR_ATmega168P__) || defined(__AVR_ATmega328__) || defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
+#if defined(__AVR_ATmega168A__) || defined(__AVR_ATmega168P__) || defined(__AVR_ATmega328__) || defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328BP__) || defined(__AVR_ATmega32U4__)
 	// Set the internal reference and mux.
 	ADMUX = (_BV(REFS1) | _BV(REFS0) | _BV(MUX3));
 	ADCSRA |= _BV(ADEN);  // enable the ADC

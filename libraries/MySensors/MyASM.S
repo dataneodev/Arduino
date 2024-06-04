@@ -6,7 +6,7 @@
  * network topology allowing messages to be routed to nodes.
  *
  * Created by Henrik Ekblad <henrik.ekblad@mysensors.org>
- * Copyright (C) 2013-2022 Sensnology AB
+ * Copyright (C) 2013-2019 Sensnology AB
  * Full contributor list: https://github.com/mysensors/MySensors/graphs/contributors
  *
  * Documentation: http://www.mysensors.org
@@ -24,15 +24,15 @@
 doNothing:
 	nop
 	.size	doNothing, .-doNothing
-
+ 
 #elif defined(ARDUINO_ARCH_NRF5)
 /* workaround to prevent compiler error */
 	.thumb_func
 doNothing:
 	nop
 	.size	doNothing, .-doNothing
-
-#elif defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_MEGAAVR)
+ 
+#elif defined(ARDUINO_ARCH_AVR) 
 
 #include "hal/crypto/AVR/drivers/SHA256/SHA256.S"
 

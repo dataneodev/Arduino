@@ -6,7 +6,7 @@
  * network topology allowing messages to be routed to nodes.
  *
  * Created by Henrik Ekblad <henrik.ekblad@mysensors.org>
- * Copyright (C) 2013-2022 Sensnology AB
+ * Copyright (C) 2013-2019 Sensnology AB
  * Full contributor list: https://github.com/mysensors/MySensors/graphs/contributors
  *
  * Documentation: http://www.mysensors.org
@@ -19,7 +19,7 @@
  *******************************
  *
  * REVISION HISTORY
- * Version 1.1 - tekka
+ * Version 1.0 - tekka
  *
  * DESCRIPTION
  * ATC mode settings and signal report functions, on RFM69 and RFM95 nodes
@@ -28,9 +28,6 @@
 
 // Enable debug prints
 #define MY_DEBUG
-
-// Enable signal report functionalities
-#define MY_SIGNAL_REPORT_ENABLED
 
 // Enable and select radio type attached
 
@@ -74,7 +71,7 @@ void setup()
 void presentation()
 {
 	// Send the sketch version information to the gateway and controller
-	sendSketchInfo("ATC", "1.1");
+	sendSketchInfo("ATC", "1.0");
 
 	// Register all sensors to gw (they will be created as child devices)
 	present(CHILD_ID_UPLINK_QUALITY, S_CUSTOM, "UPLINK QUALITY RSSI");

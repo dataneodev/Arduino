@@ -6,7 +6,7 @@
  * network topology allowing messages to be routed to nodes.
  *
  * Created by Henrik Ekblad <henrik.ekblad@mysensors.org>
- * Copyright (C) 2013-2022 Sensnology AB
+ * Copyright (C) 2013-2019 Sensnology AB
  * Full contributor list: https://github.com/mysensors/MySensors/graphs/contributors
  *
  * Documentation: http://www.mysensors.org
@@ -44,7 +44,6 @@
 //#define MY_RADIO_NRF5_ESB
 //#define MY_RADIO_RFM69
 //#define MY_RADIO_RFM95
-//#define MY_PJON
 
 #include <MySensors.h>
 
@@ -89,10 +88,6 @@ void loop()
 			uvIndex = i;
 			break;
 		}
-	}
-
-	if(i==12) {
-		i--;
 	}
 
 	//calculate 1 decimal if possible

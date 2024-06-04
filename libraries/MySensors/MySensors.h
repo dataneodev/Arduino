@@ -6,7 +6,7 @@
  * network topology allowing messages to be routed to nodes.
  *
  * Created by Henrik Ekblad <henrik.ekblad@mysensors.org>
- * Copyright (C) 2013-2023 Sensnology AB
+ * Copyright (C) 2013-2019 Sensnology AB
  * Full contributor list: https://github.com/mysensors/MySensors/graphs/contributors
  *
  * Documentation: http://www.mysensors.org
@@ -63,9 +63,6 @@
 #elif defined(ARDUINO_ARCH_AVR)
 #include "hal/architecture/AVR/MyHwAVR.cpp"
 #include "hal/crypto/AVR/MyCryptoAVR.cpp"
-#elif defined(ARDUINO_ARCH_MEGAAVR)
-#include "hal/architecture/AVR/MyHwMegaAVR.cpp"
-#include "hal/crypto/AVR/MyCryptoAVR.cpp"
 #elif defined(ARDUINO_ARCH_SAMD)
 #include "drivers/extEEPROM/extEEPROM.cpp"
 #include "hal/architecture/SAMD/MyHwSAMD.cpp"
@@ -78,9 +75,6 @@
 #include "hal/crypto/generic/MyCryptoGeneric.cpp"
 #elif defined(__arm__) && defined(TEENSYDUINO)
 #include "hal/architecture/Teensy3/MyHwTeensy3.cpp"
-#include "hal/crypto/generic/MyCryptoGeneric.cpp"
-#elif defined(__ASR6501__) || defined (__ASR6502__)
-#include "hal/architecture/ASR650x/MyHwASR650x.cpp"
 #include "hal/crypto/generic/MyCryptoGeneric.cpp"
 #elif defined(__linux__)
 #include "hal/architecture/Linux/MyHwLinuxGeneric.cpp"
@@ -291,17 +285,8 @@ MY_DEFAULT_RX_LED_PIN in your sketch instead to enable LEDs
 #else
 #define __RS485CNT 0	//!< __RS485CNT
 #endif
-#if defined(MY_PJON)
-#define _PJONCNT 1	//!< _PJONCNT
-#else
-#define _PJONCNT 0	//!< _PJONCNT
-#endif
-#if defined(MY_RADIO_SX126x)
-#define __SX126xCNT 1   //!< __SX126xCNT
-#else
-#define __SX126xCNT 0   //!< __SX126xCNT
-#endif
-#if (__RF24CNT + __NRF5ESBCNT + __RFM69CNT + __RFM95CNT + __RS485CNT + _PJONCNT + __SX126xCNT > 1)
+
+#if (__RF24CNT + __NRF5ESBCNT + __RFM69CNT + __RFM95CNT + __RS485CNT > 1)
 #error Only one forward link driver can be activated
 #endif
 #endif //DOXYGEN
@@ -312,7 +297,7 @@ MY_DEFAULT_RX_LED_PIN in your sketch instead to enable LEDs
 #endif
 
 // TRANSPORT INCLUDES
-#if defined(MY_RADIO_RF24) || defined(MY_RADIO_NRF5_ESB) || defined(MY_RADIO_RFM69) || defined(MY_RADIO_RFM95) || defined(MY_RS485) || defined (MY_PJON) || defined(MY_RADIO_SX126x)
+#if defined(MY_RADIO_RF24) || defined(MY_RADIO_NRF5_ESB) || defined(MY_RADIO_RFM69) || defined(MY_RADIO_RFM95) || defined(MY_RS485)
 #include "hal/transport/MyTransportHAL.h"
 #include "core/MyTransport.h"
 
@@ -326,6 +311,20 @@ MY_DEFAULT_RX_LED_PIN in your sketch instead to enable LEDs
 #endif
 
 // RAM ROUTING TABLE
+#if defined(MY_RAM_ROUTING_TABLE_FEATURE) && defined(MY_REPEATER_FEATURE)
+// activate feature based on architecture
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_NRF5) || defined(ARDUINO_ARCH_STM32F1) || defined(TEENSYDUINO) || defined(__linux__)
+#define MY_RAM_ROUTING_TABLE_ENABLED
+#elif defined(ARDUINO_ARCH_AVR)
+#if defined(__avr_atmega1280__) || defined(__avr_atmega1284__) || defined(__avr_atmega2560__)
+// >4kb, enable it
+#define MY_RAM_ROUTING_TABLE_ENABLED
+#else
+// memory limited, enable with care
+// #define MY_RAM_ROUTING_TABLE_ENABLED
+#endif // __avr_atmega1280__, __avr_atmega1284__, __avr_atmega2560__
+#endif // ARDUINO_ARCH_AVR
+#endif
 #ifdef DOXYGEN
 /**
  * @def MY_RAM_ROUTING_TABLE_ENABLED
@@ -334,20 +333,7 @@ MY_DEFAULT_RX_LED_PIN in your sketch instead to enable LEDs
  * @see MY_RAM_ROUTING_TABLE_FEATURE
  */
 #define MY_RAM_ROUTING_TABLE_ENABLED
-#elif defined(MY_RAM_ROUTING_TABLE_FEATURE) && defined(MY_REPEATER_FEATURE)
-// activate feature based on architecture
-#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_NRF5) || defined(ARDUINO_ARCH_STM32F1) || defined(TEENSYDUINO) || defined(__linux__) || defined(__ASR6501__) || defined (__ASR6502__)
-#define MY_RAM_ROUTING_TABLE_ENABLED
-#elif defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_MEGAAVR)
-#if defined(__avr_atmega1280__) || defined(__avr_atmega1284__) || defined(__avr_atmega2560__) || defined(__avr_attiny3224__) || defined(__avr_attiny3227__)
-// >4kb, enable it
-#define MY_RAM_ROUTING_TABLE_ENABLED
-#else
-// memory limited, enable with care
-// #define MY_RAM_ROUTING_TABLE_ENABLED
-#endif // __avr_atmega1280__, __avr_atmega1284__, __avr_atmega2560__
-#endif // ARDUINO_ARCH_AVR
-#endif // DOXYGEN
+#endif
 
 // SOFTSERIAL
 #if defined(MY_GSM_TX) != defined(MY_GSM_RX)
@@ -360,7 +346,7 @@ MY_DEFAULT_RX_LED_PIN in your sketch instead to enable LEDs
 
 // POWER PIN
 #ifndef DOXYGEN
-#if defined(MY_RF24_POWER_PIN) || defined(MY_RFM69_POWER_PIN) || defined(MY_RFM95_POWER_PIN) || defined(MY_RADIO_NRF5_ESB) || defined(MY_RADIO_SX126x_POWER_PIN)
+#if defined(MY_RF24_POWER_PIN) || defined(MY_RFM69_POWER_PIN) || defined(MY_RFM95_POWER_PIN) || defined(MY_RADIO_NRF5_ESB)
 #define RADIO_CAN_POWER_OFF (true)
 #else
 #define RADIO_CAN_POWER_OFF (false)
@@ -396,16 +382,6 @@ MY_DEFAULT_RX_LED_PIN in your sketch instead to enable LEDs
 #elif defined(MY_RADIO_RFM95)
 #include "hal/transport/RFM95/driver/RFM95.cpp"
 #include "hal/transport/RFM95/MyTransportRFM95.cpp"
-#elif defined(MY_PJON)
-#include "hal/transport/PJON/driver/PJON.h"
-#include "hal/transport/PJON/driver/PJONSoftwareBitBang.h"
-#if (PJON_BROADCAST == 0)
-#error "You must change PJON_BROADCAST to BROADCAST_ADDRESS (255u) and PJON_NOT_ASSIGNED to other one."
-#endif
-#include "hal/transport/PJON/MyTransportPJON.cpp"
-#elif defined(MY_RADIO_SX126x)
-#include "hal/transport/SX126x/driver/SX126x.cpp"
-#include "hal/transport/SX126x/MyTransportSX126x.cpp"
 #endif
 
 #if (defined(MY_RF24_ENABLE_ENCRYPTION) && defined(MY_RADIO_RF24)) || (defined(MY_NRF5_ESB_ENABLE_ENCRYPTION) && defined(MY_RADIO_NRF5_ESB)) || (defined(MY_RFM69_ENABLE_ENCRYPTION) && defined(MY_RADIO_RFM69)) || (defined(MY_RFM95_ENABLE_ENCRYPTION) && defined(MY_RADIO_RFM95))
@@ -453,14 +429,11 @@ MY_DEFAULT_RX_LED_PIN in your sketch instead to enable LEDs
 
 #include "core/MyCapabilities.h"
 #include "core/MyMessage.cpp"
-#include "core/MyMultiMessage.cpp"
 #include "core/MySplashScreen.cpp"
 #include "core/MySensorsCore.cpp"
 
 // HW mains
 #if defined(ARDUINO_ARCH_AVR)
-#include "hal/architecture/AVR/MyMainAVR.cpp"
-#elif defined(ARDUINO_ARCH_MEGAAVR)
 #include "hal/architecture/AVR/MyMainAVR.cpp"
 #elif defined(ARDUINO_ARCH_SAMD)
 #include "hal/architecture/SAMD/MyMainSAMD.cpp"
@@ -474,12 +447,8 @@ MY_DEFAULT_RX_LED_PIN in your sketch instead to enable LEDs
 #include "hal/architecture/Linux/MyMainLinuxGeneric.cpp"
 #elif defined(ARDUINO_ARCH_STM32F1)
 #include "hal/architecture/STM32F1/MyMainSTM32F1.cpp"
-#elif defined(__ASR6501__) || defined(__ASR6502__)
-#include "hal/architecture/ASR650x/MyMainASR650x.cpp"
 #elif defined(__arm__) && defined(TEENSYDUINO)
 #include "hal/architecture/Teensy3/MyMainTeensy3.cpp"
-#elif defined(ARDUINO_ARCH_CUBECELL)
-#include "hal/architecture/ASR650x/MyMainASR650x.cpp"
 #endif
 
 #endif
