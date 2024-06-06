@@ -1,8 +1,13 @@
 
 
-/* #region  Instalation */
+/* Instalacja
+Dodać board https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json
+Zainstalować board STM32 MCU based boards
+Zainstalować  Arduino SAM Boards
+Podmienić pliki w MySensors dla STM32F1 libraries\MySensors\hal\architecture\STM32F1\
+*/
+
 /*
-Konfiguracja podłączenia kabli
 -RGBW
   - 1 kanał - biały
   - 2 kanał - red
@@ -16,62 +21,28 @@ Konfiguracja podłączenia kabli
 
 -Single
   - 1 kanał - white
-*/
-/* Instalacja 
-Dodać board https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json
-Zainstalować board STM32 MCU based boards
-Zainstalować  Arduino SAM Boards
-Podmienić pliki w MySensors dla STM32F1 libraries\MySensors\hal\architecture\STM32F1\
-*/
-/* #endregion */
 
-/* #region  user configuration */
-#define SOFTWARE_VERION "1.0"
-#define MIN_LIGHT_LEVEL 0      // minimalna jasnosc
-#define MAX_LIGHT_LEVEL 1000   // maksymalna jasnosc nie moze przekroczyc PWM_PERIOD!!! 4kHz - 1000
-#define STARTUP_LIGHT_LEVEL 5  //0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
 
-//tylko 1 z poniższych opcji moze być wybrana :
+  tylko 1 z poniższych opcji moze być wybrana :
+*/
+
 #define RGBW_MODE
-//#define RGB_MODE
-//#define SINGLE_LED_MODE
+// #define RGB_MODE
+// #define RGB_MODE_SINGLE
+// #define SINGLE_LED_MODE_1
+// #define SINGLE_LED_MODE_2
+// #define SINGLE_LED_MODE_3
+// #define SINGLE_LED_MODE_4
 
-#define MY_NODE_ID 60  // id węzła my sensors - każdy sterownik musi miec inny numer
-#define DIMMER_ID 1
-#define RGBW_ID 1
+#define MIN_LIGHT_LEVEL 5     // minimalna jasnosc
+#define MAX_LIGHT_LEVEL 100   // maksymalna jasnosc
+#define STARTUP_LIGHT_LEVEL 5 // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
 
 /* #endregion */
 
 /* #region  const configuration */
-
-// RS485
-#define ARDUINO_ARCH_STM32F1
-#define MY_DISABLED_SERIAL         // manual configure Serial1
-#define MY_RS485                   // Enable RS485 transport layer
-#define MY_RS485_DE_PIN PA1        // Define this to enables DE-pin management on defined pin
-#define MY_RS485_BAUD_RATE 9600    // Set RS485 baud rate to use
-#define MY_RS485_HWSERIAL Serial2  //
-#define MY_RS485_SOH_COUNT 6
-#define MY_TRANSPORT_WAIT_READY_MS 1
-
-//24C32
-#define SCL_PIN PB10
-#define SDA_PIN PB11
-
-//relay
-#define RELAY_PIN PB7
-
-//pwm
-#define PWM_1 PA10
-#define PWM_2 PB6
-#define PWM_3 PA8
-#define PWM_4 PA9
-
-//INPUT
-#define IN_1 PB1
-#define IN_2 PB0
-#define IN_3 PA5
-#define IN_4 PA4
+// MY SENSORS
+#define SOFTWARE_VERION "1.0"
 
 #if defined(RGBW_MODE)
 #define SKETCH_NAME "RGBW_LED"
@@ -84,26 +55,68 @@ Podmienić pliki w MySensors dla STM32F1 libraries\MySensors\hal\architecture\ST
 #if defined(SINGLE_LED_MODE)
 #define SKETCH_NAME "SingleLED"
 #endif
+
+#define MY_NODE_ID 60 // id węzła my sensors - każdy sterownik musi miec inny numer
+#define RGBW_ID 1
+#define DIMMER_ID_1 1
+#define DIMMER_ID_2 1
+#define DIMMER_ID_3 1
+#define DIMMER_ID_4 1
+
+// RS485
+#define ARDUINO_ARCH_STM32F1
+#define MY_DISABLED_SERIAL        // manual configure Serial1
+#define MY_RS485                  // Enable RS485 transport layer
+#define MY_RS485_DE_PIN PA1       // Define this to enables DE-pin management on defined pin
+#define MY_RS485_BAUD_RATE 9600   // Set RS485 baud rate to use
+#define MY_RS485_HWSERIAL Serial2 //
+#define MY_RS485_SOH_COUNT 6
+#define MY_TRANSPORT_WAIT_READY_MS 1
+
+// 24C32
+#define SCL_PIN PB10
+#define SDA_PIN PB11
+
+// relay
+#define RELAY_PIN PB7
+
+// pwm
+#define PWM_1 PA10
+#define PWM_2 PB6
+#define PWM_3 PA8
+#define PWM_4 PA9
+
+// INPUT
+#define IN_1 PB1
+#define IN_2 PB0
+#define IN_3 PA5
+#define IN_4 PA4
+
 /* #endregion */
 
-class StateTime {
+class StateTime
+{
 private:
   unsigned long startState;
 
 public:
-  void stateStart() {
+  void stateStart()
+  {
     startState = millis();
   }
 
-  bool isElapsed(unsigned long elapsed) {
+  bool isElapsed(unsigned long elapsed)
+  {
     unsigned long current = millis();
 
-    if (startState > current) {
+    if (startState > current)
+    {
       startState = current;
       return false;
     }
 
-    if (startState + elapsed < current) {
+    if (startState + elapsed < current)
+    {
       return true;
     }
 
@@ -111,20 +124,20 @@ public:
   }
 };
 
-class StateChangeManager {
+class StateChangeManager
+{
 private:
   bool _states[10];
 
 public:
-  bool isStateChanged(bool state, int index) {
+  bool isStateChanged(bool state, int index)
+  {
     bool changed = _states[index] != state;
     _states[index] = state;
 
     return changed;
   }
 };
-
-
 
 #include <MySensors.h>
 #include <24C32.h>
@@ -136,7 +149,7 @@ MyMessage mMessage;
 StateChangeManager SCM;
 
 bool deviceEnabled = true;
-uint8_t deviceLightLevel = 50;  // 0 -100
+uint8_t deviceLightLevel = 50; // 0 -100
 
 #if defined(RGBW_MODE)
 #define DEFAULT_CH2 255
@@ -156,46 +169,43 @@ uint8_t deviceLightLevel = 50;  // 0 -100
 #define DEFAULT_CH4 0
 #endif
 
-uint8_t channel1Level = 255;  // 0-255
+uint8_t channel1Level = 255; // 0-255
 uint8_t channel2Level = DEFAULT_CH2;
 uint8_t channel3Level = DEFAULT_CH3;
 uint8_t channel4Level = DEFAULT_CH4;
 
-//unsigned long lastMessageRevice;
+// unsigned long lastMessageRevice;
 /* #endregion */
-
-
-
 
 /* #region  Power Optimalization */
 
- /**
-  * @brief  System Clock Configuration Reduced with big peripheral reduction
-  *         The system Clock is configured as follow :
-  *            System Clock source            = PLL (HSE)
-  *            SYSCLK(Hz)                     = 72000000 --> 48000000
-  *            HCLK(Hz)                       = 72000000 --> 12000000
-  *            AHB Prescaler                  = 1        --> /4
-  *            APB1 Prescaler                 = 2        --> /1
-  *            APB2 Prescaler                 = 1
-  *            PLL_Source                     = HSE     --> HSE Pre DIV2
-  *            PLL_Mul                        = 9       --> 12
-  *            Flash Latency(WS)              = 2       --> 1
-  *            ADC Prescaler                  = 6       --> 2
-  *            USB Prescaler                  = 1.5     --> 1
-  * @param  None
-  * @retval None
-  */
+/**
+ * @brief  System Clock Configuration Reduced with big peripheral reduction
+ *         The system Clock is configured as follow :
+ *            System Clock source            = PLL (HSE)
+ *            SYSCLK(Hz)                     = 72000000 --> 48000000
+ *            HCLK(Hz)                       = 72000000 --> 12000000
+ *            AHB Prescaler                  = 1        --> /4
+ *            APB1 Prescaler                 = 2        --> /1
+ *            APB2 Prescaler                 = 1
+ *            PLL_Source                     = HSE     --> HSE Pre DIV2
+ *            PLL_Mul                        = 9       --> 12
+ *            Flash Latency(WS)              = 2       --> 1
+ *            ADC Prescaler                  = 6       --> 2
+ *            USB Prescaler                  = 1.5     --> 1
+ * @param  None
+ * @retval None
+ */
 extern "C" void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
- 
+
   /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
+   * in the RCC_OscInitTypeDef structure.
+   */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV2;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
@@ -207,21 +217,20 @@ extern "C" void SystemClock_Config(void)
   {
     Error_Handler();
   }
- 
+
   /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+   */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV4;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
- 
+
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USB;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC | RCC_PERIPHCLK_USB;
   PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
   PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
@@ -232,32 +241,31 @@ extern "C" void SystemClock_Config(void)
 
 void setAllPinsAnalog(void)
 {
-GPIO_InitTypeDef GPIO_InitStruct = { 0, 0, 0, 0};
+  GPIO_InitTypeDef GPIO_InitStruct = {0, 0, 0, 0};
 
-__HAL_RCC_GPIOA_CLK_ENABLE();
-__HAL_RCC_GPIOB_CLK_ENABLE();
-__HAL_RCC_GPIOC_CLK_ENABLE();
-__HAL_RCC_GPIOD_CLK_ENABLE();
-__HAL_RCC_GPIOE_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOE_CLK_ENABLE();
 
-//DAC:
-/**DAC1 GPIO Configuration
-PA4 ------> DAC1_OUT1
-PA5 ------> DAC1_OUT2
-*/
+  // DAC:
+  /**DAC1 GPIO Configuration
+  PA4 ------> DAC1_OUT1
+  PA5 ------> DAC1_OUT2
+  */
 
-GPIO_InitStruct.Pin = GPIO_PIN_All;
+  GPIO_InitStruct.Pin = GPIO_PIN_All;
 
-GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
 
-HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
-
-} 
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+}
 
 /* #endregion  Power Optimalization */
 
@@ -268,34 +276,35 @@ HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 //   MX_SPI1_Init();
 //   MX_USART1_UART_Init();
 
-void before() {
+void before()
+{
   setAllPinsAnalog();
 
-__HAL_RCC_GPIOA_CLK_DISABLE();
-__HAL_RCC_GPIOB_CLK_DISABLE();
-__HAL_RCC_GPIOC_CLK_DISABLE();
-__HAL_RCC_GPIOD_CLK_DISABLE();
-__HAL_RCC_GPIOE_CLK_DISABLE();
+  __HAL_RCC_GPIOA_CLK_DISABLE();
+  __HAL_RCC_GPIOB_CLK_DISABLE();
+  __HAL_RCC_GPIOC_CLK_DISABLE();
+  __HAL_RCC_GPIOD_CLK_DISABLE();
+  __HAL_RCC_GPIOE_CLK_DISABLE();
 
-__HAL_RCC_AFIO_CLK_DISABLE();
-__HAL_RCC_TIM1_CLK_DISABLE();
-__HAL_RCC_SPI1_CLK_DISABLE();
-__HAL_RCC_USART1_CLK_DISABLE();
-__HAL_RCC_DMA1_CLK_DISABLE();
-__HAL_RCC_TIM2_CLK_DISABLE();
-__HAL_RCC_TIM3_CLK_DISABLE();
-__HAL_RCC_WWDG_CLK_DISABLE();
+  __HAL_RCC_AFIO_CLK_DISABLE();
+  __HAL_RCC_TIM1_CLK_DISABLE();
+  __HAL_RCC_SPI1_CLK_DISABLE();
+  __HAL_RCC_USART1_CLK_DISABLE();
+  __HAL_RCC_DMA1_CLK_DISABLE();
+  __HAL_RCC_TIM2_CLK_DISABLE();
+  __HAL_RCC_TIM3_CLK_DISABLE();
+  __HAL_RCC_WWDG_CLK_DISABLE();
 
-//__HAL_RCC_USART2_CLK_DISABLE();
-//__HAL_RCC_I2C1_CLK_DISABLE();
+  //__HAL_RCC_USART2_CLK_DISABLE();
+  //__HAL_RCC_I2C1_CLK_DISABLE();
 
-//__HAL_RCC_BKP_CLK_DISABLE(); //Powe consupction goes up
-//__HAL_RCC_PWR_CLK_DISABLE(); //Powe consupction goes up
-//__HAL_RCC_HSI_DISABLE(); //Powe consupction goes up
+  //__HAL_RCC_BKP_CLK_DISABLE(); //Powe consupction goes up
+  //__HAL_RCC_PWR_CLK_DISABLE(); //Powe consupction goes up
+  //__HAL_RCC_HSI_DISABLE(); //Powe consupction goes up
 
-__HAL_RCC_LSI_DISABLE();
-__HAL_RCC_PLL_DISABLE();
-__HAL_RCC_RTC_DISABLE();
+  __HAL_RCC_LSI_DISABLE();
+  __HAL_RCC_PLL_DISABLE();
+  __HAL_RCC_RTC_DISABLE();
 
   Serial2.begin(9600);
   inicjalizePins();
@@ -303,47 +312,52 @@ __HAL_RCC_RTC_DISABLE();
   readSettingFromEprom();
 }
 
-void setup() {
+void setup()
+{
 
   calculate();
 }
 
+void loop()
+{
+  if (SCM.isStateChanged(isPresentedToController, 0))
+  {
+    sendAllMySensorsStatus();
+  }
+}
 
 bool isPresentedToController = false;
-void presentation()  //MySensors
+void presentation() // MySensors
 {
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
   presentToControler();
   isPresentedToController = true;
 }
 
-void loop() {
-
-  if (SCM.isStateChanged(isPresentedToController, 0)) {
-    sendAllMySensorsStatus();
-  }
-}
-
-void receive(const MyMessage &message)  //MySensors
+void receive(const MyMessage &message) // MySensors
 {
   if (message.isAck())
     return;
 
-  if (message.sensor == DIMMER_ID && message.type == V_STATUS) {
+  if (message.sensor == DIMMER_ID && message.type == V_STATUS)
+  {
     setDeviceEnabledFromControler(message.getBool());
     return;
   }
 
-  if (message.sensor == DIMMER_ID && message.type == V_PERCENTAGE) {
+  if (message.sensor == DIMMER_ID && message.type == V_PERCENTAGE)
+  {
     int val = atoi(message.data);
-    if (val >= 0 && val <= 100) {
+    if (val >= 0 && val <= 100)
+    {
       setLightLevelFromControler(val);
     }
     return;
   }
 
 #if defined(RGBW_MODE)
-  if (message.sensor == RGBW_ID && message.type == V_RGBW) {
+  if (message.sensor == RGBW_ID && message.type == V_RGBW)
+  {
     unsigned long number = (unsigned long)strtoul(message.data, NULL, 16);
     uint8_t red = unsigned(number >> 24 & 0xFF);
     uint8_t green = unsigned(number >> 16 & 0xFF);
@@ -374,7 +388,8 @@ void receive(const MyMessage &message)  //MySensors
 #endif
 
 #if defined(RGB_MODE)
-  if (message.sensor == RGBW_ID && message.type == V_RGB) {
+  if (message.sensor == RGBW_ID && message.type == V_RGB)
+  {
     unsigned long number = (unsigned long)strtoul(message.data, NULL, 16);
     uint8_t red = unsigned(number >> 16 & 0xFF);
     uint8_t green = unsigned(number >> 8 & 0xFF);
@@ -388,8 +403,9 @@ void receive(const MyMessage &message)  //MySensors
 /* #endregion */
 
 /* #region  inicjalize */
-void inicjalizePins() {
-  //PWM
+void inicjalizePins()
+{
+  // PWM
   digitalWrite(PWM_1, LOW);
   pinMode(PWM_1, OUTPUT);
   digitalWrite(PWM_1, LOW);
@@ -418,7 +434,8 @@ void inicjalizePins() {
   pinMode(IN_4, INPUT);
 }
 
-void inicjalizeI2C() {
+void inicjalizeI2C()
+{
   Wire.setSDA(SDA_PIN);
   Wire.setSCL(SCL_PIN);
   Wire.begin();
@@ -440,8 +457,10 @@ void inicjalizeI2C() {
 #define CHECK_NUMBER 0x63
 #endif
 
-void readSettingFromEprom() {
-  if (EEPROM24C32.readByte(105) != CHECK_NUMBER) {
+void readSettingFromEprom()
+{
+  if (EEPROM24C32.readByte(105) != CHECK_NUMBER)
+  {
     setDefaultSetting();
     return;
   }
@@ -460,7 +479,8 @@ void readSettingFromEprom() {
 #endif
 }
 
-void setDefaultSetting() {
+void setDefaultSetting()
+{
 #if defined(MY_DEBUG)
   Serial.println("Zapisuje domyslne ustawienia");
 #endif
@@ -473,22 +493,26 @@ void setDefaultSetting() {
   setChannelValue(4, channel4Level);
 }
 
-void setDeviceEnableToEeprom(bool deviceEabled) {
+void setDeviceEnableToEeprom(bool deviceEabled)
+{
   EEPROM24C32.writeByte(106, deviceEabled ? 0x05 : 0x06, false, false);
 }
 
-void setLightLevelToEeprom(uint8_t lightLevel) {
+void setLightLevelToEeprom(uint8_t lightLevel)
+{
   EEPROM24C32.writeByte(107, lightLevel, false, false);
 }
 
-void setChannelValue(uint8_t channelNo, uint8_t value) {
+void setChannelValue(uint8_t channelNo, uint8_t value)
+{
   uint8_t channelAdress = 107 + channelNo;
   EEPROM24C32.writeByte(channelAdress, value, false, false);
 }
 /* #endregion */
 
 /* #region  present to controler */
-void presentToControler() {
+void presentToControler()
+{
 #if defined(SINGLE_LED_MODE)
   present(DIMMER_ID, S_DIMMER, "LED dimmer");
 #endif
@@ -502,18 +526,21 @@ void presentToControler() {
 #endif
 }
 
-void sendEnabledStatus() {
+void sendEnabledStatus()
+{
   mMessage.setSensor(DIMMER_ID);
   mMessage.setType(V_STATUS);
   send(mMessage.set(deviceEnabled));
 }
 
-void sendPercentageStatus() {
+void sendPercentageStatus()
+{
   mMessage.setType(V_PERCENTAGE);
   send(mMessage.set(deviceLightLevel));
 }
 
-void sendColor() {
+void sendColor()
+{
 #if defined(RGBW_MODE)
 #if defined(MY_DEBUG)
   Serial.println("Wysyłam RGBW.");
@@ -553,7 +580,8 @@ void sendColor() {
 #endif
 }
 
-void sendAllMySensorsStatus() {
+void sendAllMySensorsStatus()
+{
 
   sendEnabledStatus();
   sendPercentageStatus();
@@ -561,37 +589,45 @@ void sendAllMySensorsStatus() {
 }
 /* #endregion */
 
-void setDeviceEnabledFromControler(bool deviceEnbledToSet) {
+void setDeviceEnabledFromControler(bool deviceEnbledToSet)
+{
   deviceEnabled = deviceEnbledToSet;
 
   setDeviceEnableToEeprom(deviceEnabled);
 
-  if (deviceEnabled && deviceLightLevel == 0) {
+  if (deviceEnabled && deviceLightLevel == 0)
+  {
     setLightLevelFromControler(STARTUP_LIGHT_LEVEL);
     sendAllMySensorsStatus();
     return;
   }
 
   calculate();
-  if (deviceEnabled) {
+  if (deviceEnabled)
+  {
     sendAllMySensorsStatus();
-  } else {
+  }
+  else
+  {
     sendEnabledStatus();
   }
 }
 
-void setLightLevelFromControler(uint8_t lightLevel) {
-  deviceLightLevel = lightLevel;  // 0 -100
+void setLightLevelFromControler(uint8_t lightLevel)
+{
+  deviceLightLevel = lightLevel; // 0 -100
 
   setLightLevelToEeprom(deviceLightLevel);
 
-  if (deviceLightLevel == 0 && deviceEnabled) {
+  if (deviceLightLevel == 0 && deviceEnabled)
+  {
     setDeviceEnabledFromControler(false);
     sendEnabledStatus();
     return;
   }
 
-  if (deviceLightLevel > 0 && !deviceEnabled) {
+  if (deviceLightLevel > 0 && !deviceEnabled)
+  {
     setDeviceEnabledFromControler(true);
     sendEnabledStatus();
     return;
@@ -602,7 +638,8 @@ void setLightLevelFromControler(uint8_t lightLevel) {
 }
 
 #if defined(RGBW_MODE)
-void setRGBWvalueFromControler(uint8_t red, uint8_t green, uint8_t blue, uint8_t white) {
+void setRGBWvalueFromControler(uint8_t red, uint8_t green, uint8_t blue, uint8_t white)
+{
   channel1Level = white;
   channel2Level = red;
   channel3Level = green;
@@ -610,7 +647,6 @@ void setRGBWvalueFromControler(uint8_t red, uint8_t green, uint8_t blue, uint8_t
 
   calculate();
   sendColor();
-
 
   setChannelValue(1, channel1Level);
   setChannelValue(2, channel2Level);
@@ -620,7 +656,8 @@ void setRGBWvalueFromControler(uint8_t red, uint8_t green, uint8_t blue, uint8_t
 #endif
 
 #if defined(RGB_MODE)
-void setRGBValueFromControler(uint8_t red, uint8_t green, uint8_t blue) {
+void setRGBValueFromControler(uint8_t red, uint8_t green, uint8_t blue)
+{
   channel1Level = red;
   channel2Level = green;
   channel3Level = blue;
@@ -628,29 +665,32 @@ void setRGBValueFromControler(uint8_t red, uint8_t green, uint8_t blue) {
   calculate();
   sendColor();
 
-
   setChannelValue(1, channel1Level);
   setChannelValue(2, channel2Level);
   setChannelValue(3, channel3Level);
 }
 #endif
 
-void calculate() {
-  if (deviceEnabled) {
+void calculate()
+{
+  if (deviceEnabled)
+  {
     unsigned int duty_1 = getChannel1Duty();
     unsigned int duty_2 = getChannel2Duty();
     unsigned int duty_3 = getChannel3Duty();
     unsigned int duty_4 = getChannel4Duty();
 
-    //analogWrite
-    // pwm_set_duty(duty_1, 0);
-    // pwm_set_duty(duty_2, 1);
-    // pwm_set_duty(duty_3, 2);
-    // pwm_set_duty(duty_4, 3);
-    // pwm_start();
+    // analogWrite
+    //  pwm_set_duty(duty_1, 0);
+    //  pwm_set_duty(duty_2, 1);
+    //  pwm_set_duty(duty_3, 2);
+    //  pwm_set_duty(duty_4, 3);
+    //  pwm_start();
 
     setRelayStatus(duty_1 > 0 || duty_2 > 0 || duty_3 > 0 || duty_4 > 0);
-  } else {
+  }
+  else
+  {
     setRelayStatus(false);
 
     // pwm_set_duty(0, 0);
@@ -661,15 +701,18 @@ void calculate() {
   }
 }
 
-void setRelayStatus(bool enabled) {
+void setRelayStatus(bool enabled)
+{
   digitalWrite(RELAY_PIN, enabled ? HIGH : LOW);
 }
 
-unsigned int getChannel1Duty() {
+unsigned int getChannel1Duty()
+{
   return map(channel1Level * deviceLightLevel / 100, 0, 255, MIN_LIGHT_LEVEL, MAX_LIGHT_LEVEL);
 }
 
-unsigned int getChannel2Duty() {
+unsigned int getChannel2Duty()
+{
 #if defined(RGBW_MODE) || defined(RGB_MODE)
   return map(channel2Level * deviceLightLevel / 100, 0, 255, MIN_LIGHT_LEVEL, MAX_LIGHT_LEVEL);
 #endif
@@ -679,7 +722,8 @@ unsigned int getChannel2Duty() {
 #endif
 }
 
-unsigned int getChannel3Duty() {
+unsigned int getChannel3Duty()
+{
 #if defined(RGBW_MODE) || defined(RGB_MODE)
   return map(channel3Level * deviceLightLevel / 100, 0, 255, MIN_LIGHT_LEVEL, MAX_LIGHT_LEVEL);
 #endif
@@ -689,7 +733,8 @@ unsigned int getChannel3Duty() {
 #endif
 }
 
-unsigned int getChannel4Duty() {
+unsigned int getChannel4Duty()
+{
 #if defined(RGBW_MODE)
   return map(channel4Level * deviceLightLevel / 100, 0, 255, MIN_LIGHT_LEVEL, MAX_LIGHT_LEVEL);
 #endif
