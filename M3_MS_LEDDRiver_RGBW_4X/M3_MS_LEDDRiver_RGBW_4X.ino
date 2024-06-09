@@ -165,10 +165,6 @@ uint8_t channel4Level = DEFAULT_CH4;
 /* #endregion */
 
 
-
-
-/* #region  Power Optimalization */
-
  /**
   * @brief  System Clock Configuration Reduced with big peripheral reduction
   *         The system Clock is configured as follow :
@@ -230,80 +226,88 @@ extern "C" void SystemClock_Config(void)
   }
 }
 
-void setAllPinsAnalog(void)
-{
-GPIO_InitTypeDef GPIO_InitStruct = { 0, 0, 0, 0};
+void setAllPinsAnalog(void) {
+  GPIO_InitTypeDef GPIO_InitStruct = { 0, 0, 0, 0 };
 
-__HAL_RCC_GPIOA_CLK_ENABLE();
-__HAL_RCC_GPIOB_CLK_ENABLE();
-__HAL_RCC_GPIOC_CLK_ENABLE();
-__HAL_RCC_GPIOD_CLK_ENABLE();
-__HAL_RCC_GPIOE_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOE_CLK_ENABLE();
 
-//DAC:
-/**DAC1 GPIO Configuration
+  //DAC:
+  /**DAC1 GPIO Configuration
 PA4 ------> DAC1_OUT1
 PA5 ------> DAC1_OUT2
 */
 
-GPIO_InitStruct.Pin = GPIO_PIN_All;
+  GPIO_InitStruct.Pin = GPIO_PIN_All;
 
-GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
 
-HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-} 
+  // __HAL_RCC_GPIOA_CLK_DISABLE();
+  // __HAL_RCC_GPIOB_CLK_DISABLE();
+  // __HAL_RCC_GPIOC_CLK_DISABLE();
+  // __HAL_RCC_GPIOD_CLK_DISABLE();
+  // __HAL_RCC_GPIOE_CLK_DISABLE();
+}
+
+void disableAllClocks() {
+
+  __HAL_RCC_ADC1_CLK_DISABLE();
+
+  __HAL_RCC_AFIO_CLK_DISABLE();
+  __HAL_RCC_TIM1_CLK_DISABLE();
+  __HAL_RCC_SPI1_CLK_DISABLE();
+  __HAL_RCC_USART1_CLK_DISABLE();
+  __HAL_RCC_DMA1_CLK_DISABLE();
+  __HAL_RCC_TIM2_CLK_DISABLE();
+  __HAL_RCC_TIM3_CLK_DISABLE();
+  __HAL_RCC_WWDG_CLK_DISABLE();
+
+  //__HAL_RCC_USART2_CLK_DISABLE();
+  //__HAL_RCC_I2C1_CLK_DISABLE();
+
+  //__HAL_RCC_BKP_CLK_DISABLE(); //zwrasta do 15mA
+  //__HAL_RCC_PWR_CLK_DISABLE(); //zwrasta do 15mA
+  //__HAL_RCC_HSI_DISABLE(); //Problem
+
+  __HAL_RCC_LSI_DISABLE();
+  __HAL_RCC_PLL_DISABLE();
+  __HAL_RCC_RTC_DISABLE();
+}
 
 /* #endregion  Power Optimalization */
 
-// HAL_Init();
-//   SystemClock_Config();
-//   MX_GPIO_Init();
-//   MX_I2C3_Init();
-//   MX_SPI1_Init();
-//   MX_USART1_UART_Init();
-
 void before() {
   setAllPinsAnalog();
+  disableAllClocks();
 
-__HAL_RCC_GPIOA_CLK_DISABLE();
-__HAL_RCC_GPIOB_CLK_DISABLE();
-__HAL_RCC_GPIOC_CLK_DISABLE();
-__HAL_RCC_GPIOD_CLK_DISABLE();
-__HAL_RCC_GPIOE_CLK_DISABLE();
 
-__HAL_RCC_AFIO_CLK_DISABLE();
-__HAL_RCC_TIM1_CLK_DISABLE();
-__HAL_RCC_SPI1_CLK_DISABLE();
-__HAL_RCC_USART1_CLK_DISABLE();
-__HAL_RCC_DMA1_CLK_DISABLE();
-__HAL_RCC_TIM2_CLK_DISABLE();
-__HAL_RCC_TIM3_CLK_DISABLE();
-__HAL_RCC_WWDG_CLK_DISABLE();
 
-//__HAL_RCC_USART2_CLK_DISABLE();
-//__HAL_RCC_I2C1_CLK_DISABLE();
-
-//__HAL_RCC_BKP_CLK_DISABLE(); //Powe consupction goes up
-//__HAL_RCC_PWR_CLK_DISABLE(); //Powe consupction goes up
-//__HAL_RCC_HSI_DISABLE(); //Powe consupction goes up
-
-__HAL_RCC_LSI_DISABLE();
-__HAL_RCC_PLL_DISABLE();
-__HAL_RCC_RTC_DISABLE();
 
   Serial2.begin(9600);
   inicjalizePins();
   inicjalizeI2C();
+
+
+
+
+
+
   readSettingFromEprom();
 }
 
 void setup() {
+
+
 
   calculate();
 }
@@ -321,6 +325,7 @@ void loop() {
 
   if (SCM.isStateChanged(isPresentedToController, 0)) {
     sendAllMySensorsStatus();
+    
   }
 }
 
