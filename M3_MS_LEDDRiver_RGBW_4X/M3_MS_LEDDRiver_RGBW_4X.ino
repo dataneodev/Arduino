@@ -5,9 +5,8 @@ Dodać board https://github.com/stm32duino/BoardManagerFiles/raw/main/package_st
 Zainstalować board STM32 MCU based boards
 Zainstalować  Arduino SAM Boards
 Podmienić pliki w MySensors dla STM32F1 libraries\MySensors\hal\architecture\STM32F1\
-*/
 
-/*
+Dodatek do VS Code #region folding for VS Code
 -RGBW
   - 1 kanał - biały
   - 2 kanał - red
@@ -37,6 +36,12 @@ Podmienić pliki w MySensors dla STM32F1 libraries\MySensors\hal\architecture\ST
 #define MIN_LIGHT_LEVEL 5     // minimalna jasnosc
 #define MAX_LIGHT_LEVEL 100   // maksymalna jasnosc
 #define STARTUP_LIGHT_LEVEL 5 // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
+
+/* #region Imports */
+
+#include <MySensors.h>
+#include <24C32.h>
+#include <Wire.h>
 
 /* #endregion */
 
@@ -94,6 +99,8 @@ Podmienić pliki w MySensors dla STM32F1 libraries\MySensors\hal\architecture\ST
 
 /* #endregion */
 
+/* #region Class definition */
+
 class StateTime
 {
 private:
@@ -138,12 +145,9 @@ public:
     return changed;
   }
 };
+/* #endregion */
 
-#include <MySensors.h>
-#include <24C32.h>
-#include <Wire.h>
 /* #region  global variable */
-
 EE EEPROM24C32;
 MyMessage mMessage;
 StateChangeManager SCM;
@@ -177,7 +181,7 @@ uint8_t channel4Level = DEFAULT_CH4;
 // unsigned long lastMessageRevice;
 /* #endregion */
 
-/* #region  Power Optimalization */
+/* #region  Power Optimization */
 
 /**
  * @brief  System Clock Configuration Reduced with big peripheral reduction
@@ -267,19 +271,8 @@ void setAllPinsAnalog(void)
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 }
 
-/* #endregion  Power Optimalization */
-
-// HAL_Init();
-//   SystemClock_Config();
-//   MX_GPIO_Init();
-//   MX_I2C3_Init();
-//   MX_SPI1_Init();
-//   MX_USART1_UART_Init();
-
-void before()
+void disableClocks()
 {
-  setAllPinsAnalog();
-
   __HAL_RCC_GPIOA_CLK_DISABLE();
   __HAL_RCC_GPIOB_CLK_DISABLE();
   __HAL_RCC_GPIOC_CLK_DISABLE();
@@ -305,6 +298,15 @@ void before()
   __HAL_RCC_LSI_DISABLE();
   __HAL_RCC_PLL_DISABLE();
   __HAL_RCC_RTC_DISABLE();
+}
+
+/* #endregion  Power Optimalization */
+
+/* #region main functions */
+
+void before()
+{
+  setAllPinsAnalog();
 
   Serial2.begin(9600);
   inicjalizePins();
@@ -326,80 +328,6 @@ void loop()
   }
 }
 
-bool isPresentedToController = false;
-void presentation() // MySensors
-{
-  sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
-  presentToControler();
-  isPresentedToController = true;
-}
-
-void receive(const MyMessage &message) // MySensors
-{
-  if (message.isAck())
-    return;
-
-  if (message.sensor == DIMMER_ID && message.type == V_STATUS)
-  {
-    setDeviceEnabledFromControler(message.getBool());
-    return;
-  }
-
-  if (message.sensor == DIMMER_ID && message.type == V_PERCENTAGE)
-  {
-    int val = atoi(message.data);
-    if (val >= 0 && val <= 100)
-    {
-      setLightLevelFromControler(val);
-    }
-    return;
-  }
-
-#if defined(RGBW_MODE)
-  if (message.sensor == RGBW_ID && message.type == V_RGBW)
-  {
-    unsigned long number = (unsigned long)strtoul(message.data, NULL, 16);
-    uint8_t red = unsigned(number >> 24 & 0xFF);
-    uint8_t green = unsigned(number >> 16 & 0xFF);
-    uint8_t blue = unsigned(number >> 8 & 0xFF);
-    uint8_t white = unsigned(number & 0xFF);
-
-#if defined(MY_DEBUG)
-    Serial.println("Otrzymano RGBW.");
-    Serial.print("Decimal: ");
-    Serial.println(number);
-
-    Serial.print("Red: ");
-    Serial.println(red);
-
-    Serial.print("Green: ");
-    Serial.println(green);
-
-    Serial.print("Blue: ");
-    Serial.println(blue);
-
-    Serial.print("White: ");
-    Serial.println(white);
-#endif
-
-    setRGBWvalueFromControler(red, green, blue, white);
-    return;
-  }
-#endif
-
-#if defined(RGB_MODE)
-  if (message.sensor == RGBW_ID && message.type == V_RGB)
-  {
-    unsigned long number = (unsigned long)strtoul(message.data, NULL, 16);
-    uint8_t red = unsigned(number >> 16 & 0xFF);
-    uint8_t green = unsigned(number >> 8 & 0xFF);
-    uint8_t blue = unsigned(number & 0xFF);
-
-    setRGBValueFromControler(red, green, blue);
-    return;
-  }
-#endif
-}
 /* #endregion */
 
 /* #region  inicjalize */
@@ -510,7 +438,83 @@ void setChannelValue(uint8_t channelNo, uint8_t value)
 }
 /* #endregion */
 
-/* #region  present to controler */
+/* #region  mysensors */
+
+bool isPresentedToController = false;
+void presentation() // MySensors
+{
+  sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
+  presentToControler();
+  isPresentedToController = true;
+}
+
+void receive(const MyMessage &message) // MySensors
+{
+  if (message.isAck())
+    return;
+
+  if (message.sensor == DIMMER_ID && message.type == V_STATUS)
+  {
+    setDeviceEnabledFromControler(message.getBool());
+    return;
+  }
+
+  if (message.sensor == DIMMER_ID && message.type == V_PERCENTAGE)
+  {
+    int val = atoi(message.data);
+    if (val >= 0 && val <= 100)
+    {
+      setLightLevelFromControler(val);
+    }
+    return;
+  }
+
+#if defined(RGBW_MODE)
+  if (message.sensor == RGBW_ID && message.type == V_RGBW)
+  {
+    unsigned long number = (unsigned long)strtoul(message.data, NULL, 16);
+    uint8_t red = unsigned(number >> 24 & 0xFF);
+    uint8_t green = unsigned(number >> 16 & 0xFF);
+    uint8_t blue = unsigned(number >> 8 & 0xFF);
+    uint8_t white = unsigned(number & 0xFF);
+
+#if defined(MY_DEBUG)
+    Serial.println("Otrzymano RGBW.");
+    Serial.print("Decimal: ");
+    Serial.println(number);
+
+    Serial.print("Red: ");
+    Serial.println(red);
+
+    Serial.print("Green: ");
+    Serial.println(green);
+
+    Serial.print("Blue: ");
+    Serial.println(blue);
+
+    Serial.print("White: ");
+    Serial.println(white);
+#endif
+
+    setRGBWvalueFromControler(red, green, blue, white);
+    return;
+  }
+#endif
+
+#if defined(RGB_MODE)
+  if (message.sensor == RGBW_ID && message.type == V_RGB)
+  {
+    unsigned long number = (unsigned long)strtoul(message.data, NULL, 16);
+    uint8_t red = unsigned(number >> 16 & 0xFF);
+    uint8_t green = unsigned(number >> 8 & 0xFF);
+    uint8_t blue = unsigned(number & 0xFF);
+
+    setRGBValueFromControler(red, green, blue);
+    return;
+  }
+#endif
+}
+
 void presentToControler()
 {
 #if defined(SINGLE_LED_MODE)
