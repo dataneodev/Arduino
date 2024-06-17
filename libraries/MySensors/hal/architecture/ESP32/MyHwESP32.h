@@ -96,7 +96,7 @@ ssize_t hwGetentropy(void *__buffer, size_t __length);
 */
 static __inline__ void __psRestore(const uint32_t *__s)
 {
-	XTOS_RESTORE_INTLEVEL(*__s);
+	//XTOS_RESTORE_INTLEVEL(*__s);
 }
 
 #ifndef DOXYGEN

@@ -91,6 +91,8 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #define MS_TEMP_ID 25
 #define MS_MIN_RSSI_ID 26
 #define MY_NODE_ID 95  // id wezła dla my sensors
+#define MS_SEND_TIMEOUT 10 * 1000
+#define WAIT_TIME_FOR_MS_MESSAGE_BEFORE_SLEEP 40
 #pragma endregion MY_SENSORS_CONFIGURATION
 
 #pragma region TYPES
@@ -296,6 +298,10 @@ BLEScanner ScannerGK(&EEStorage);
 
 DoorManager Door(OPEN_DOOR_PIN, CLOSE_DOOR_PIN);
 StateTime T;
+StateTime MessageReceiveTime;
+StateTime MessageSentTime;
+bool messageSent = true;
+
 MotionDetect M1(MOTION_SENSOR_1_PIN, MOTION_1_DELAY, MOTION_1_DELAY_WAIT);
 MotionDetect M2(MOTION_SENSOR_2_PIN, MOTION_2_DELAY, MOTION_2_DELAY_WAIT);
 MotionDetect M3(MOTION_SENSOR_3_PIN, 5 * 1000, 1);
@@ -519,7 +525,7 @@ void s_OPENING_DOOR() {
     setLightOn();
 
     EEStorage.setDoorOpen(true);
-     sentDoorOpen();
+    sentDoorOpen();
   }
 }
 
@@ -548,7 +554,7 @@ void s_DOOR_OPEN() {
       setLightOn();
     } else {
       setLightOff();
-    }   
+    }
   }
 }
 
@@ -743,7 +749,7 @@ bool T_S_SLEEP_S_START_MOTION_DETECTION() {
     return false;
   }
 
-  return T.isElapsed(25) && M1.getPinState() == LOW && M2.getPinState() == LOW;
+  return T.isElapsed(5) && M1.getPinState() == LOW && M2.getPinState() == LOW;
 }
 
 bool T_S_SLEEP_S_DOOR_OPEN() {
@@ -775,7 +781,7 @@ bool S_ONE_MOTION_DETECTIONN_S_MOTION_DETECTED() {
 }
 
 bool T_S_MOTION_DETECTION_S_SLEEP() {
-  if (!T.isElapsed(TIME_SLEEP_AFTER_LAST_DETECTION)) {
+  if (!T.isElapsed(WAIT_TIME_FOR_MS_MESSAGE_BEFORE_SLEEP)) {
     return false;
   }
 
@@ -796,6 +802,14 @@ bool T_S_MOTION_DETECTION_S_SLEEP() {
   }
 
   if (millis() < TIME_SLEEP_AFTER_START) {
+    return false;
+  }
+
+  if (!MessageReceiveTime.isElapsed(TIME_SLEEP_AFTER_LAST_DETECTION)) {
+    return false;
+  }
+
+  if (!messageSent && !MessageSentTime.isElapsed(MS_SEND_TIMEOUT)) {
     return false;
   }
 
@@ -907,7 +921,7 @@ bool T_S_DOOR_OPEN_S_SLEEP() {
     return false;
   }
 
-  if (!T.isElapsed(TIME_SLEEP_AFTER_LAST_DETECTION)) {
+  if (!T.isElapsed(WAIT_TIME_FOR_MS_MESSAGE_BEFORE_SLEEP)) {
     return false;
   }
 
@@ -928,6 +942,14 @@ bool T_S_DOOR_OPEN_S_SLEEP() {
   }
 
   if (millis() < TIME_SLEEP_AFTER_START) {
+    return false;
+  }
+
+  if (!MessageReceiveTime.isElapsed(TIME_SLEEP_AFTER_LAST_DETECTION)) {
+    return false;
+  }
+
+  if (!messageSent && !MessageSentTime.isElapsed(MS_SEND_TIMEOUT)) {
     return false;
   }
 
@@ -1073,6 +1095,9 @@ void presentBleDevices() {
 }
 
 void sentMyDoorAlwaysOpenStatus() {
+  MessageSentTime.stateStart();
+  messageSent = false;
+
 #if defined(DEBUG_GK)
   Serial.print("sentMyDoorAlwaysOpenStatus");
   Serial.println(EEStorage.isDoorAlwaysOpen() ? "1" : "0");
@@ -1081,9 +1106,14 @@ void sentMyDoorAlwaysOpenStatus() {
   mMessage.setType(V_STATUS);
   mMessage.setSensor(MS_OPEN_DOOR_ID);
   send(mMessage.set(EEStorage.isDoorAlwaysOpen() ? "1" : "0"));
+
+  messageSent = true;
 }
 
 void sentMyDoorAlwaysCloseStatus() {
+  MessageSentTime.stateStart();
+  messageSent = false;
+
 #if defined(DEBUG_GK)
   Serial.print("sentMyDoorAlwaysCloseStatus");
   Serial.println(EEStorage.isDoorAlwaysClose() ? "1" : "0");
@@ -1092,9 +1122,14 @@ void sentMyDoorAlwaysCloseStatus() {
   mMessage.setType(V_STATUS);
   mMessage.setSensor(MS_CLOSE_DOOR_ID);
   send(mMessage.set(EEStorage.isDoorAlwaysClose() ? "1" : "0"));
+
+  messageSent = true;
 }
 
 void sentMyBleAuthStatus() {
+  MessageSentTime.stateStart();
+  messageSent = false;
+
   bool useAuth = EEStorage.isAuth();
 
 #if defined(DEBUG_GK)
@@ -1105,9 +1140,14 @@ void sentMyBleAuthStatus() {
   mMessage.setType(V_STATUS);
   mMessage.setSensor(MS_AUTH_BLE_ID);
   send(mMessage.set(useAuth ? "1" : "0"));
+
+  messageSent = true;
 }
 
 void sentLightStatus() {
+  MessageSentTime.stateStart();
+  messageSent = false;
+
   bool useLight = EEStorage.useLight();
 
 #if defined(DEBUG_GK)
@@ -1118,10 +1158,14 @@ void sentLightStatus() {
   mMessage.setType(V_STATUS);
   mMessage.setSensor(MS_LIGHT_ID);
   send(mMessage.set(useLight ? "1" : "0"));
-} 
+
+  messageSent = true;
+}
 
 void sentTempStatus() {
-  
+  MessageSentTime.stateStart();
+  messageSent = false;
+
   temperature_sensor_enable(temp_sensor);
 
   float tsens_value;
@@ -1137,9 +1181,14 @@ void sentTempStatus() {
   mMessage.setType(V_TEMP);
   mMessage.setSensor(MS_TEMP_ID);
   send(mMessage.set(tsens_value, 1));
+
+  messageSent = true;
 }
 
 void sentMyDoorOpenCount() {
+  MessageSentTime.stateStart();
+  messageSent = false;
+
 #if defined(DEBUG_GK)
   Serial.print("sentMyDoorOpenCount");
   Serial.println(EEStorage.getDoorOpenCount());
@@ -1150,6 +1199,8 @@ void sentMyDoorOpenCount() {
   mMessage.setType(V_TEXT);
   mMessage.setSensor(MS_OPEN_DOOR_COUNT_ID);
   send(mMessage.set(openCount));
+
+  messageSent = true;
 }
 
 void sentMyAllClientOpenDoorDefaultStatus() {
@@ -1178,6 +1229,9 @@ void sentMyClientOpenDoorStatus(int clientId, bool status) {
 }
 
 void sentMyClientOpenDoorStatusMy(int clientId, bool status) {
+  MessageSentTime.stateStart();
+  messageSent = false;
+
 #if defined(DEBUG_GK)
   Serial.println("sentMyClientOpenDoorStatus");
 
@@ -1191,6 +1245,8 @@ void sentMyClientOpenDoorStatusMy(int clientId, bool status) {
   mMessage.setType(V_STATUS);
   mMessage.setSensor(clientId);
   send(mMessage.set(status ? "1" : "0"));
+
+  messageSent = true;
 }
 
 int lastOpenClientId = 0;
@@ -1212,6 +1268,9 @@ void sentDoorClose() {
 }
 
 void sentMinRssi() {
+  MessageSentTime.stateStart();
+  messageSent = false;
+
 #if defined(DEBUG_GK)
   Serial.print("sentMinRssi");
   Serial.println(EEStorage.getMinRSSI());
@@ -1222,6 +1281,8 @@ void sentMinRssi() {
   mMessage.setType(V_TEXT);
   mMessage.setSensor(MS_MIN_RSSI_ID);
   send(mMessage.set(minRSSI));
+
+  messageSent = true;
 }
 
 void sendAllMySensorsStatus() {
@@ -1291,6 +1352,8 @@ void setup() {
 
   defineTransition();
   setDefaultState();
+
+  MessageReceiveTime.stateStart();
 }
 
 void loop() {
@@ -1310,6 +1373,8 @@ void loop() {
 }
 
 void receive(const MyMessage &message) {
+  MessageReceiveTime.stateStart();
+
   if (message.isAck())
     return;
 
