@@ -925,6 +925,14 @@ bool T_S_DOOR_OPEN_S_SLEEP() {
     return false;
   }
 
+   if (!messageSent && !MessageSentTime.isElapsed(MS_SEND_TIMEOUT)) {
+    return false;
+  }
+  
+  if (!MessageReceiveTime.isElapsed(TIME_SLEEP_AFTER_LAST_DETECTION)) {
+    return false;
+  }
+
   if (M1.ping() != NO_MOTION) {
     return false;
   }
@@ -942,14 +950,6 @@ bool T_S_DOOR_OPEN_S_SLEEP() {
   }
 
   if (millis() < TIME_SLEEP_AFTER_START) {
-    return false;
-  }
-
-  if (!MessageReceiveTime.isElapsed(TIME_SLEEP_AFTER_LAST_DETECTION)) {
-    return false;
-  }
-
-  if (!messageSent && !MessageSentTime.isElapsed(MS_SEND_TIMEOUT)) {
     return false;
   }
 

@@ -37,13 +37,8 @@ Dodatek do VS Code #region folding for VS Code
 #define MAX_LIGHT_LEVEL 100   // maksymalna jasnosc
 #define STARTUP_LIGHT_LEVEL 5 // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
 
-/* #region Imports */
 
-#include <MySensors.h>
-#include <24C32.h>
-#include <Wire.h>
 
-/* #endregion */
 
 /* #region  const configuration */
 // MY SENSORS
@@ -96,6 +91,15 @@ Dodatek do VS Code #region folding for VS Code
 #define IN_2 PB0
 #define IN_3 PA5
 #define IN_4 PA4
+
+/* #endregion */
+
+/* #region Imports */
+
+
+#include <MySensors.h>
+#include <24C32.h>
+#include <Wire.h>
 
 /* #endregion */
 
@@ -532,7 +536,7 @@ void presentToControler()
 
 void sendEnabledStatus()
 {
-  mMessage.setSensor(DIMMER_ID);
+  mMessage.setSensor(DIMMER_ID_1);
   mMessage.setType(V_STATUS);
   send(mMessage.set(deviceEnabled));
 }
