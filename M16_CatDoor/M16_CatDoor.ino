@@ -5,6 +5,8 @@
 
 #include "esp_random.h"  //brakuje w plikach mysensors dla esp32, sprawdzicz y mozna usunąć w nowych wersjach
 /*
+Dodać link w ustawieniach additional boards manager urls: https://espressif.github.io/arduino-esp32/package_esp32_dev_index.json
+Płytka: ESP32C6 Dev Module
 
 dla ESP32-C6 zakomentować w pliku:
 C:\Users\Smith\Documents\Arduino\libraries\MySensors\hal\architecture\ESP32\MyHwESP32.h
@@ -24,7 +26,7 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #define OPEN_CLOSE_SOUND           // sygnał dzwiekowy przy otwarciu/zamknieciu drzwi
 #define OUT_2_ENABLED              // czy są 2 diodu - OUT1 -zielona, OUT2 - czerwona
 #define USE_M1_M2_ON_DOOR_CLOSING  // czy wykrycie ruchy przez m1 i m2 także przerywa zamykanie drzwi
-#define USE_M3_ON_DOOR_CLOSING     // czy wykrycie ruchy przez czujnik na sterowniku przerywa zamykanie drzwi
+//#define USE_M3_ON_DOOR_CLOSING     // czy wykrycie ruchy przez czujnik na sterowniku przerywa zamykanie drzwi
 
 #define MOTION_1_DELAY 5 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a kolejnym wykryciem uruchamiajacym otwarcie drzwi dla sensoru 1,
 #define MOTION_1_DELAY_WAIT 4 * 1000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 1,
