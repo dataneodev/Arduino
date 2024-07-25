@@ -29,30 +29,30 @@ Dodatek do VS Code #region folding for VS Code
 // #define NODE_1_RGB
 
 #define NODE_1_SINGLE
-#define NODE_1_MIN_LIGHT_LEVEL 5     // minimalna jasnosc
-#define NODE_1_MAX_LIGHT_LEVEL 100   // maksymalna jasnosc
-#define NODE_1_STARTUP_LIGHT_LEVEL 5 // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
+#define NODE_1_MIN_LIGHT_LEVEL 5      // minimalna jasnosc
+#define NODE_1_MAX_LIGHT_LEVEL 100    // maksymalna jasnosc
+#define NODE_1_STARTUP_LIGHT_LEVEL 5  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
 
-#if !defined NODE_1_RGBW && !defined NODE_1_RGB 
-   #define NODE_2_SINGLE
-   #define NODE_2_MIN_LIGHT_LEVEL 5     // minimalna jasnosc
-   #define NODE_2_MAX_LIGHT_LEVEL 100   // maksymalna jasnosc
-   #define NODE_2_STARTUP_LIGHT_LEVEL 5 // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
-#endif 
+#if !defined NODE_1_RGBW && !defined NODE_1_RGB
+#define NODE_2_SINGLE
+#define NODE_2_MIN_LIGHT_LEVEL 5      // minimalna jasnosc
+#define NODE_2_MAX_LIGHT_LEVEL 100    // maksymalna jasnosc
+#define NODE_2_STARTUP_LIGHT_LEVEL 5  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
+#endif
 
-#if !defined NODE_1_RGBW && !defined NODE_1_RGB 
-   #define NODE_3_SINGLE
-   #define NODE_3_MIN_LIGHT_LEVEL 5     // minimalna jasnosc
-   #define NODE_3_MAX_LIGHT_LEVEL 100   // maksymalna jasnosc
-   #define NODE_3_STARTUP_LIGHT_LEVEL 5 // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
-#endif 
+#if !defined NODE_1_RGBW && !defined NODE_1_RGB
+#define NODE_3_SINGLE
+#define NODE_3_MIN_LIGHT_LEVEL 5      // minimalna jasnosc
+#define NODE_3_MAX_LIGHT_LEVEL 100    // maksymalna jasnosc
+#define NODE_3_STARTUP_LIGHT_LEVEL 5  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
+#endif
 
 #if !defined NODE_1_RGBW
-   #define NODE_4_SINGLE
-   #define NODE_4_MIN_LIGHT_LEVEL 5     // minimalna jasnosc
-   #define NODE_4_MAX_LIGHT_LEVEL 100   // maksymalna jasnosc
-   #define NODE_4_STARTUP_LIGHT_LEVEL 5 // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
-#endif 
+#define NODE_4_SINGLE
+#define NODE_4_MIN_LIGHT_LEVEL 5      // minimalna jasnosc
+#define NODE_4_MAX_LIGHT_LEVEL 100    // maksymalna jasnosc
+#define NODE_4_STARTUP_LIGHT_LEVEL 5  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
+#endif
 
 /* #endregion  user configuration */
 
@@ -72,23 +72,23 @@ Dodatek do VS Code #region folding for VS Code
 #define SKETCH_NAME "RGB_LED_DRIVER"
 #endif
 
-#define MY_NODE_ID 60 // id węzła my sensors - każdy sterownik musi miec inny numer
+#define MY_NODE_ID 60  // id węzła my sensors - każdy sterownik musi miec inny numer
 
-#if defined NODE_1_RGBW || defined NODE_1_RGB 
+#if defined NODE_1_RGBW || defined NODE_1_RGB
 #define RGBW_ID 1
 #endif
 
 #if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
 #define DIMMER_ID_1 1
-#endif 
+#endif
 
 #if defined NODE_2_SINGLE
 #define DIMMER_ID_2 2
-#endif 
+#endif
 
 #if defined NODE_3_SINGLE
 #define DIMMER_ID_3 3
-#endif 
+#endif
 
 #if defined NODE_4_SINGLE
 #define DIMMER_ID_4 4
@@ -96,11 +96,11 @@ Dodatek do VS Code #region folding for VS Code
 
 // RS485
 #define ARDUINO_ARCH_STM32F1
-#define MY_DISABLED_SERIAL        // manual configure Serial1
-#define MY_RS485                  // Enable RS485 transport layer
-#define MY_RS485_DE_PIN PA1       // Define this to enables DE-pin management on defined pin
-#define MY_RS485_BAUD_RATE 9600   // Set RS485 baud rate to use
-#define MY_RS485_HWSERIAL Serial2 //
+#define MY_DISABLED_SERIAL         // manual configure Serial1
+#define MY_RS485                   // Enable RS485 transport layer
+#define MY_RS485_DE_PIN PA1        // Define this to enables DE-pin management on defined pin
+#define MY_RS485_BAUD_RATE 9600    // Set RS485 baud rate to use
+#define MY_RS485_HWSERIAL Serial2  //
 #define MY_RS485_SOH_COUNT 6
 #define MY_TRANSPORT_WAIT_READY_MS 1
 
@@ -136,29 +136,24 @@ Dodatek do VS Code #region folding for VS Code
 
 /* #region Class definition */
 
-class StateTime
-{
+class StateTime {
 private:
   unsigned long startState;
 
 public:
-  void stateStart()
-  {
+  void stateStart() {
     startState = millis();
   }
 
-  bool isElapsed(unsigned long elapsed)
-  {
+  bool isElapsed(unsigned long elapsed) {
     unsigned long current = millis();
 
-    if (startState > current)
-    {
+    if (startState > current) {
       startState = current;
       return false;
     }
 
-    if (startState + elapsed < current)
-    {
+    if (startState + elapsed < current) {
       return true;
     }
 
@@ -166,14 +161,12 @@ public:
   }
 };
 
-class StateChangeManager
-{
+class StateChangeManager {
 private:
   bool _states[10];
 
 public:
-  bool isStateChanged(bool state, int index)
-  {
+  bool isStateChanged(bool state, int index) {
     bool changed = _states[index] != state;
     _states[index] = state;
 
@@ -183,39 +176,38 @@ public:
 /* #endregion */
 
 /* #region  global variable */
-EE EEPROM24C32;
 MyMessage mMessage;
 StateChangeManager SCM;
 
 #if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
 bool node1Enabled = false;
-uint8_t node1LightLevel = 50; // 0 -100
-#endif 
+uint8_t node1LightLevel = 50;  // 0 -100
+#endif
 
 #if defined NODE_1_RGBW
-uint8_t node1WhiteChannel = 125; 
-#endif 
+uint8_t node1WhiteChannel = 125;
+#endif
 
 #if defined NODE_1_RGBW || defined NODE_1_RGB
 uint8_t node1RedChannel = 30;
 uint8_t node1GreenChannel = 180;
 uint8_t node1BlueChannel = 30;
-#endif 
+#endif
 
 #if defined NODE_2_SINGLE
 bool node2Enabled = false;
-uint8_t node2LightLevel = 50; // 0 -100
-#endif 
+uint8_t node2LightLevel = 50;  // 0 -100
+#endif
 
 #if defined NODE_3_SINGLE
 bool node3Enabled = false;
-uint8_t node3LightLevel = 50; // 0 -100
-#endif 
+uint8_t node3LightLevel = 50;  // 0 -100
+#endif
 
 #if defined NODE_4_SINGLE
 bool node4Enabled = false;
-uint8_t node4DeviceLightLevel = 50; // 0 -100
-#endif 
+uint8_t node4DeviceLightLevel = 50;  // 0 -100
+#endif
 /* #endregion */
 
 /* #region  Power Optimization */
@@ -237,11 +229,10 @@ uint8_t node4DeviceLightLevel = 50; // 0 -100
  * @param  None
  * @retval None
  */
-extern "C" void SystemClock_Config(void)
-{
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+extern "C" void SystemClock_Config(void) {
+  RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = { 0 };
 
   /** Initializes the RCC Oscillators according to the specified parameters
    * in the RCC_OscInitTypeDef structure.
@@ -254,8 +245,7 @@ extern "C" void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL12;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
     Error_Handler();
   }
 
@@ -267,22 +257,19 @@ extern "C" void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
-  {
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
     Error_Handler();
   }
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC | RCC_PERIPHCLK_USB;
   PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
   PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
-  {
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {
     Error_Handler();
   }
 }
 
-void setAllPinsAnalog(void)
-{
-  GPIO_InitTypeDef GPIO_InitStruct = {0, 0, 0, 0};
+void setAllPinsAnalog(void) {
+  GPIO_InitTypeDef GPIO_InitStruct = { 0, 0, 0, 0 };
 
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
@@ -308,8 +295,7 @@ void setAllPinsAnalog(void)
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 }
 
-void disableClocks()
-{
+void disableClocks() {
   __HAL_RCC_GPIOA_CLK_DISABLE();
   __HAL_RCC_GPIOB_CLK_DISABLE();
   __HAL_RCC_GPIOC_CLK_DISABLE();
@@ -342,8 +328,7 @@ void disableClocks()
 
 
 /* #region  inicjalize */
-void inicjalizePins()
-{
+void inicjalizePins() {
   // PWM
   digitalWrite(PWM_1, LOW);
   pinMode(PWM_1, OUTPUT);
@@ -373,8 +358,7 @@ void inicjalizePins()
   pinMode(IN_4, INPUT);
 }
 
-void inicjalizeI2C()
-{
+void inicjalizeI2C() {
   Wire.setSDA(SDA_PIN);
   Wire.setSCL(SCL_PIN);
   Wire.begin();
@@ -387,47 +371,44 @@ void inicjalizeI2C()
 #define CHECK_NUMBER 0x65
 #define TRUE_BYTE 0X05
 
-void readSettingFromEPPROM()
-{
-  if (EEPROM24C32.readByte(50) != CHECK_NUMBER)
-  {
+void readSettingFromEPPROM() {
+  if (EEPROM24C32.readByte(50) != CHECK_NUMBER) {
     saveDefaultSettingToEPPROM();
     return;
   }
 
 #if defined NODE_1_RGBW
   node1WhiteChannel = EEPROM24C32.readByte(501);
- #endif 
- 
- #if defined NODE_1_RGBW || defined NODE_1_RGB 
+#endif
+
+#if defined NODE_1_RGBW || defined NODE_1_RGB
   node1RedChannel = EEPROM24C32.readByte(502);
   node1GreenChannel = EEPROM24C32.readByte(503);
   node1BlueChannel = EEPROM24C32.readByte(504);
- #endif 
+#endif
 
 #if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
   node1Enabled = EEPROM24C32.readByte(100) == TRUE_BYTE;
   node1LightLevel = EEPROM24C32.readByte(101);
-#endif 
+#endif
 
 #if defined NODE_2_SINGLE
   node2Enabled = EEPROM24C32.readByte(200) == TRUE_BYTE;
   node2LightLevel = EEPROM24C32.readByte(201);
-#endif 
+#endif
 
 #if defined NODE_3_SINGLE
   node3Enabled = EEPROM24C32.readByte(300) == TRUE_BYTE;
   node3LightLevel = EEPROM24C32.readByte(301);
-#endif 
+#endif
 
 #if defined NODE_4_SINGLE
   node4Enabled = EEPROM24C32.readByte(400) == TRUE_BYTE;
   node4LightLevel = EEPROM24C32.readByte(401);
- #endif 
+#endif
 }
 
-void saveDefaultSettingToEPPROM()
-{
+void saveDefaultSettingToEPPROM() {
 #if defined(MY_DEBUG)
   Serial.println("Zapisuje domyslne ustawienia");
 #endif
@@ -437,112 +418,114 @@ void saveDefaultSettingToEPPROM()
 #if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
   saveNode1EnableToEPPROM(node1Enabled);
   setNode1LightLevelToEPPROM(node1LightLevel);
-#endif 
+#endif
 
 #if defined NODE_1_RGBW
-    setNode1WhiteChannel( node1WhiteChannel);
-#endif 
+  setNode1WhiteChannel(node1WhiteChannel);
+#endif
 
 #if defined NODE_1_RGBW || defined NODE_1_RGB
   setNode1RGBValues(node1RedChannel, node1GreenChannel, node1BlueChannel);
-#endif 
+#endif
 
 #if defined NODE_2_SINGLE
   saveNode2EnableToEPPROM(node2Enabled);
   setNode2LightLevelToEPPROM(node2LightLevel);
-#endif 
+#endif
 
 #if defined NODE_3_SINGLE
   saveNode3EnableToEPPROM(node3Enabled);
   setNode3LightLevelToEPPROM(node3LightLevel);
-#endif 
+#endif
 
 #if defined NODE_4_SINGLE
   saveNode4EnableToEPPROM(node4Enabled);
   setNode4LightLevelToEPPROM(node4LightLevel);
-  #endif 
+#endif
 }
 
 #if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
-void saveNode1EnableToEPPROM(bool deviceEabled)
-{
-  EEPROM24C32.writeByte(100, deviceEabled ? TRUE_BYTE : 0x06, false, false);
+void saveNode1EnableToEPPROM(bool enabled) {
+  node1Enabled= enabled;
+  EEPROM24C32.writeByte(100, enabled ? TRUE_BYTE : 0x06, false, false);
 }
 
-void setNode1LightLevelToEPPROM(uint8_t lightLevel)
-{
+void setNode1LightLevelToEPPROM(uint8_t lightLevel) {
+  node1LightLevel = lightLevel;
   EEPROM24C32.writeByte(101, lightLevel, false, false);
 }
-#endif 
+#endif
 
 #if defined NODE_1_RGBW
-void setNode1WhiteChannel(uint8_t value)
-{
+void setNode1WhiteChannel(uint8_t value) {
+  node1WhiteChannel = value;
   EEPROM24C32.writeByte(501, value, false, false);
 }
 #endif
 
 #if defined NODE_1_RGBW || defined NODE_1_RGB
-void setNode1RGBValues(uint8_t red, uint8_t green, uint8_t blue)
-{
+void setNode1RGBValues(uint8_t red, uint8_t green, uint8_t blue) {
+
+  node1RedChannel = red;
+  node1GreenChannel = green;
+  node1BlueChannel = blue;
+
   EEPROM24C32.writeByte(502, red, false, false);
   EEPROM24C32.writeByte(503, green, false, false);
   EEPROM24C32.writeByte(504, blue, false, false);
 }
-#endif 
+#endif
 
 #if defined NODE_2_SINGLE
-void saveNode2EnableToEPPROM(bool deviceEabled)
-{
-  EEPROM24C32.writeByte(200, deviceEabled ? TRUE_BYTE : 0x07, false, false);
+void saveNode2EnableToEPPROM(bool enabled) {
+  node2Enabled = enabled;
+  EEPROM24C32.writeByte(200, enabled ? TRUE_BYTE : 0x07, false, false);
 }
 
-void setNode2LightLevelToEPPROM(uint8_t lightLevel)
-{
+void setNode2LightLevelToEPPROM(uint8_t lightLevel) {
+  node2LightLevel = lightLevel;
   EEPROM24C32.writeByte(201, lightLevel, false, false);
 }
-#endif 
+#endif
 
 #if defined NODE_3_SINGLE
-void saveNode3EnableToEPPROM(bool deviceEabled)
-{
+void saveNode3EnableToEPPROM(bool enabled) {
+  node3Enabled = enabled;
   EEPROM24C32.writeByte(300, deviceEabled ? TRUE_BYTE : 0x08, false, false);
 }
 
-void setNode3LightLevelToEPPROM(uint8_t lightLevel)
-{
+void setNode3LightLevelToEPPROM(uint8_t lightLevel) {
+  node3LightLevel = lightLevel;
   EEPROM24C32.writeByte(301, lightLevel, false, false);
 }
-#endif 
+#endif
 
 #if defined NODE_4_SINGLE
-void saveNode4EnableToEPPROM(bool deviceEabled)
-{
-  EEPROM24C32.writeByte(400, deviceEabled ? TRUE_BYTE : 0x09, false, false);
+void saveNode4EnableToEPPROM(bool enabled) {
+  node4Enabled = enabled;
+  EEPROM24C32.writeByte(400, enabled ? TRUE_BYTE : 0x09, false, false);
 }
 
-void setNode4LightLevelToEPPROM(uint8_t lightLevel)
-{
+void setNode4LightLevelToEPPROM(uint8_t lightLevel) {
+  node4LightLevel = lightLevel;
   EEPROM24C32.writeByte(401, lightLevel, false, false);
 }
-#endif 
+#endif
 
 
 /* #endregion */
 
 /* #region  mysensors */
-
 bool isPresentedToController = false;
-void presentation() // MySensors
+void presentation()  // MySensors
 {
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
   presentToControler();
   isPresentedToController = true;
 }
 
-void presentToControler()
-{
-#if defined NODE_1_RGBW || defined NODE_1_RGB || defined NODE_1_SINGLE 
+void presentToControler() {
+#if defined NODE_1_RGBW || defined NODE_1_RGB || defined NODE_1_SINGLE
   present(DIMMER_ID_1, S_DIMMER, "LED dimmer 1");
 #endif
 
@@ -554,43 +537,180 @@ void presentToControler()
   present(RGBW_ID, S_RGB_LIGHT, "RGB controller");
 #endif
 
-#if defined NODE_2_SINGLE 
+#if defined NODE_2_SINGLE
   present(DIMMER_ID_2, S_DIMMER, "LED dimmer 2");
 #endif
 
-#if defined NODE_3_SINGLE 
+#if defined NODE_3_SINGLE
   present(DIMMER_ID_3, S_DIMMER, "LED dimmer 3");
 #endif
 
-#if defined NODE_4_SINGLE 
+#if defined NODE_4_SINGLE
   present(DIMMER_ID_4, S_DIMMER, "LED dimmer 4");
 #endif
 }
 
-void receive(const MyMessage &message) // MySensors
+#if defined NODE_1_RGBW || defined NODE_1_RGB || defined NODE_1_SINGLE
+void sendNode1EnabledStatus() {
+  mMessage.setSensor(DIMMER_ID_1);
+  mMessage.setType(V_STATUS);
+  send(mMessage.set(node1Enabled));
+}
+
+void sendNode1LightLevel() {
+  mMessage.setSensor(DIMMER_ID_1);
+  mMessage.setType(V_PERCENTAGE);
+  send(mMessage.set(node1LightLevel));
+}
+#endif
+
+#if defined NODE_2_SINGLE
+void sendNode2EnabledStatus() {
+  mMessage.setSensor(DIMMER_ID_2);
+  mMessage.setType(V_STATUS);
+  send(mMessage.set(node2Enabled));
+}
+
+void sendNode2LightLevel() {
+  mMessage.setSensor(DIMMER_ID_2);
+  mMessage.setType(V_PERCENTAGE);
+  send(mMessage.set(node2LightLevel));
+}
+#endif
+
+#if defined NODE_3_SINGLE
+void sendNode3EnabledStatus() {
+  mMessage.setSensor(DIMMER_ID_3);
+  mMessage.setType(V_STATUS);
+  send(mMessage.set(node3Enabled));
+}
+
+void sendNode3LightLevel() {
+  mMessage.setSensor(DIMMER_ID_3);
+  mMessage.setType(V_PERCENTAGE);
+  send(mMessage.set(node3LightLevel));
+}
+#endif
+
+#if defined NODE_4_SINGLE
+void sendNode4EnabledStatus() {
+  mMessage.setSensor(DIMMER_ID_4);
+  mMessage.setType(V_STATUS);
+  send(mMessage.set(node4Enabled));
+}
+
+void sendNode4LightLevel() {
+  mMessage.setSensor(DIMMER_ID_4);
+  mMessage.setType(V_PERCENTAGE);
+  send(mMessage.set(node4LightLevel));
+}
+#endif
+
+#if defined(NODE_1_RGBW)
+void sendNode1RGBWColor() {
+  mMessage.setSensor(RGBW_ID);
+  mMessage.setType(V_RGBW);
+
+  char str[8];
+  sprintf(&str[0], "%02x", channel2Level);
+  sprintf(&str[2], "%02x", channel3Level);
+  sprintf(&str[4], "%02x", channel4Level);
+  sprintf(&str[6], "%02x", channel1Level);
+  send(mMessage.set(str));
+}
+#endif
+
+#if defined(NODE_1_RGB)
+void sendNode1RGBColor() {
+  mMessage.setSensor(RGBW_ID);
+  mMessage.setType(V_RGB);
+
+  char str[6];
+  sprintf(&str[0], "%02x", channel1Level);
+  sprintf(&str[2], "%02x", channel2Level);
+  sprintf(&str[4], "%02x", channel3Level);
+  send(mMessage.set(str));
+}
+#endif
+
+void sendAllMySensorsStatus() {
+#if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
+  sendNode1MySensorsAllStatus();
+#endif
+
+#if defined NODE_2_SINGLE
+  sendNode2MySensorsAllStatus()
+#endif
+
+#if defined NODE_3_SINGLE
+  sendNode3MySensorsAllStatus()
+#endif
+
+#if defined NODE_4_SINGLE
+  sendNode4MySensorsAllStatus()
+#endif
+}
+
+#if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
+void sendNode1MySensorsAllStatus() {
+  sendNode1EnabledStatus();
+  sendNode1LightLevel();
+
+#if defined NODE_1_RGBW
+  sendNode1RGBWColor();
+#endif
+
+#if defined NODE_1_RGB
+  sendNode1RGBColor();
+#endif
+}
+#endif
+
+#if defined NODE_2_SINGLE
+void sendNode2MySensorsAllStatus() {
+  sendNode2EnabledStatus();
+  sendNode2LightLevel();
+}
+#endif
+
+#if defined NODE_3_SINGLE
+void sendNode3MySensorsAllStatus() {
+  sendNode3EnabledStatus();
+  sendNode3LightLevel();
+}
+#endif
+
+#if defined NODE_4_SINGLE
+void sendNode4MySensorsAllStatus() {
+  sendNode4EnabledStatus();
+  sendNode4LightLevel();
+}
+#endif
+
+void receive(const MyMessage &message)  // MySensors
 {
   if (message.isAck())
     return;
 
-  if (message.sensor == DIMMER_ID && message.type == V_STATUS)
-  {
-    setDeviceEnabledFromControler(message.getBool());
+#if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
+  if (message.sensor == DIMMER_ID_1 && message.type == V_STATUS) {
+    setNode1EnabledFromControler(message.getBool());
     return;
   }
 
-  if (message.sensor == DIMMER_ID && message.type == V_PERCENTAGE)
-  {
+  if (message.sensor == DIMMER_ID_1 && message.type == V_PERCENTAGE) {
     int val = atoi(message.data);
-    if (val >= 0 && val <= 100)
-    {
-      setLightLevelFromControler(val);
+    if (val < 0 || val > 100) {
+      return;     
     }
+
+    setNode1LightLevelFromControler(val);
     return;
   }
+#endif
 
-#if defined(RGBW_MODE)
-  if (message.sensor == RGBW_ID && message.type == V_RGBW)
-  {
+#if defined(NODE_1_RGBW)
+  if (message.sensor == RGBW_ID && message.type == V_RGBW) {
     unsigned long number = (unsigned long)strtoul(message.data, NULL, 16);
     uint8_t red = unsigned(number >> 24 & 0xFF);
     uint8_t green = unsigned(number >> 16 & 0xFF);
@@ -615,14 +735,13 @@ void receive(const MyMessage &message) // MySensors
     Serial.println(white);
 #endif
 
-    setRGBWvalueFromControler(red, green, blue, white);
+    setRGBWValueFromControler(red, green, blue, white);
     return;
   }
 #endif
 
-#if defined(RGB_MODE)
-  if (message.sensor == RGBW_ID && message.type == V_RGB)
-  {
+#if defined(NODE_1_RGB)
+  if (message.sensor == RGBW_ID && message.type == V_RGB) {
     unsigned long number = (unsigned long)strtoul(message.data, NULL, 16);
     uint8_t red = unsigned(number >> 16 & 0xFF);
     uint8_t green = unsigned(number >> 8 & 0xFF);
@@ -632,220 +751,255 @@ void receive(const MyMessage &message) // MySensors
     return;
   }
 #endif
-}
 
-#if defined NODE_1_RGBW || defined NODE_1_RGB || defined NODE_1_SINGLE 
-void sendNode1EnabledStatus()
-{
-  mMessage.setSensor(DIMMER_ID_1);
-  mMessage.setType(V_STATUS);
-  send(mMessage.set(node1Enabled));
-}
+#if defined NODE_2_SINGLE
+  if (message.sensor == DIMMER_ID_2 && message.type == V_STATUS) {
+    setNode2EnabledFromControler(message.getBool());
+    return;
+  }
 
-void sendNode1LightLevel()
-{
-   mMessage.setSensor(DIMMER_ID_1);
-  mMessage.setType(V_PERCENTAGE);
-  send(mMessage.set(node1LightLevel));
-}
+  if (message.sensor == DIMMER_ID_2 && message.type == V_PERCENTAGE) {
+    int val = atoi(message.data);
+    if (val < 0 || val > 100) {
+      return;     
+    }
+
+    setNode2LightLevelFromControler(val);
+    return;
+  }
 #endif
 
-#if defined NODE_2_SINGLE 
-void sendNode2EnabledStatus()
-{
-  mMessage.setSensor(DIMMER_ID_2);
-  mMessage.setType(V_STATUS);
-  send(mMessage.set(node2Enabled));
-}
+#if defined NODE_3_SINGLE
+  if (message.sensor == DIMMER_ID_3 && message.type == V_STATUS) {
+    setNode3EnabledFromControler(message.getBool());
+    return;
+  }
 
-void sendNode2LightLevel()
-{
-   mMessage.setSensor(DIMMER_ID_2);
-  mMessage.setType(V_PERCENTAGE);
-  send(mMessage.set(node2LightLevel));
-}
+  if (message.sensor == DIMMER_ID_3 && message.type == V_PERCENTAGE) {
+    int val = atoi(message.data);
+    if (val < 0 || val > 100) {
+      return;     
+    }
+
+    setNode3LightLevelFromControler(val);
+    return;
+  }
 #endif
 
-#if defined NODE_3_SINGLE 
-void sendNode3EnabledStatus()
-{
-  mMessage.setSensor(DIMMER_ID_3);
-  mMessage.setType(V_STATUS);
-  send(mMessage.set(node3Enabled));
-}
+#if defined NODE_4_SINGLE
+  if (message.sensor == DIMMER_ID_4 && message.type == V_STATUS) {
+    setNode4EnabledFromControler(message.getBool());
+    return;
+  }
 
-void sendNode3LightLevel()
-{
-   mMessage.setSensor(DIMMER_ID_3);
-  mMessage.setType(V_PERCENTAGE);
-  send(mMessage.set(node3LightLevel));
-}
+  if (message.sensor == DIMMER_ID_4 && message.type == V_PERCENTAGE) {
+    int val = atoi(message.data);
+    if (val < 0 || val > 100) {
+      return;     
+    }
+
+    setNode4LightLevelFromControler(val);
+    return;
+  }
 #endif
-
-#if defined NODE_4_SINGLE 
-void sendNode4EnabledStatus()
-{
-  mMessage.setSensor(DIMMER_ID_4);
-  mMessage.setType(V_STATUS);
-  send(mMessage.set(node4Enabled));
 }
 
-void sendNode4LightLevel()
-{
-   mMessage.setSensor(DIMMER_ID_4);
-  mMessage.setType(V_PERCENTAGE);
-  send(mMessage.set(node4LightLevel));
+#if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
+void setNode1EnabledFromControler(bool enabled) {
+
+  saveNode1EnableToEPPROM(enabled);
+
+  if (enabled && node1LightLevel < NODE_1_MIN_LIGHT_LEVEL) {
+    setNode1LightLevelToEPPROM(NODE_1_STARTUP_LIGHT_LEVEL);
+  }
+
+  updatePWM();
+
+  if (node1Enabled) {
+    sendNode1MySensorsAllStatus();
+  } else{
+   sendNode1EnabledStatus();
+  }
+}
+
+void setNode1LightLevelFromControler(uint8_t lightLevel) {
+  setNode1LightLevelToEPPROM(lightLevel);
+
+  bool sendAllVars = false;
+  if (lightLevel < NODE_1_MIN_LIGHT_LEVEL && node1Enabled) {
+    saveNode1EnableToEPPROM(false);
+    sendAllVars = true;
+  }
+
+  if (lightLevel >= NODE_1_MIN_LIGHT_LEVEL && !node1Enabled) {
+    saveNode1EnableToEPPROM(true);
+    sendAllVars = true;
+  }
+
+  updatePWM();
+
+  if(sendAllVars){
+    sendNode1MySensorsAllStatus();
+  }else{
+    sendNode1LightLevel();
+  }
 }
 #endif
 
 #if defined(NODE_1_RGBW)
-void sendNode1RGBWColor()
-{
-  mMessage.setSensor(RGBW_ID);
-  mMessage.setType(V_RGBW);
+void setRGBWValueFromControler(uint8_t red, uint8_t green, uint8_t blue, uint8_t white) {
+  
+  setNode1WhiteChannel(white);
+  setNode1RGBValues(red, green,blue );
 
-  char str[8];
-  sprintf(&str[0], "%02x", channel2Level);
-  sprintf(&str[2], "%02x", channel3Level);
-  sprintf(&str[4], "%02x", channel4Level);
-  sprintf(&str[6], "%02x", channel1Level);
-  send(mMessage.set(str));
+  updatePWM();
+
+  sendNode1RGBWColor();
 }
 #endif
 
 #if defined(NODE_1_RGB)
-void sendNode1RGBColor()
-{
-  mMessage.setSensor(RGBW_ID);
-  mMessage.setType(V_RGB);
+void setRGBValueFromControler(uint8_t red, uint8_t green, uint8_t blue) {
+  setNode1RGBValues(red, green,blue );
 
-  char str[6];
-  sprintf(&str[0], "%02x", channel1Level);
-  sprintf(&str[2], "%02x", channel2Level);
-  sprintf(&str[4], "%02x", channel3Level);
-  send(mMessage.set(str));
+  updatePWM();
+
+  sendNode1RGBColor();
 }
 #endif
 
-void sendAllMySensorsStatus()
-{
-  #if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
-  sendNode1EnabledStatus();
-  sendNode1LightLevel();
-#endif 
 
-  #if defined NODE_1_RGBW
-  sendNode1RGBWColor();
-#endif 
+#if defined NODE_2_SINGLE
+void setNode2EnabledFromControler(bool enabled) {
 
-    #if defined NODE_1_RGB
- sendNode1RGBColor();
-    #endif 
+  saveNode2EnableToEPPROM(enabled);
 
-      #if defined NODE_2_SINGLE
-  sendNode2EnabledStatus();
-  sendNode2LightLevel();
-#endif 
-
- #if defined NODE_3_SINGLE
-  sendNode3EnabledStatus();
-  sendNode3LightLevel();
-#endif 
-
- #if defined NODE_4_SINGLE
-  sendNode4EnabledStatus();
-  sendNode4LightLevel();
-#endif 
-}
-
-
-void setDeviceEnabledFromControler(bool deviceEnbledToSet)
-{
-  node1Enabled = deviceEnbledToSet;
-
-  saveNode1EnableToEPPROM(node1Enabled);
-
-  if (node1Enabled && node1LightLevel == 0)
-  {
-    setLightLevelFromControler(STARTUP_LIGHT_LEVEL);
-    sendAllMySensorsStatus();
-    return;
+  if (enabled && node2LightLevel < NODE_2_MIN_LIGHT_LEVEL) {
+    setNode2LightLevelToEPPROM(NODE_2_STARTUP_LIGHT_LEVEL);
   }
 
-  calculate();
-  if (node1Enabled)
-  {
-    sendAllMySensorsStatus();
-  }
-  else
-  {
-    sendNode1EnabledStatus();
+  updatePWM();
+
+  if (enabled) {
+    sendNode2MySensorsAllStatus();
+  } else{
+   sendNode2EnabledStatus();
   }
 }
 
-void setLightLevelFromControler(uint8_t lightLevel)
-{
-  node1LightLevel = lightLevel; // 0 -100
+void setNode2LightLevelFromControler(uint8_t lightLevel) {
+  setNode2LightLevelToEPPROM(lightLevel);
 
-  setNode1LightLevelToEPPROM(node1LightLevel);
-
-  if (node1LightLevel == 0 && node1Enabled)
-  {
-    setDeviceEnabledFromControler(false);
-    sendNode1EnabledStatus();
-    return;
+  bool sendAllVars = false;
+  if (lightLevel < NODE_2_MIN_LIGHT_LEVEL && node2Enabled) {
+    saveNode2EnableToEPPROM(false);
+    sendAllVars = true;
   }
 
-  if (node1LightLevel > 0 && !node1Enabled)
-  {
-    setDeviceEnabledFromControler(true);
-    sendNode1EnabledStatus();
-    return;
+  if (lightLevel >= NODE_2_MIN_LIGHT_LEVEL && !node2Enabled) {
+    saveNode2EnableToEPPROM(true);
+    sendAllVars = true;
   }
 
-  calculate();
-  sendNode1LightLevel();
-}
+  updatePWM();
 
-#if defined(RGBW_MODE)
-void setRGBWvalueFromControler(uint8_t red, uint8_t green, uint8_t blue, uint8_t white)
-{
-  channel1Level = white;
-  channel2Level = red;
-  channel3Level = green;
-  channel4Level = blue;
-
-  calculate();
-  sendColor();
-
-  setChannelValue(1, channel1Level);
-  setChannelValue(2, channel2Level);
-  setChannelValue(3, channel3Level);
-  setChannelValue(4, channel4Level);
+  if(sendAllVars){
+    sendNode2MySensorsAllStatus();
+  }else{
+    sendNode2LightLevel();
+  }
 }
 #endif
 
-#if defined(RGB_MODE)
-void setRGBValueFromControler(uint8_t red, uint8_t green, uint8_t blue)
-{
-  channel1Level = red;
-  channel2Level = green;
-  channel3Level = blue;
 
-  calculate();
-  sendColor();
+#if defined NODE_3_SINGLE
+void setNode3EnabledFromControler(bool enabled) {
 
-  setChannelValue(1, channel1Level);
-  setChannelValue(2, channel2Level);
-  setChannelValue(3, channel3Level);
+  saveNode3EnableToEPPROM(enabled);
+
+  if (enabled && node3LightLevel < NODE_3_MIN_LIGHT_LEVEL) {
+    setNode2LightLevelToEPPROM(NODE_3_STARTUP_LIGHT_LEVEL);
+  }
+
+  updatePWM();
+
+  if (enabled) {
+    sendNode3MySensorsAllStatus();
+  } else{
+   sendNode3EnabledStatus();
+  }
+}
+
+void setNode3LightLevelFromControler(uint8_t lightLevel) {
+  setNode3LightLevelToEPPROM(lightLevel);
+
+  bool sendAllVars = false;
+  if (lightLevel < NODE_3_MIN_LIGHT_LEVEL && node3Enabled) {
+    saveNode3EnableToEPPROM(false);
+    sendAllVars = true;
+  }
+
+  if (lightLevel >= NODE_3_MIN_LIGHT_LEVEL && !node3Enabled) {
+    saveNode3EnableToEPPROM(true);
+    sendAllVars = true;
+  }
+
+  updatePWM();
+
+  if(sendAllVars){
+    sendNode3MySensorsAllStatus();
+  }else{
+    sendNode3LightLevel();
+  }
+}
+#endif
+
+
+#if defined NODE_4_SINGLE
+void setNode4EnabledFromControler(bool enabled) {
+
+  saveNode4EnableToEPPROM(enabled);
+
+  if (enabled && node4LightLevel < NODE_4_MIN_LIGHT_LEVEL) {
+    setNode4LightLevelToEPPROM(NODE_4_STARTUP_LIGHT_LEVEL);
+  }
+
+  updatePWM();
+
+  if (enabled) {
+    sendNode4MySensorsAllStatus();
+  } else{
+   sendNode4EnabledStatus();
+  }
+}
+
+void setNode4LightLevelFromControler(uint8_t lightLevel) {
+  setNode4LightLevelToEPPROM(lightLevel);
+
+  bool sendAllVars = false;
+  if (lightLevel < NODE_4_MIN_LIGHT_LEVEL && node4Enabled) {
+    saveNode4EnableToEPPROM(false);
+    sendAllVars = true;
+  }
+
+  if (lightLevel >= NODE_4_MIN_LIGHT_LEVEL && !node4Enabled) {
+    saveNode4EnableToEPPROM(true);
+    sendAllVars = true;
+  }
+
+  updatePWM();
+
+  if(sendAllVars){
+    sendNode4MySensorsAllStatus();
+  }else{
+    sendNode4LightLevel();
+  }
 }
 #endif
 /* #endregion */
 
-void calculate()
-{
-  if (node1Enabled)
-  {
+void updatePWM() {
+  if (node1Enabled) {
     unsigned int duty_1 = getChannel1Duty();
     unsigned int duty_2 = getChannel2Duty();
     unsigned int duty_3 = getChannel3Duty();
@@ -856,34 +1010,27 @@ void calculate()
     //  pwm_set_duty(duty_2, 1);
     //  pwm_set_duty(duty_3, 2);
     //  pwm_set_duty(duty_4, 3);
-    //  pwm_start();
 
     setRelayStatus(duty_1 > 0 || duty_2 > 0 || duty_3 > 0 || duty_4 > 0);
-  }
-  else
-  {
+  } else {
     setRelayStatus(false);
 
     // pwm_set_duty(0, 0);
     // pwm_set_duty(0, 1);
     // pwm_set_duty(0, 2);
     // pwm_set_duty(0, 3);
-    // pwm_start();
   }
 }
 
-void setRelayStatus(bool enabled)
-{
+void setRelayStatus(bool enabled) {
   digitalWrite(RELAY_PIN, enabled ? HIGH : LOW);
 }
 
-unsigned int getChannel1Duty()
-{
+unsigned int getChannel1Duty() {
   return map(node1WhiteChannel * node1LightLevel / 100, 0, 255, MIN_LIGHT_LEVEL, MAX_LIGHT_LEVEL);
 }
 
-unsigned int getChannel2Duty()
-{
+unsigned int getChannel2Duty() {
 #if defined(RGBW_MODE) || defined(RGB_MODE)
   return map(channel2Level * deviceLightLevel / 100, 0, 255, MIN_LIGHT_LEVEL, MAX_LIGHT_LEVEL);
 #endif
@@ -893,8 +1040,7 @@ unsigned int getChannel2Duty()
 #endif
 }
 
-unsigned int getChannel3Duty()
-{
+unsigned int getChannel3Duty() {
 #if defined(RGBW_MODE) || defined(RGB_MODE)
   return map(channel3Level * deviceLightLevel / 100, 0, 255, MIN_LIGHT_LEVEL, MAX_LIGHT_LEVEL);
 #endif
@@ -904,8 +1050,7 @@ unsigned int getChannel3Duty()
 #endif
 }
 
-unsigned int getChannel4Duty()
-{
+unsigned int getChannel4Duty() {
 #if defined(RGBW_MODE)
   return map(channel4Level * deviceLightLevel / 100, 0, 255, MIN_LIGHT_LEVEL, MAX_LIGHT_LEVEL);
 #endif
@@ -913,13 +1058,12 @@ unsigned int getChannel4Duty()
 #if defined(RGB_MODE) || defined(SINGLE_LED_MODE)
   return 0;
 #endif
-
 }
 
 /* #region main functions */
 
-void before()
-{
+void before() {
+
   setAllPinsAnalog();
 
   Serial2.begin(9600);
@@ -928,16 +1072,13 @@ void before()
   readSettingFromEPPROM();
 }
 
-void setup()
-{
+void setup() {
 
-  calculate();
+  updatePWM();
 }
 
-void loop()
-{
-  if (SCM.isStateChanged(isPresentedToController, 0))
-  {
+void loop() {
+  if (SCM.isStateChanged(isPresentedToController, 0)) {
     sendAllMySensorsStatus();
   }
 }
