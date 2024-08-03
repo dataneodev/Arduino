@@ -1064,7 +1064,7 @@ unsigned int getChannel4Duty() {
 
 void before() {
 
-  setAllPinsAnalog();
+  //setAllPinsAnalog();
 
   Serial2.begin(9600);
   inicjalizePins();
