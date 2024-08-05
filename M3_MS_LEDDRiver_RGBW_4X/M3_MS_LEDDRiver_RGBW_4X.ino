@@ -443,11 +443,19 @@ void saveDefaultSettingToEPPROM() {
 
 #if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
 void saveNode1EnableToEPPROM(bool enabled) {
+  if(node1Enabled == enabled){
+    return;
+  }
+
   node1Enabled = enabled;
   EEPROM24C32.writeByte(100, enabled ? TRUE_BYTE : 0x06, false, false);
 }
 
 void setNode1LightLevelToEPPROM(uint8_t lightLevel) {
+  if(node1LightLevel == lightLevel){
+    return;
+  }
+  
   node1LightLevel = lightLevel;
   EEPROM24C32.writeByte(101, lightLevel, false, false);
 }
@@ -455,6 +463,10 @@ void setNode1LightLevelToEPPROM(uint8_t lightLevel) {
 
 #if defined NODE_1_RGBW
 void setNode1WhiteChannel(uint8_t value) {
+  if(node1WhiteChannel == value){
+    return;
+  }
+
   node1WhiteChannel = value;
   EEPROM24C32.writeByte(501, value, false, false);
 }
@@ -462,6 +474,10 @@ void setNode1WhiteChannel(uint8_t value) {
 
 #if defined NODE_1_RGBW || defined NODE_1_RGB
 void setNode1RGBValues(uint8_t red, uint8_t green, uint8_t blue) {
+if(node1RedChannel == red && node1GreenChannel == green && node1BlueChannel == blue){
+    return;
+  }
+
   node1RedChannel = red;
   node1GreenChannel = green;
   node1BlueChannel = blue;
@@ -474,11 +490,19 @@ void setNode1RGBValues(uint8_t red, uint8_t green, uint8_t blue) {
 
 #if defined NODE_2_SINGLE
 void saveNode2EnableToEPPROM(bool enabled) {
+  if(node2Enabled == enabled){
+    return;
+  }
+
   node2Enabled = enabled;
   EEPROM24C32.writeByte(200, enabled ? TRUE_BYTE : 0x07, false, false);
 }
 
 void setNode2LightLevelToEPPROM(uint8_t lightLevel) {
+  if(node2LightLevel == lightLevel){
+    return;
+  }
+
   node2LightLevel = lightLevel;
   EEPROM24C32.writeByte(201, lightLevel, false, false);
 }
@@ -486,11 +510,19 @@ void setNode2LightLevelToEPPROM(uint8_t lightLevel) {
 
 #if defined NODE_3_SINGLE
 void saveNode3EnableToEPPROM(bool enabled) {
+  if(node3Enabled == enabled){
+    return;
+  }
+
   node3Enabled = enabled;
   EEPROM24C32.writeByte(300, enabled ? TRUE_BYTE : 0x08, false, false);
 }
 
 void setNode3LightLevelToEPPROM(uint8_t lightLevel) {
+  if(node3LightLevel == lightLevel){
+    return;
+  }
+
   node3LightLevel = lightLevel;
   EEPROM24C32.writeByte(301, lightLevel, false, false);
 }
@@ -498,11 +530,19 @@ void setNode3LightLevelToEPPROM(uint8_t lightLevel) {
 
 #if defined NODE_4_SINGLE
 void saveNode4EnableToEPPROM(bool enabled) {
+  if(node4Enabled == enabled){
+    return;
+  }
+
   node4Enabled = enabled;
   EEPROM24C32.writeByte(400, enabled ? TRUE_BYTE : 0x09, false, false);
 }
 
 void setNode4LightLevelToEPPROM(uint8_t lightLevel) {
+  if(node4LightLevel == lightLevel){
+    return;
+  }
+
   node4LightLevel = lightLevel;
   EEPROM24C32.writeByte(401, lightLevel, false, false);
 }
@@ -1034,94 +1074,52 @@ void updateRelayStatus() {
 #if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
 void updateNode1PWM() {
 #if defined NODE_1_SINGLE
-  if (node1Enabled) {
-    duty_1 = map(node1LightLevel / 100, 0, 255, NODE_1_MIN_LIGHT_LEVEL, NODE_1_MAX_LIGHT_LEVEL);
-    analogWrite(PWM_1, duty_1);
-  } else {
-    duty_1 = 0;
-    analogWrite(PWM_1, duty_1);
-  }
+  duty_1 = node1Enabled ? map(node1LightLevel / 100, 0, 255, NODE_1_MIN_LIGHT_LEVEL, NODE_1_MAX_LIGHT_LEVEL) : 0;
+  analogWrite(PWM_1, duty_1);
 #endif
 
 #if defined NODE_1_RGBW
-  if (node1Enabled) {
-    duty_1 = map(node1RedChannel * node1LightLevel / 100, 0, 255, NODE_1_MIN_LIGHT_LEVEL, NODE_1_MAX_LIGHT_LEVEL);
-    duty_2 = map(node1GreenChannel * node1LightLevel / 100, 0, 255, NODE_1_MIN_LIGHT_LEVEL, NODE_1_MAX_LIGHT_LEVEL);
-    duty_3 = map(node1BlueChannel * node1LightLevel / 100, 0, 255, NODE_1_MIN_LIGHT_LEVEL, NODE_1_MAX_LIGHT_LEVEL);
-    duty_4 = map(node1WhiteChannel * node1LightLevel / 100, 0, 255, NODE_1_MIN_LIGHT_LEVEL, NODE_1_MAX_LIGHT_LEVEL);
+  duty_1 = node1Enabled ? map(node1RedChannel * node1LightLevel / 100, 0, 255, NODE_1_MIN_LIGHT_LEVEL, NODE_1_MAX_LIGHT_LEVEL) : 0;
+  duty_2 = node1Enabled ? map(node1GreenChannel * node1LightLevel / 100, 0, 255, NODE_1_MIN_LIGHT_LEVEL, NODE_1_MAX_LIGHT_LEVEL) : 0;
+  duty_3 = node1Enabled ? map(node1BlueChannel * node1LightLevel / 100, 0, 255, NODE_1_MIN_LIGHT_LEVEL, NODE_1_MAX_LIGHT_LEVEL) : 0;
+  duty_4 = node1Enabled ? map(node1WhiteChannel * node1LightLevel / 100, 0, 255, NODE_1_MIN_LIGHT_LEVEL, NODE_1_MAX_LIGHT_LEVEL) : 0;
 
-    analogWrite(PWM_1, duty_1);
-    analogWrite(PWM_2, duty_2);
-    analogWrite(PWM_3, duty_3);
-    analogWrite(PWM_4, duty_4);
-  } else {
-    duty_1 = 0;
-    duty_2 = 0;
-    duty_3 = 0;
-    duty_4 = 0;
-
-    analogWrite(PWM_1, duty_1);
-    analogWrite(PWM_2, duty_2);
-    analogWrite(PWM_3, duty_3);
-    analogWrite(PWM_4, duty_4);
-  }
+  analogWrite(PWM_1, duty_1);
+  analogWrite(PWM_2, duty_2);
+  analogWrite(PWM_3, duty_3);
+  analogWrite(PWM_4, duty_4);
 #endif
 
 #if defined NODE_1_RGB
-  if (node1Enabled) {
-    duty_1 = map(node1RedChannel * node1LightLevel / 100, 0, 255, NODE_1_MIN_LIGHT_LEVEL, NODE_1_MAX_LIGHT_LEVEL);
-    duty_2 = map(node1GreenChannel * node1LightLevel / 100, 0, 255, NODE_1_MIN_LIGHT_LEVEL, NODE_1_MAX_LIGHT_LEVEL);
-    duty_3 = map(node1BlueChannel * node1LightLevel / 100, 0, 255, NODE_1_MIN_LIGHT_LEVEL, NODE_1_MAX_LIGHT_LEVEL);
+  duty_1 = node1Enabled ? map(node1RedChannel * node1LightLevel / 100, 0, 255, NODE_1_MIN_LIGHT_LEVEL, NODE_1_MAX_LIGHT_LEVEL) : 0;
+  duty_2 = node1Enabled ? map(node1GreenChannel * node1LightLevel / 100, 0, 255, NODE_1_MIN_LIGHT_LEVEL, NODE_1_MAX_LIGHT_LEVEL) : 0;
+  duty_3 = node1Enabled ? map(node1BlueChannel * node1LightLevel / 100, 0, 255, NODE_1_MIN_LIGHT_LEVEL, NODE_1_MAX_LIGHT_LEVEL) : 0;
 
-    analogWrite(PWM_1, duty_1);
-    analogWrite(PWM_2, duty_2);
-    analogWrite(PWM_3, duty_3);
-  } else {
-    duty_1 = 0;
-    duty_2 = 0;
-    duty_3 = 0;
-
-    analogWrite(PWM_1, duty_1);
-    analogWrite(PWM_2, duty_2);
-    analogWrite(PWM_3, duty_3);
-  }
+  analogWrite(PWM_1, duty_1);
+  analogWrite(PWM_2, duty_2);
+  analogWrite(PWM_3, duty_3);
 #endif
 }
 #endif
 
 #if defined NODE_2_SINGLE
 void updateNode2PWM() {
-  if (node2Enabled) {
-    duty_2 = map(node2LightLevel / 100, 0, 255, NODE_2_MIN_LIGHT_LEVEL, NODE_2_MAX_LIGHT_LEVEL);
-    analogWrite(PWM_2, duty_2);
-  } else {
-    duty_2 = 0;
-    analogWrite(PWM_2, duty_2);
-  }
+  duty_2 = node2Enabled ? map(node2LightLevel / 100, 0, 255, NODE_2_MIN_LIGHT_LEVEL, NODE_2_MAX_LIGHT_LEVEL) : 0;
+  analogWrite(PWM_2, duty_2);
 }
 #endif
 
 #if defined NODE_3_SINGLE
 void updateNode3PWM() {
-  if (node3Enabled) {
-    duty_3 = map(node3LightLevel / 100, 0, 255, NODE_3_MIN_LIGHT_LEVEL, NODE_3_MAX_LIGHT_LEVEL);
-    analogWrite(PWM_3, duty_3);
-  } else {
-    duty_3 = 0;
-    analogWrite(PWM_3, duty_3);
-  }
+  duty_3 = node3Enabled ? map(node3LightLevel / 100, 0, 255, NODE_3_MIN_LIGHT_LEVEL, NODE_3_MAX_LIGHT_LEVEL) : 0;
+  analogWrite(PWM_3, duty_3);
 }
 #endif
 
 #if defined NODE_4_SINGLE
 void updateNode4PWM() {
-  if (node4Enabled) {
-    duty_4 = map(node4LightLevel / 100, 0, 255, NODE_4_MIN_LIGHT_LEVEL, NODE_4_MAX_LIGHT_LEVEL);
-    analogWrite(PWM_4, duty_4);
-  } else {
-    duty_4 = 0;
-    analogWrite(PWM_4, duty_4);
-  }
+  duty_4 = node4Enabled ? map(node4LightLevel / 100, 0, 255, NODE_4_MIN_LIGHT_LEVEL, NODE_4_MAX_LIGHT_LEVEL) : 0;
+  analogWrite(PWM_4, duty_4);
 }
 #endif
 
