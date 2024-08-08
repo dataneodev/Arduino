@@ -30,30 +30,88 @@ Dodatek do VS Code #region folding for VS Code
 //#define NODE_1_RGBW
 //#define NODE_1_RGB
 #define NODE_1_SINGLE
-#define NODE_1_MIN_LIGHT_LEVEL 5      // minimalna jasnosc
-#define NODE_1_MAX_LIGHT_LEVEL 100    // maksymalna jasnosc
-#define NODE_1_STARTUP_LIGHT_LEVEL 5  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
+
+#define NODE_1_MIN_LIGHT_LEVEL 12      // minimalna jasnosc
+#define NODE_1_MAX_LIGHT_LEVEL 255    // maksymalna jasnosc 0-255
+#define NODE_1_STARTUP_LIGHT_LEVEL 25  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
 
 #if !defined NODE_1_RGBW && !defined NODE_1_RGB
 #define NODE_2_SINGLE
-#define NODE_2_MIN_LIGHT_LEVEL 5      // minimalna jasnosc
-#define NODE_2_MAX_LIGHT_LEVEL 100    // maksymalna jasnosc
-#define NODE_2_STARTUP_LIGHT_LEVEL 5  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
+#define NODE_2_MIN_LIGHT_LEVEL 12      // minimalna jasnosc
+#define NODE_2_MAX_LIGHT_LEVEL 255    // maksymalna jasnosc
+#define NODE_2_STARTUP_LIGHT_LEVEL 25  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
 #endif
 
 #if !defined NODE_1_RGBW && !defined NODE_1_RGB
 #define NODE_3_SINGLE
-#define NODE_3_MIN_LIGHT_LEVEL 5      // minimalna jasnosc
-#define NODE_3_MAX_LIGHT_LEVEL 100    // maksymalna jasnosc
-#define NODE_3_STARTUP_LIGHT_LEVEL 5  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
+#define NODE_3_MIN_LIGHT_LEVEL 12      // minimalna jasnosc
+#define NODE_3_MAX_LIGHT_LEVEL 255    // maksymalna jasnosc
+#define NODE_3_STARTUP_LIGHT_LEVEL 25  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
 #endif
 
 #if !defined NODE_1_RGBW
 #define NODE_4_SINGLE
 #define NODE_4_MIN_LIGHT_LEVEL 5      // minimalna jasnosc
-#define NODE_4_MAX_LIGHT_LEVEL 100    // maksymalna jasnosc
-#define NODE_4_STARTUP_LIGHT_LEVEL 5  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
+#define NODE_4_MAX_LIGHT_LEVEL 255    // maksymalna jasnosc
+#define NODE_4_STARTUP_LIGHT_LEVEL 25  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
 #endif
+
+enum Nodes {
+#if defined NODE_1_RGBW || defined NODE_1_RGB || defined NODE_1_SINGLE
+  Node1,
+#endif
+#if defined NODE_2_SINGLE
+  Node2,
+#endif
+#if defined NODE_3_SINGLE
+  Node3,
+#endif
+#if defined NODE_4_SINGLE
+  Node4,
+#endif
+};
+
+enum ButtonMode { OnOff,
+                  Switching,
+                  Off };
+
+struct inButtonDef {
+  Nodes node;              // który kanał jest połączony z przyciskiem
+  ButtonMode mode;         // tryb OnOff - włączenie/wyłączenie kanału sciśle połączone ze statusem przycisku, Switching - przełączanie aktualnego stanu kanału podczas naciśniecia przycisku, Off - przycisk wyłączony
+  bool prefferOffOnStart;  // działa tylko z trybem OnOff - jeśli podczas startu sterownika stan przycisku jest off lub zapisany stan jest off - zawsze zastosuje stan off,
+                           // w przeciwnym przypadku stan kanału zawsze zostanie ustawiony na stan przycisku
+  bool invert; // w mode OnOff stan niski na przycisku włącza kanał, a przy Switching przuszczenie przycisku przełącza kanał
+};
+
+//definicja buttonów
+inButtonDef in1Button = {
+  Node1,
+  OnOff,
+  true,
+  false,
+};
+
+inButtonDef in2Button = {
+  Node2,
+  OnOff,
+  false,
+  true
+};
+
+inButtonDef in3Button = {
+  Node3,
+  Switching,
+  true,
+  false
+};
+
+inButtonDef in4Button = {
+  Node4,
+  Switching,
+  false,
+  true
+};
+
 
 /* #endregion  user configuration */
 
@@ -113,10 +171,10 @@ Dodatek do VS Code #region folding for VS Code
 #define RELAY_PIN PB7
 
 // pwm
-#define PWM_1 PA10
-#define PWM_2 PB6
-#define PWM_3 PA8
-#define PWM_4 PA9
+#define PWM_1 PA8 
+#define PWM_2 PA9
+#define PWM_3 PA10 
+#define PWM_4 PB6 
 
 // INPUT
 #define IN_1 PB1
@@ -127,7 +185,7 @@ Dodatek do VS Code #region folding for VS Code
 /* #endregion */
 
 /* #region Imports */
-
+#include <ButtonDebounce.h>
 #include <MySensors.h>
 #include <24C32.h>
 #include <Wire.h>
@@ -173,9 +231,20 @@ public:
     return changed;
   }
 };
+
 /* #endregion */
 
 /* #region  global variable */
+ButtonDebounce in1(IN_1, 50);
+ButtonDebounce in2(IN_2, 50);
+ButtonDebounce in3(IN_3, 50);
+ButtonDebounce in4(IN_4, 50);
+
+// HardwareTimer *pwm1 = new HardwareTimer();
+// HardwareTimer *pwm2 = new HardwareTimer();
+// HardwareTimer *pwm3 = new HardwareTimer();
+// HardwareTimer *pwm4 = new HardwareTimer();
+
 MyMessage mMessage;
 StateChangeManager SCM;
 EE EEPROM24C32;
@@ -336,6 +405,8 @@ void inicjalizePins() {
   pinMode(RELAY_PIN, OUTPUT);
   digitalWrite(RELAY_PIN, LOW);
 
+  analogWriteFrequency(4000);
+
   pinMode(PWM_1, OUTPUT);
   analogWrite(PWM_1, 0);
 
@@ -443,7 +514,7 @@ void saveDefaultSettingToEPPROM() {
 
 #if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
 void saveNode1EnableToEPPROM(bool enabled) {
-  if(node1Enabled == enabled){
+  if (node1Enabled == enabled) {
     return;
   }
 
@@ -452,10 +523,10 @@ void saveNode1EnableToEPPROM(bool enabled) {
 }
 
 void setNode1LightLevelToEPPROM(uint8_t lightLevel) {
-  if(node1LightLevel == lightLevel){
+  if (node1LightLevel == lightLevel) {
     return;
   }
-  
+
   node1LightLevel = lightLevel;
   EEPROM24C32.writeByte(101, lightLevel, false, false);
 }
@@ -463,7 +534,7 @@ void setNode1LightLevelToEPPROM(uint8_t lightLevel) {
 
 #if defined NODE_1_RGBW
 void setNode1WhiteChannel(uint8_t value) {
-  if(node1WhiteChannel == value){
+  if (node1WhiteChannel == value) {
     return;
   }
 
@@ -474,7 +545,7 @@ void setNode1WhiteChannel(uint8_t value) {
 
 #if defined NODE_1_RGBW || defined NODE_1_RGB
 void setNode1RGBValues(uint8_t red, uint8_t green, uint8_t blue) {
-if(node1RedChannel == red && node1GreenChannel == green && node1BlueChannel == blue){
+  if (node1RedChannel == red && node1GreenChannel == green && node1BlueChannel == blue) {
     return;
   }
 
@@ -490,7 +561,7 @@ if(node1RedChannel == red && node1GreenChannel == green && node1BlueChannel == b
 
 #if defined NODE_2_SINGLE
 void saveNode2EnableToEPPROM(bool enabled) {
-  if(node2Enabled == enabled){
+  if (node2Enabled == enabled) {
     return;
   }
 
@@ -499,7 +570,7 @@ void saveNode2EnableToEPPROM(bool enabled) {
 }
 
 void setNode2LightLevelToEPPROM(uint8_t lightLevel) {
-  if(node2LightLevel == lightLevel){
+  if (node2LightLevel == lightLevel) {
     return;
   }
 
@@ -510,7 +581,7 @@ void setNode2LightLevelToEPPROM(uint8_t lightLevel) {
 
 #if defined NODE_3_SINGLE
 void saveNode3EnableToEPPROM(bool enabled) {
-  if(node3Enabled == enabled){
+  if (node3Enabled == enabled) {
     return;
   }
 
@@ -519,7 +590,7 @@ void saveNode3EnableToEPPROM(bool enabled) {
 }
 
 void setNode3LightLevelToEPPROM(uint8_t lightLevel) {
-  if(node3LightLevel == lightLevel){
+  if (node3LightLevel == lightLevel) {
     return;
   }
 
@@ -530,7 +601,7 @@ void setNode3LightLevelToEPPROM(uint8_t lightLevel) {
 
 #if defined NODE_4_SINGLE
 void saveNode4EnableToEPPROM(bool enabled) {
-  if(node4Enabled == enabled){
+  if (node4Enabled == enabled) {
     return;
   }
 
@@ -539,7 +610,7 @@ void saveNode4EnableToEPPROM(bool enabled) {
 }
 
 void setNode4LightLevelToEPPROM(uint8_t lightLevel) {
-  if(node4LightLevel == lightLevel){
+  if (node4LightLevel == lightLevel) {
     return;
   }
 
@@ -729,7 +800,7 @@ void receive(const MyMessage &message)  // MySensors
 
 #if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
   if (message.sensor == DIMMER_ID_1 && message.type == V_STATUS) {
-    setNode1Enabled(message.getBool());
+    setNode1Enabled(message.getBool(), false);
     return;
   }
 
@@ -739,7 +810,7 @@ void receive(const MyMessage &message)  // MySensors
       return;
     }
 
-    setNode1LightLevel(val);
+    setNode1LightLevel(val, false);
     return;
   }
 #endif
@@ -789,7 +860,7 @@ void receive(const MyMessage &message)  // MySensors
 
 #if defined NODE_2_SINGLE
   if (message.sensor == DIMMER_ID_2 && message.type == V_STATUS) {
-    setNode2Enabled(message.getBool());
+    setNode2Enabled(message.getBool(), false);
     return;
   }
 
@@ -799,14 +870,14 @@ void receive(const MyMessage &message)  // MySensors
       return;
     }
 
-    setNode2LightLevel(val);
+    setNode2LightLevel(val, false);
     return;
   }
 #endif
 
 #if defined NODE_3_SINGLE
   if (message.sensor == DIMMER_ID_3 && message.type == V_STATUS) {
-    setNode3Enabled(message.getBool());
+    setNode3Enabled(message.getBool(), false);
     return;
   }
 
@@ -816,14 +887,14 @@ void receive(const MyMessage &message)  // MySensors
       return;
     }
 
-    setNode3LightLevel(val);
+    setNode3LightLevel(val, false);
     return;
   }
 #endif
 
 #if defined NODE_4_SINGLE
   if (message.sensor == DIMMER_ID_4 && message.type == V_STATUS) {
-    setNode4Enabled(message.getBool());
+    setNode4Enabled(message.getBool(), false);
     return;
   }
 
@@ -833,7 +904,7 @@ void receive(const MyMessage &message)  // MySensors
       return;
     }
 
-    setNode4LightLevel(val);
+    setNode4LightLevel(val, false);
     return;
   }
 #endif
@@ -844,11 +915,16 @@ void receive(const MyMessage &message)  // MySensors
 /* #region controls */
 
 #if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
-void setNode1Enabled(bool enabled) {
+
+void setNode1Enabled(bool enabled, bool onlyDataSave) {
   saveNode1EnableToEPPROM(enabled);
 
   if (enabled && node1LightLevel == 0) {
     setNode1LightLevelToEPPROM(NODE_1_STARTUP_LIGHT_LEVEL);
+  }
+
+  if(onlyDataSave){
+    return;
   }
 
   updateNode1PWM();
@@ -861,7 +937,7 @@ void setNode1Enabled(bool enabled) {
   }
 }
 
-void setNode1LightLevel(uint8_t lightLevel) {
+void setNode1LightLevel(uint8_t lightLevel, bool onlyDataSave) {
   setNode1LightLevelToEPPROM(lightLevel);
 
   bool sendAllVars = false;
@@ -873,6 +949,10 @@ void setNode1LightLevel(uint8_t lightLevel) {
   if (lightLevel > 0 && !node1Enabled) {
     saveNode1EnableToEPPROM(true);
     sendAllVars = true;
+  }
+
+  if(onlyDataSave){
+    return;
   }
 
   updateNode1PWM();
@@ -911,11 +991,15 @@ void setRGBValueFromControler(uint8_t red, uint8_t green, uint8_t blue) {
 #endif
 
 #if defined NODE_2_SINGLE
-void setNode2Enabled(bool enabled) {
+void setNode2Enabled(bool enabled, bool onlyDataSave) {
   saveNode2EnableToEPPROM(enabled);
 
   if (enabled && node2LightLevel == 0) {
     setNode2LightLevelToEPPROM(NODE_2_STARTUP_LIGHT_LEVEL);
+  }
+
+  if(onlyDataSave){
+    return;
   }
 
   updateNode2PWM();
@@ -928,7 +1012,7 @@ void setNode2Enabled(bool enabled) {
   }
 }
 
-void setNode2LightLevel(uint8_t lightLevel) {
+void setNode2LightLevel(uint8_t lightLevel, bool onlyDataSave) {
   setNode2LightLevelToEPPROM(lightLevel);
 
   bool sendAllVars = false;
@@ -940,6 +1024,10 @@ void setNode2LightLevel(uint8_t lightLevel) {
   if (lightLevel > 0 && !node2Enabled) {
     saveNode2EnableToEPPROM(true);
     sendAllVars = true;
+  }
+
+  if(onlyDataSave){
+    return;
   }
 
   updateNode2PWM();
@@ -954,12 +1042,16 @@ void setNode2LightLevel(uint8_t lightLevel) {
 #endif
 
 #if defined NODE_3_SINGLE
-void setNode3Enabled(bool enabled) {
+void setNode3Enabled(bool enabled, bool onlyDataSave) {
 
   saveNode3EnableToEPPROM(enabled);
 
   if (enabled && node3LightLevel == 0) {
     setNode2LightLevelToEPPROM(NODE_3_STARTUP_LIGHT_LEVEL);
+  }
+
+  if(onlyDataSave){
+    return;
   }
 
   updateNode3PWM();
@@ -972,7 +1064,7 @@ void setNode3Enabled(bool enabled) {
   }
 }
 
-void setNode3LightLevel(uint8_t lightLevel) {
+void setNode3LightLevel(uint8_t lightLevel, bool onlyDataSave) {
   setNode3LightLevelToEPPROM(lightLevel);
 
   bool sendAllVars = false;
@@ -984,6 +1076,10 @@ void setNode3LightLevel(uint8_t lightLevel) {
   if (lightLevel > 0 && !node3Enabled) {
     saveNode3EnableToEPPROM(true);
     sendAllVars = true;
+  }
+
+  if(onlyDataSave){
+    return;
   }
 
   updateNode3PWM();
@@ -998,11 +1094,15 @@ void setNode3LightLevel(uint8_t lightLevel) {
 #endif
 
 #if defined NODE_4_SINGLE
-void setNode4Enabled(bool enabled) {
+void setNode4Enabled(bool enabled, bool onlyDataSave) {
   saveNode4EnableToEPPROM(enabled);
 
   if (enabled && node4LightLevel == 0) {
     setNode4LightLevelToEPPROM(NODE_4_STARTUP_LIGHT_LEVEL);
+  }
+
+  if(onlyDataSave){
+    return;
   }
 
   updateNode4PWM();
@@ -1015,7 +1115,7 @@ void setNode4Enabled(bool enabled) {
   }
 }
 
-void setNode4LightLevel(uint8_t lightLevel) {
+void setNode4LightLevel(uint8_t lightLevel, bool onlyDataSave) {
   setNode4LightLevelToEPPROM(lightLevel);
 
   bool sendAllVars = false;
@@ -1027,6 +1127,10 @@ void setNode4LightLevel(uint8_t lightLevel) {
   if (lightLevel > 0 && !node4Enabled) {
     saveNode4EnableToEPPROM(true);
     sendAllVars = true;
+  }
+
+  if(onlyDataSave){
+    return;
   }
 
   updateNode4PWM();
@@ -1046,6 +1150,37 @@ unsigned int duty_1 = 0;
 unsigned int duty_2 = 0;
 unsigned int duty_3 = 0;
 unsigned int duty_4 = 0;
+
+void inicjalizePWM() {
+  // TIM_TypeDef *Instance1 = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(PWM_1), PinMap_PWM);
+  // uint32_t channel1 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(PWM_1), PinMap_PWM));
+  // pwm1->setup(Instance1);
+  // pwm1->setMode(channel1, TIMER_OUTPUT_COMPARE_PWM1, PWM_1);
+  // pwm1->setPrescaleFactor(8);
+  // pwm1->pause();
+
+  // TIM_TypeDef *Instance2 = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(PWM_2), PinMap_PWM);
+  // uint32_t channel2 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(PWM_2), PinMap_PWM));
+  // pwm2->setup(Instance2);
+  // pwm2->setMode(channel2, TIMER_OUTPUT_COMPARE_PWM1, PWM_2);
+  // pwm2->setPrescaleFactor(8);
+  // pwm2->setPWM()
+  // pwm2->pause();
+
+  // TIM_TypeDef *Instance3 = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(PWM_3), PinMap_PWM);
+  // uint32_t channel3 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(PWM_3), PinMap_PWM));
+  // pwm3->setup(Instance3);
+  // pwm3->setMode(channel3, TIMER_OUTPUT_COMPARE_PWM1, PWM_3);
+  // pwm3->setPrescaleFactor(8);
+  // pwm3->pause();
+
+  // TIM_TypeDef *Instance4 = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(PWM_4), PinMap_PWM);
+  // uint32_t channel4 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(PWM_4), PinMap_PWM));
+  // pwm4->setup(Instance4);
+  // pwm4->setMode(channel4, TIMER_OUTPUT_COMPARE_PWM1, PWM_4);
+  // pwm4->setPrescaleFactor(8);
+  // pwm4->pause();
+}
 
 void updateAllNodePWM() {
 #if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
@@ -1074,7 +1209,7 @@ void updateRelayStatus() {
 #if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
 void updateNode1PWM() {
 #if defined NODE_1_SINGLE
-  duty_1 = node1Enabled ? map(node1LightLevel / 100, 0, 255, NODE_1_MIN_LIGHT_LEVEL, NODE_1_MAX_LIGHT_LEVEL) : 0;
+  duty_1 = node1Enabled ? map(node1LightLevel, 0, 100, NODE_1_MIN_LIGHT_LEVEL, NODE_1_MAX_LIGHT_LEVEL) : 0;
   analogWrite(PWM_1, duty_1);
 #endif
 
@@ -1104,21 +1239,21 @@ void updateNode1PWM() {
 
 #if defined NODE_2_SINGLE
 void updateNode2PWM() {
-  duty_2 = node2Enabled ? map(node2LightLevel / 100, 0, 255, NODE_2_MIN_LIGHT_LEVEL, NODE_2_MAX_LIGHT_LEVEL) : 0;
+  duty_2 = node2Enabled ? map(node2LightLevel , 0, 100, NODE_2_MIN_LIGHT_LEVEL, NODE_2_MAX_LIGHT_LEVEL) : 0;
   analogWrite(PWM_2, duty_2);
 }
 #endif
 
 #if defined NODE_3_SINGLE
 void updateNode3PWM() {
-  duty_3 = node3Enabled ? map(node3LightLevel / 100, 0, 255, NODE_3_MIN_LIGHT_LEVEL, NODE_3_MAX_LIGHT_LEVEL) : 0;
+  duty_3 = node3Enabled ? map(node3LightLevel , 0, 100, NODE_3_MIN_LIGHT_LEVEL, NODE_3_MAX_LIGHT_LEVEL) : 0;
   analogWrite(PWM_3, duty_3);
 }
 #endif
 
 #if defined NODE_4_SINGLE
 void updateNode4PWM() {
-  duty_4 = node4Enabled ? map(node4LightLevel / 100, 0, 255, NODE_4_MIN_LIGHT_LEVEL, NODE_4_MAX_LIGHT_LEVEL) : 0;
+  duty_4 = node4Enabled ? map(node4LightLevel , 0, 100, NODE_4_MIN_LIGHT_LEVEL, NODE_4_MAX_LIGHT_LEVEL) : 0;
   analogWrite(PWM_4, duty_4);
 }
 #endif
@@ -1126,6 +1261,180 @@ void updateNode4PWM() {
 void setRelayStatus(bool enabled) {
   digitalWrite(RELAY_PIN, enabled ? HIGH : LOW);
 }
+/* #endregion */
+
+/* #region buttons */
+bool getInvertedState(inButtonDef button, bool state) {
+  if(button.invert){
+    return !state;
+  }
+
+  return state;
+}
+void onIn1Change(const int state) {
+  if (in1Button.mode == Off) {
+    return;
+  }
+
+  if (in1Button.mode == OnOff) {
+    setNodeState(in1Button.node, getInvertedState(in1Button, state == HIGH), false);
+  }
+
+  if (in1Button.mode == Switching && getInvertedState(in1Button, state == HIGH)) {
+    bool nodeState = getNodeState(in1Button.node);
+    setNodeState(in1Button.node, !nodeState, false);
+  }
+}
+
+void onIn2Change(const int state) {
+  if (in2Button.mode == Off) {
+    return;
+  }
+
+  if (in2Button.mode == OnOff) {
+    setNodeState(in2Button.node, getInvertedState(in2Button, state == HIGH), false);
+  }
+
+  if (in2Button.mode == Switching && getInvertedState(in2Button, state == HIGH)) {
+    bool nodeState = getNodeState(in2Button.node);
+    setNodeState(in2Button.node, !nodeState, false);
+  }
+}
+
+void onIn3Change(const int state) {
+  if (in3Button.mode == Off) {
+    return;
+  }
+
+  if (in3Button.mode == OnOff) {
+    setNodeState(in3Button.node, getInvertedState(in3Button, state == HIGH), false);
+  }
+
+  if (in3Button.mode == Switching && getInvertedState(in3Button, state == HIGH)) {
+    bool nodeState = getNodeState(in3Button.node);
+    setNodeState(in3Button.node, !nodeState, false);
+  }
+}
+
+void onIn4Change(const int state) {
+  if (in4Button.mode == Off) {
+    return;
+  }
+
+  if (in4Button.mode == OnOff) {
+    setNodeState(in4Button.node, getInvertedState(in4Button, state == HIGH), false);
+  }
+
+  if (in4Button.mode == Switching && getInvertedState(in4Button, state == HIGH)) {
+    bool nodeState = getNodeState(in4Button.node);
+    setNodeState(in4Button.node, !nodeState, false);
+  }
+}
+
+bool getNodeState(Nodes node) {
+#if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
+  if (node == Node1) {
+    return node1Enabled;
+  }
+#endif
+
+#if defined NODE_2_SINGLE
+  if (node == Node2) {
+    return node2Enabled;
+  }
+#endif
+
+#if defined NODE_3_SINGLE
+  if (node == Node3) {
+    return node3Enabled;
+  }
+#endif
+
+#if defined NODE_4_SINGLE
+  if (node == Node4) {
+    return node4Enabled;
+  }
+#endif
+
+  return false;
+}
+
+bool getButtonState(uint8_t buttonLp) {
+  if (buttonLp == 1) {
+    return in1.state() == HIGH;
+  }
+
+  if (buttonLp == 2) {
+    return in2.state() == HIGH;
+  }
+
+  if (buttonLp == 3) {
+    return in3.state() == HIGH;
+  }
+
+  if (buttonLp == 4) {
+    return in4.state() == HIGH;
+  }
+
+  return false;
+}
+
+void setNodeState(Nodes node, bool state, bool onlyDataSave) {
+#if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
+  if (node == Node1) {
+    setNode1Enabled(state, onlyDataSave);
+  }
+#endif
+
+#if defined NODE_2_SINGLE
+  if (node == Node2) {
+    setNode2Enabled(state, onlyDataSave);
+  }
+#endif
+
+#if defined NODE_3_SINGLE
+  if (node == Node3) {
+    setNode3Enabled(state, onlyDataSave);
+  }
+#endif
+
+#if defined NODE_4_SINGLE
+  if (node == Node4) {
+    setNode4Enabled(state, onlyDataSave);
+  }
+#endif
+}
+
+void updateNodesFromButtons() {
+  updateNodesFromButton(in1Button, 1);
+  updateNodesFromButton(in2Button, 2);
+  updateNodesFromButton(in3Button, 3);
+  updateNodesFromButton(in4Button, 4);
+}
+
+void updateNodesFromButton(inButtonDef button, uint8_t buttonLp) {
+  if (button.mode != OnOff) {
+    return;
+  }
+
+  bool epState = getNodeState(button.node);
+  bool buttonState = getInvertedState(button, getButtonState(buttonLp));
+
+  if (button.prefferOffOnStart && (!epState || !buttonState)) {
+    setNodeState(button.node, false, true);
+    return;
+  }
+
+  setNodeState(button.node, buttonState, true);
+}
+
+void inicjalizeButtons() {
+  in1.setCallback(onIn1Change);
+  in2.setCallback(onIn2Change);
+  in3.setCallback(onIn3Change);
+  in4.setCallback(onIn4Change);
+}
+
 /* #endregion */
 
 /* #region main functions */
@@ -1136,7 +1445,9 @@ void before() {
   Serial2.begin(9600);
   inicjalizePins();
   inicjalizeI2C();
+  inicjalizeButtons();
   readSettingFromEPPROM();
+  updateNodesFromButtons();
 }
 
 void setup() {
@@ -1147,6 +1458,11 @@ void loop() {
   if (SCM.isStateChanged(isPresentedToController, 0)) {
     sendAllMySensorsStatus();
   }
+
+  in1.update();
+  in2.update();
+  in3.update();
+  in4.update();
 }
 
 /* #endregion */
