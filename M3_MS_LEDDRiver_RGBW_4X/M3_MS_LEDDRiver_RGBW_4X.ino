@@ -3,6 +3,7 @@ Dodać board https://github.com/stm32duino/BoardManagerFiles/raw/main/package_st
 Zainstalować board STM32 MCU based boards
 Zainstalować  Arduino SAM Boards
 Podmienić pliki w MySensors dla STM32F1 libraries\MySensors\hal\architecture\STM32F1\
+Info https://github.com/stm32duino/Arduino_Core_STM32
 
 Dodatek do VS Code #region folding for VS Code
 -RGBW
@@ -32,27 +33,27 @@ Dodatek do VS Code #region folding for VS Code
 #define NODE_1_SINGLE
 
 #define NODE_1_MIN_LIGHT_LEVEL 12      // minimalna jasnosc
-#define NODE_1_MAX_LIGHT_LEVEL 255    // maksymalna jasnosc 0-255
+#define NODE_1_MAX_LIGHT_LEVEL 255     // maksymalna jasnosc 0-255
 #define NODE_1_STARTUP_LIGHT_LEVEL 25  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
 
 #if !defined NODE_1_RGBW && !defined NODE_1_RGB
 #define NODE_2_SINGLE
 #define NODE_2_MIN_LIGHT_LEVEL 12      // minimalna jasnosc
-#define NODE_2_MAX_LIGHT_LEVEL 255    // maksymalna jasnosc
+#define NODE_2_MAX_LIGHT_LEVEL 255     // maksymalna jasnosc
 #define NODE_2_STARTUP_LIGHT_LEVEL 25  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
 #endif
 
 #if !defined NODE_1_RGBW && !defined NODE_1_RGB
 #define NODE_3_SINGLE
 #define NODE_3_MIN_LIGHT_LEVEL 12      // minimalna jasnosc
-#define NODE_3_MAX_LIGHT_LEVEL 255    // maksymalna jasnosc
+#define NODE_3_MAX_LIGHT_LEVEL 255     // maksymalna jasnosc
 #define NODE_3_STARTUP_LIGHT_LEVEL 25  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
 #endif
 
 #if !defined NODE_1_RGBW
 #define NODE_4_SINGLE
-#define NODE_4_MIN_LIGHT_LEVEL 5      // minimalna jasnosc
-#define NODE_4_MAX_LIGHT_LEVEL 255    // maksymalna jasnosc
+#define NODE_4_MIN_LIGHT_LEVEL 5       // minimalna jasnosc
+#define NODE_4_MAX_LIGHT_LEVEL 255     // maksymalna jasnosc
 #define NODE_4_STARTUP_LIGHT_LEVEL 25  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
 #endif
 
@@ -80,10 +81,12 @@ struct inButtonDef {
   ButtonMode mode;         // tryb OnOff - włączenie/wyłączenie kanału sciśle połączone ze statusem przycisku, Switching - przełączanie aktualnego stanu kanału podczas naciśniecia przycisku, Off - przycisk wyłączony
   bool prefferOffOnStart;  // działa tylko z trybem OnOff - jeśli podczas startu sterownika stan przycisku jest off lub zapisany stan jest off - zawsze zastosuje stan off,
                            // w przeciwnym przypadku stan kanału zawsze zostanie ustawiony na stan przycisku
-  bool invert; // w mode OnOff stan niski na przycisku włącza kanał, a przy Switching przuszczenie przycisku przełącza kanał
+                           // przykład - jeśli podczas zaniku zasilania było zamknięte to
+  bool invert;             // w mode OnOff stan niski na przycisku włącza kanał, a przy Switching przuszczenie przycisku przełącza kanał
 };
 
 //definicja buttonów
+//przycisk 1
 inButtonDef in1Button = {
   Node1,
   OnOff,
@@ -91,6 +94,7 @@ inButtonDef in1Button = {
   false,
 };
 
+//przycisk 2
 inButtonDef in2Button = {
   Node2,
   OnOff,
@@ -98,6 +102,7 @@ inButtonDef in2Button = {
   true
 };
 
+//przycisk 3
 inButtonDef in3Button = {
   Node3,
   Switching,
@@ -105,6 +110,8 @@ inButtonDef in3Button = {
   false
 };
 
+
+//przycisk 4
 inButtonDef in4Button = {
   Node4,
   Switching,
@@ -171,16 +178,19 @@ inButtonDef in4Button = {
 #define RELAY_PIN PB7
 
 // pwm
-#define PWM_1 PA8 
+#define PWM_1 PA8
 #define PWM_2 PA9
-#define PWM_3 PA10 
-#define PWM_4 PB6 
+#define PWM_3 PA10
+#define PWM_4 PB6
 
 // INPUT
 #define IN_1 PB1
 #define IN_2 PB0
 #define IN_3 PA5
 #define IN_4 PA4
+
+#define DELAY_MAX_TIME 15000  //15sekund
+#define DELAY_RS485_TIME 50
 
 /* #endregion */
 
@@ -189,7 +199,7 @@ inButtonDef in4Button = {
 #include <MySensors.h>
 #include <24C32.h>
 #include <Wire.h>
-
+#include <STM32LowPower.h>
 /* #endregion */
 
 /* #region Class definition */
@@ -405,7 +415,7 @@ void inicjalizePins() {
   pinMode(RELAY_PIN, OUTPUT);
   digitalWrite(RELAY_PIN, LOW);
 
-  analogWriteFrequency(4000);
+  analogWriteFrequency(400);
 
   pinMode(PWM_1, OUTPUT);
   analogWrite(PWM_1, 0);
@@ -798,9 +808,12 @@ void receive(const MyMessage &message)  // MySensors
   if (message.isAck())
     return;
 
+  delaySleep(DELAY_MAX_TIME);
+
 #if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
   if (message.sensor == DIMMER_ID_1 && message.type == V_STATUS) {
     setNode1Enabled(message.getBool(), false);
+    delaySleep(DELAY_MAX_TIME);
     return;
   }
 
@@ -811,6 +824,7 @@ void receive(const MyMessage &message)  // MySensors
     }
 
     setNode1LightLevel(val, false);
+    delaySleep(DELAY_MAX_TIME);
     return;
   }
 #endif
@@ -842,6 +856,7 @@ void receive(const MyMessage &message)  // MySensors
 #endif
 
     setRGBWValueFromControler(red, green, blue, white);
+    delaySleep(DELAY_MAX_TIME);
     return;
   }
 #endif
@@ -854,6 +869,7 @@ void receive(const MyMessage &message)  // MySensors
     uint8_t blue = unsigned(number & 0xFF);
 
     setRGBValueFromControler(red, green, blue);
+    delaySleep(DELAY_MAX_TIME);
     return;
   }
 #endif
@@ -861,6 +877,7 @@ void receive(const MyMessage &message)  // MySensors
 #if defined NODE_2_SINGLE
   if (message.sensor == DIMMER_ID_2 && message.type == V_STATUS) {
     setNode2Enabled(message.getBool(), false);
+    delaySleep(DELAY_MAX_TIME);
     return;
   }
 
@@ -871,6 +888,7 @@ void receive(const MyMessage &message)  // MySensors
     }
 
     setNode2LightLevel(val, false);
+    delaySleep(DELAY_MAX_TIME);
     return;
   }
 #endif
@@ -878,6 +896,7 @@ void receive(const MyMessage &message)  // MySensors
 #if defined NODE_3_SINGLE
   if (message.sensor == DIMMER_ID_3 && message.type == V_STATUS) {
     setNode3Enabled(message.getBool(), false);
+    delaySleep(DELAY_MAX_TIME);
     return;
   }
 
@@ -888,6 +907,7 @@ void receive(const MyMessage &message)  // MySensors
     }
 
     setNode3LightLevel(val, false);
+    delaySleep(DELAY_MAX_TIME);
     return;
   }
 #endif
@@ -895,6 +915,7 @@ void receive(const MyMessage &message)  // MySensors
 #if defined NODE_4_SINGLE
   if (message.sensor == DIMMER_ID_4 && message.type == V_STATUS) {
     setNode4Enabled(message.getBool(), false);
+    delaySleep(DELAY_MAX_TIME);
     return;
   }
 
@@ -905,6 +926,7 @@ void receive(const MyMessage &message)  // MySensors
     }
 
     setNode4LightLevel(val, false);
+    delaySleep(DELAY_MAX_TIME);
     return;
   }
 #endif
@@ -923,7 +945,7 @@ void setNode1Enabled(bool enabled, bool onlyDataSave) {
     setNode1LightLevelToEPPROM(NODE_1_STARTUP_LIGHT_LEVEL);
   }
 
-  if(onlyDataSave){
+  if (onlyDataSave) {
     return;
   }
 
@@ -951,7 +973,7 @@ void setNode1LightLevel(uint8_t lightLevel, bool onlyDataSave) {
     sendAllVars = true;
   }
 
-  if(onlyDataSave){
+  if (onlyDataSave) {
     return;
   }
 
@@ -998,7 +1020,7 @@ void setNode2Enabled(bool enabled, bool onlyDataSave) {
     setNode2LightLevelToEPPROM(NODE_2_STARTUP_LIGHT_LEVEL);
   }
 
-  if(onlyDataSave){
+  if (onlyDataSave) {
     return;
   }
 
@@ -1026,7 +1048,7 @@ void setNode2LightLevel(uint8_t lightLevel, bool onlyDataSave) {
     sendAllVars = true;
   }
 
-  if(onlyDataSave){
+  if (onlyDataSave) {
     return;
   }
 
@@ -1050,7 +1072,7 @@ void setNode3Enabled(bool enabled, bool onlyDataSave) {
     setNode2LightLevelToEPPROM(NODE_3_STARTUP_LIGHT_LEVEL);
   }
 
-  if(onlyDataSave){
+  if (onlyDataSave) {
     return;
   }
 
@@ -1078,7 +1100,7 @@ void setNode3LightLevel(uint8_t lightLevel, bool onlyDataSave) {
     sendAllVars = true;
   }
 
-  if(onlyDataSave){
+  if (onlyDataSave) {
     return;
   }
 
@@ -1101,7 +1123,7 @@ void setNode4Enabled(bool enabled, bool onlyDataSave) {
     setNode4LightLevelToEPPROM(NODE_4_STARTUP_LIGHT_LEVEL);
   }
 
-  if(onlyDataSave){
+  if (onlyDataSave) {
     return;
   }
 
@@ -1129,7 +1151,7 @@ void setNode4LightLevel(uint8_t lightLevel, bool onlyDataSave) {
     sendAllVars = true;
   }
 
-  if(onlyDataSave){
+  if (onlyDataSave) {
     return;
   }
 
@@ -1202,8 +1224,10 @@ void updateAllNodePWM() {
   updateRelayStatus();
 }
 
+bool relayStatus = false;
 void updateRelayStatus() {
-  setRelayStatus(duty_1 > 0 || duty_2 > 0 || duty_3 > 0 || duty_4 > 0);
+  relayStatus = duty_1 > 0 || duty_2 > 0 || duty_3 > 0 || duty_4 > 0;
+  setRelayStatus(relayStatus);
 }
 
 #if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
@@ -1239,21 +1263,21 @@ void updateNode1PWM() {
 
 #if defined NODE_2_SINGLE
 void updateNode2PWM() {
-  duty_2 = node2Enabled ? map(node2LightLevel , 0, 100, NODE_2_MIN_LIGHT_LEVEL, NODE_2_MAX_LIGHT_LEVEL) : 0;
+  duty_2 = node2Enabled ? map(node2LightLevel, 0, 100, NODE_2_MIN_LIGHT_LEVEL, NODE_2_MAX_LIGHT_LEVEL) : 0;
   analogWrite(PWM_2, duty_2);
 }
 #endif
 
 #if defined NODE_3_SINGLE
 void updateNode3PWM() {
-  duty_3 = node3Enabled ? map(node3LightLevel , 0, 100, NODE_3_MIN_LIGHT_LEVEL, NODE_3_MAX_LIGHT_LEVEL) : 0;
+  duty_3 = node3Enabled ? map(node3LightLevel, 0, 100, NODE_3_MIN_LIGHT_LEVEL, NODE_3_MAX_LIGHT_LEVEL) : 0;
   analogWrite(PWM_3, duty_3);
 }
 #endif
 
 #if defined NODE_4_SINGLE
 void updateNode4PWM() {
-  duty_4 = node4Enabled ? map(node4LightLevel , 0, 100, NODE_4_MIN_LIGHT_LEVEL, NODE_4_MAX_LIGHT_LEVEL) : 0;
+  duty_4 = node4Enabled ? map(node4LightLevel, 0, 100, NODE_4_MIN_LIGHT_LEVEL, NODE_4_MAX_LIGHT_LEVEL) : 0;
   analogWrite(PWM_4, duty_4);
 }
 #endif
@@ -1265,7 +1289,7 @@ void setRelayStatus(bool enabled) {
 
 /* #region buttons */
 bool getInvertedState(inButtonDef button, bool state) {
-  if(button.invert){
+  if (button.invert) {
     return !state;
   }
 
@@ -1403,6 +1427,8 @@ void setNodeState(Nodes node, bool state, bool onlyDataSave) {
     setNode4Enabled(state, onlyDataSave);
   }
 #endif
+
+delaySleep(DELAY_MAX_TIME);
 }
 
 void updateNodesFromButtons() {
@@ -1437,10 +1463,53 @@ void inicjalizeButtons() {
 
 /* #endregion */
 
+/* #region sleep */
+volatile u_int32_t sleepWaitTime;
+volatile u_int32_t sleepSetTime;
+volatile bool canSleep;
+
+void delaySleep(u_int32_t delay) {
+  u_int32_t now = millis();
+
+  canSleep = false;
+  sleepSetTime = now;
+  sleepWaitTime = now + delay;
+}
+
+void compensateSleepDelay() {
+  if (canSleep) {
+    return;
+  }
+
+  u_int32_t now = millis();
+
+  if (sleepSetTime > now) {
+    delaySleep(DELAY_MAX_TIME);
+    return;
+  }
+
+  if (sleepWaitTime < now) {
+    canSleep = true;
+    return;
+  }
+}
+
+
+void buttonInterrupt() {
+  delaySleep(DELAY_MAX_TIME);
+}
+
+void serialWakeup() {
+  delaySleep(DELAY_RS485_TIME);
+}
+/* #endregion */
+
 /* #region main functions */
 void before() {
   // setAllPinsAnalog();
   // disableClocks();
+
+  delaySleep(DELAY_MAX_TIME);
 
   Serial2.begin(9600);
   inicjalizePins();
@@ -1452,11 +1521,32 @@ void before() {
 
 void setup() {
   updateAllNodePWM();
+
+  LowPower.begin();
+  
+  LowPower.attachInterruptWakeup(IN_1, buttonInterrupt, CHANGE, SLEEP_MODE);
+  LowPower.attachInterruptWakeup(IN_2, buttonInterrupt, CHANGE, SLEEP_MODE);
+  LowPower.attachInterruptWakeup(IN_3, buttonInterrupt, CHANGE, SLEEP_MODE);
+  LowPower.attachInterruptWakeup(IN_4, buttonInterrupt, CHANGE, SLEEP_MODE);
+
+  LowPower.enableWakeupFrom(&Serial2, serialWakeup);
 }
 
 void loop() {
   if (SCM.isStateChanged(isPresentedToController, 0)) {
+    delaySleep(DELAY_MAX_TIME);
     sendAllMySensorsStatus();
+    delaySleep(DELAY_MAX_TIME);
+  }
+
+  if (!relayStatus) {
+    if (canSleep) {
+      Serial2.flush();
+      LowPower.sleep();
+      Serial2.flush();
+    } else {
+      compensateSleepDelay();
+    }
   }
 
   in1.update();
