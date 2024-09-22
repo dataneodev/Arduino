@@ -1,11 +1,17 @@
 
 #include <Wire.h>
 
+#define SCL_PIN PB8
+#define SDA_PIN PB9
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
   Serial.println("\I2C scanner ready!");
-  Wire.begin(1, D0);
+   Wire.setSDA(SDA_PIN);
+  Wire.setSCL(SCL_PIN);
+  Wire.begin();
+  Wire.setClock(400000);
 }
 
 void loop() {
