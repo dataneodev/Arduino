@@ -394,6 +394,10 @@ void receive(const MyMessage &message)  // MySensors
   }
 }
 
+bool receiveTime(uint32_t ts){
+
+  
+}
 /* #endregion */
 
 
@@ -554,8 +558,6 @@ void setup() {
   LowPower.begin();
   LowPower.attachInterruptWakeup(MOTION_PIN, buttonInterrupt, CHANGE, SLEEP_MODE);
   LowPower.attachInterruptWakeup(PA3, serialWakeup, CHANGE, SLEEP_MODE);
-
- // LowPower.enableWakeupFrom(&Serial2, serialWakeup);
 }
 
 void loop() {
@@ -566,17 +568,13 @@ void loop() {
     delaySleep(SLEEP_MAX_TIME);
   }
 
-
   if (canSleep) {
     myRTC.enableOscillator(false, false, 0);
-    detachInterrupt(digitalPinToInterrupt(CLOCK_PIN));
-    //Wire.end();
     Serial2.flush();
     LowPower.deepSleep();
-    Serial2.flush();
 
-    //Wire.begin();
-    attachInterrupt(digitalPinToInterrupt(CLOCK_PIN), clockInterrupt, FALLING);
+    //weakup
+    Serial2.flush();
     myRTC.enableOscillator(true, false, 0);
   } else {
     compensateSleepDelay();
