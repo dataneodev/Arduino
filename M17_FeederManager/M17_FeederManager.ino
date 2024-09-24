@@ -48,13 +48,15 @@ HardwareSerial Serial2(USART2);
 /* #endregion */
 
 /* #region Imports */
+//
+#include <DS3231.h>
 #include <MySensors.h>
 #include <24C32.h>
 #include <Wire.h>
 #include <STM32LowPower.h>
 #include "Storage.h"
-
-#import <DS3231.h>
+#include <Timezone.h>   
+#include <time.h>
 /* #endregion */
 
 /* #region Class definition */
@@ -104,7 +106,12 @@ StateChangeManager SCM;
 EE EEPROM24C32;
 Storage EEStorage(&EEPROM24C32);
 DS3231 myRTC;  // Set up access to the DS3231
+
+TimeChangeRule myDST = {"EDT", Last, Sun, Mar, 2, 120};    // Daylight time = UTC - 4 hours
+TimeChangeRule mySTD = {"EST", Last, Sun, Nov, 2, 60};     // Standard time = UTC - 5 hours
+Timezone myTZ(myDST, mySTD);
 /* #endregion */
+
 
 /* #region  Power Optimization */
 
@@ -394,9 +401,8 @@ void receive(const MyMessage &message)  // MySensors
   }
 }
 
-bool receiveTime(uint32_t ts){
-
-  
+void receiveTime(uint32_t ts){
+ myRTC.setEpoch(myTZ.toUTC(ts), false);
 }
 /* #endregion */
 
@@ -490,6 +496,8 @@ void setMotionDetectedEnabledTime(uint16_t time, bool onlyDataSave) {
 }
 /* #endregion */
 
+
+
 /* #region sleep */
 volatile u_int32_t sleepWaitTime;
 volatile u_int32_t sleepSetTime;
@@ -505,6 +513,18 @@ void delaySleep(u_int32_t delay) {
 
 void compensateSleepDelay() {
   if (canSleep) {
+    return;
+  }
+
+  if(EEStorage.enable24VOutput()){
+    return;
+  }
+
+  if(EEStorage.enable5V1Output()){
+    return;
+  }
+
+  if(EEStorage.enable5V2Output()){
     return;
   }
 
@@ -531,6 +551,10 @@ void serialWakeup() {
 }
 
 void clockInterrupt() {
+  if(!EEStorage.enableClockSchedule() ){
+    return;
+  }
+  
   setEnable24VOutput(!EEStorage.enable24VOutput(), false);
 }
 /* #endregion */
@@ -553,6 +577,8 @@ void before() {
 void setup() {
   myRTC.enable32kHz(false);
   myRTC.enableOscillator(true, false, 0);
+  myRTC.setClockMode(false);
+
   attachInterrupt(digitalPinToInterrupt(CLOCK_PIN), clockInterrupt, FALLING);
 
   LowPower.begin();
