@@ -45,6 +45,9 @@ HardwareSerial Serial2(USART2);
 #define SLEEP_MAX_TIME 10000  // 10 sekund
 #define SLEEP_RS485_TIME 5    //5 ms
 
+#define BEFORE_CLOCK_ENABLE_TIME_PART 0.6
+#define NEXT_CLOCK_ENABLE_TIME_PART 0.4
+
 /* #endregion */
 
 /* #region Imports */
@@ -56,7 +59,7 @@ HardwareSerial Serial2(USART2);
 #include <STM32LowPower.h>
 #include "Storage.h"
 #include <Timezone.h>
-#include <time.h>
+#include <TimeLib.h>
 #include <STM32RTC.h>
 /* #endregion */
 
@@ -107,7 +110,6 @@ StateChangeManager SCM;
 EE EEPROM24C32;
 Storage EEStorage(&EEPROM24C32);
 DS3231 rtcDS3231;  // Set up access to the DS3231
-RTClib rtcClock;
 STM32RTC& rtc = STM32RTC::getInstance();
 
 TimeChangeRule myDST = { "EDT", Last, Sun, Mar, 2, 120 };  // Daylight time = UTC - 4 hours
@@ -512,12 +514,13 @@ void setMotionDetectedEnabledTime(uint16_t time, bool onlyDataSave) {
 
 
 /* #region auto action */
+
 volatile uint32_t motionEnableTime = 0;
 volatile uint32_t clockEnableTime = 0;
 
 void motionEnabledAction() {
   setEnable5V_2Output(true, false);
-  motionEnableTime = rtcClock.now().unixtime() + EEStorage.motionDetectedEnabledTime();
+  motionEnableTime = myTZ.toLocal(rtcDS3231.getNow() ) + EEStorage.motionDetectedEnabledTime();
 }
 
 void motionDisabledAction() {
@@ -538,7 +541,7 @@ void clockEnabledAction() {
   setEnable5V_2Output(true, false);
   setEnable24VOutput(true, false);
 
-  clockEnableTime = rtcClock.now().unixtime() + EEStorage.clockScheduleEnabledTime();
+  clockEnableTime = myTZ.toLocal(rtcDS3231.getNow() ) + EEStorage.clockScheduleEnabledTime();
 }
 
 void clockDisabledAction() {
@@ -553,8 +556,11 @@ void disableAutoActions() {
 }
 
 void clockInterrupt() {
-  DateTime now = rtcClock.now();
-  uint32_t unixtime = now.unixtime();
+  uint32_t unixtime = myTZ.toLocal(rtcDS3231.getNow() );
+
+  if (EEStorage.enableClockSchedule() && !isMotionActionEnabled()) {
+    clearMotionAction();
+  }
 
   if (EEStorage.enableMotionDetection() && motionEnableTime != 0 && motionEnableTime < unixtime) {
     motionDisabledAction();
@@ -564,18 +570,8 @@ void clockInterrupt() {
     clockDisabledAction();
   }
 
-  if (EEStorage.enableClockSchedule() && clockEnableTime == 0 && isClockActionTime(now)) {
+  if (EEStorage.enableClockSchedule() && clockEnableTime == 0 && isClockActionTime(unixtime)) {
     clockEnabledAction();
-  }
-}
-
-bool isClockActionEnabled() {
-  return EEStorage.enable24VOutput() && EEStorage.enable5V1Output() && EEStorage.enable5V2Output();
-}
-
-bool isClockActionTime(DateTime now) {
-  if (!EEStorage.enableClockSchedule()) {
-    return false;
   }
 }
 
@@ -584,12 +580,85 @@ void setNewRTCClockAwake() {
     return;
   }
 
-  DateTime now = rtcClock.now();
+  time_t now = rtcDS3231.getNow() ;
 
-  rtc.setEpoch(now.unixtime());
+  rtc.setEpoch(now);
+  rtc.setAlarmEpoch(now + getSleepTime(myTZ.toLocal(now)));
+}
 
+time_t getSleepTime(time_t now) {
+  time_t next = now;
 
-  rtc.setAlarmEpoch(now.unixtime() + 120);
+  while (true) {
+    next += 3600;
+    if (isHourHandledBySchedule(hour(next))) {
+      break;
+    }
+  }
+
+  time_t startScheduleTime = getTimeAtStartHour(next) - (BEFORE_CLOCK_ENABLE_TIME_PART * (float)EEStorage.clockScheduleEnabledTime());
+  return startScheduleTime - now;
+}
+
+bool isClockActionEnabled() {
+  return EEStorage.enable24VOutput() && EEStorage.enable5V1Output() && EEStorage.enable5V2Output();
+}
+
+bool isClockActionTime(time_t now) {
+  if (!EEStorage.enableClockSchedule()) {
+    return false;
+  }
+
+  if (isClockActionTime(now, now)) {
+    return true;
+  }
+
+  if (isClockActionTime(now + 3600, now)) {
+    return true;
+  }
+
+  return false;
+}
+
+bool isClockActionTime(time_t test, time_t now) {
+  if (!isHourHandledBySchedule(hour(test))) {
+    return false;
+  }
+
+  time_t startHour = getTimeAtStartHour(test);
+
+  time_t startScheduleTime = startHour - (BEFORE_CLOCK_ENABLE_TIME_PART * (float)EEStorage.clockScheduleEnabledTime());
+  if (now < startScheduleTime) {
+    return false;
+  }
+
+  time_t endScheduleTime = startHour + (NEXT_CLOCK_ENABLE_TIME_PART * (float)EEStorage.clockScheduleEnabledTime());
+  if (now > endScheduleTime) {
+    return false;
+  }
+
+  return true;
+}
+
+time_t getTimeAtStartHour(time_t now) {
+  tmElements_t tm;
+  breakTime(now, tm);
+
+  tm.Minute = 0;
+  tm.Second = 0;
+  return makeTime(tm);
+}
+
+bool isHourHandledBySchedule(uint8_t hour) {
+  uint8_t check = 0;
+
+  while (check < 24) {
+    check += EEStorage.clockScheduleIntervalHour();
+    if (check == hour) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /* #endregion */
@@ -598,7 +667,6 @@ void setNewRTCClockAwake() {
 volatile u_int32_t sleepWaitTime;
 volatile u_int32_t sleepSetTime;
 volatile bool canSleep;
-volatile bool isSerialAwake;
 
 void delaySleep(u_int32_t delay) {
   u_int32_t now = millis();
@@ -639,13 +707,10 @@ void compensateSleepDelay() {
 }
 
 void serialWakeup() {
-  isSerialAwake = true;
   delaySleep(SLEEP_RS485_TIME);
 }
 
 void buttonInterrupt() {
-  isSerialAwake = false;
-  
   if (!EEStorage.enableMotionDetection()) {
     return;
   }
@@ -660,8 +725,6 @@ void buttonInterrupt() {
 }
 
 void alarmMatch(void* data) {
-  isSerialAwake = false;
-
   if (isClockActionEnabled()) {
     return;
   }
@@ -726,11 +789,8 @@ void loop() {
     rtcDS3231.enableOscillator(false, false, 0);
     Serial2.flush();
 
-    if (!isSerialAwake) {
-      disableAutoActions();
-      setNewRTCClockAwake();
-      isSerialAwake = false;
-    }
+    disableAutoActions();
+    setNewRTCClockAwake();
 
     LowPower.deepSleep();  //sleep
 
