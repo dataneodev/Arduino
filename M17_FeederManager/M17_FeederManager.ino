@@ -287,7 +287,7 @@ void presentToControler() {
   present(MY_5_2V_STATUS_SENSOR_ID, S_BINARY, "5V 2 Relay");
   present(MY_MOTION_DETECTION_STATUS_SENSOR_ID, S_BINARY, "Motion detection");
   present(MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID, S_BINARY, "Clock schedule");
-  present(MY_TIME_SENSOR_ID, S_CUSTOM, "Clock");  
+  present(MY_TIME_SENSOR_ID, S_CUSTOM, "Clock");
 }
 
 void sendAllMySensorsStatus() {
@@ -358,7 +358,6 @@ void sendClock() {
   send(mMessage.set((uint32_t)myTZ.toLocal(rtcDS3231.getNow())));
 }
 
-
 void receive(const MyMessage& message)  // MySensors
 {
   if (message.isAck())
@@ -401,7 +400,6 @@ void receive(const MyMessage& message)  // MySensors
     delaySleep(SLEEP_MAX_TIME);
     return;
   }
-
 
   if (message.sensor == MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID && message.type == V_VAR1) {
     setClockScheduleEnabledTime(message.getUInt(), false);
