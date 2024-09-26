@@ -19,6 +19,7 @@ HardwareSerial Serial2(USART2);
 #define MY_5_2V_STATUS_SENSOR_ID 3
 #define MY_MOTION_DETECTION_STATUS_SENSOR_ID 4
 #define MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID 5
+#define MY_TIME_SENSOR_ID 6
 
 #define ARDUINO_ARCH_STM32F1
 #define MY_DISABLED_SERIAL         // manual configure Serial
@@ -286,6 +287,7 @@ void presentToControler() {
   present(MY_5_2V_STATUS_SENSOR_ID, S_BINARY, "5V 2 Relay");
   present(MY_MOTION_DETECTION_STATUS_SENSOR_ID, S_BINARY, "Motion detection");
   present(MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID, S_BINARY, "Clock schedule");
+  present(MY_TIME_SENSOR_ID, S_CUSTOM, "Clock");  
 }
 
 void sendAllMySensorsStatus() {
@@ -299,6 +301,7 @@ void sendAllMySensorsStatus() {
   sendEnableClockSchedule();
   sendClockScheduleEnabledTime();
   sendClockScheduleIntervalHour();
+  sendClock();
 }
 
 void sendEnable24VOutputStatus() {
@@ -348,6 +351,13 @@ void sendClockScheduleIntervalHour() {
   mMessage.setType(V_VAR2);
   send(mMessage.set(EEStorage.clockScheduleIntervalHour()));
 }
+
+void sendClock() {
+  mMessage.setSensor(MY_TIME_SENSOR_ID);
+  mMessage.setType(V_VAR1);
+  send(mMessage.set((uint32_t)myTZ.toLocal(rtcDS3231.getNow())));
+}
+
 
 void receive(const MyMessage& message)  // MySensors
 {
@@ -520,7 +530,7 @@ volatile uint32_t clockEnableTime = 0;
 
 void motionEnabledAction() {
   setEnable5V_2Output(true, false);
-  motionEnableTime = myTZ.toLocal(rtcDS3231.getNow() ) + EEStorage.motionDetectedEnabledTime();
+  motionEnableTime = myTZ.toLocal(rtcDS3231.getNow()) + EEStorage.motionDetectedEnabledTime();
 }
 
 void motionDisabledAction() {
@@ -541,7 +551,7 @@ void clockEnabledAction() {
   setEnable5V_2Output(true, false);
   setEnable24VOutput(true, false);
 
-  clockEnableTime = myTZ.toLocal(rtcDS3231.getNow() ) + EEStorage.clockScheduleEnabledTime();
+  clockEnableTime = myTZ.toLocal(rtcDS3231.getNow()) + EEStorage.clockScheduleEnabledTime();
 }
 
 void clockDisabledAction() {
@@ -556,7 +566,7 @@ void disableAutoActions() {
 }
 
 void clockInterrupt() {
-  uint32_t unixtime = myTZ.toLocal(rtcDS3231.getNow() );
+  uint32_t unixtime = myTZ.toLocal(rtcDS3231.getNow());
 
   if (EEStorage.enableClockSchedule() && !isMotionActionEnabled()) {
     clearMotionAction();
@@ -580,7 +590,7 @@ void setNewRTCClockAwake() {
     return;
   }
 
-  time_t now = rtcDS3231.getNow() ;
+  time_t now = rtcDS3231.getNow();
 
   rtc.setEpoch(now);
   rtc.setAlarmEpoch(now + getSleepTime(myTZ.toLocal(now)));
@@ -653,10 +663,11 @@ bool isHourHandledBySchedule(uint8_t hour) {
   uint8_t check = 0;
 
   while (check < 24) {
-    check += EEStorage.clockScheduleIntervalHour();
     if (check == hour) {
       return true;
     }
+
+    check += EEStorage.clockScheduleIntervalHour();
   }
   return false;
 }
