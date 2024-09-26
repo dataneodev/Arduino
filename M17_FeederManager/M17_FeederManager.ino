@@ -366,51 +366,56 @@ void receive(const MyMessage& message)  // MySensors
   delaySleep(SLEEP_MAX_TIME);
 
   if (message.sensor == MY_24V_STATUS_SENSOR_ID && message.type == V_STATUS) {
-    setEnable24VOutput(message.getBool(), false);
     delaySleep(SLEEP_MAX_TIME);
+    setEnable24VOutput(message.getBool(), false);
     return;
   }
 
   if (message.sensor == MY_5_1V_STATUS_SENSOR_ID && message.type == V_STATUS) {
-    setEnable5V_1Output(message.getBool(), false);
     delaySleep(SLEEP_MAX_TIME);
+    setEnable5V_1Output(message.getBool(), false);
     return;
   }
 
   if (message.sensor == MY_5_2V_STATUS_SENSOR_ID && message.type == V_STATUS) {
-    setEnable5V_2Output(message.getBool(), false);
     delaySleep(SLEEP_MAX_TIME);
+    setEnable5V_2Output(message.getBool(), false);
     return;
   }
 
   if (message.sensor == MY_MOTION_DETECTION_STATUS_SENSOR_ID && message.type == V_STATUS) {
-    setEnableMotionDetection(message.getBool(), false);
     delaySleep(SLEEP_MAX_TIME);
+    setEnableMotionDetection(message.getBool(), false);
     return;
   }
 
   if (message.sensor == MY_MOTION_DETECTION_STATUS_SENSOR_ID && message.type == V_VAR1) {
-    setMotionDetectedEnabledTime(message.getUInt(), false);
     delaySleep(SLEEP_MAX_TIME);
+    setMotionDetectedEnabledTime(message.getUInt(), false);
     return;
   }
 
   if (message.sensor == MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID && message.type == V_STATUS) {
-    setEnableClockSchedule(message.getBool(), false);
     delaySleep(SLEEP_MAX_TIME);
+    setEnableClockSchedule(message.getBool(), false);
     return;
   }
 
   if (message.sensor == MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID && message.type == V_VAR1) {
-    setClockScheduleEnabledTime(message.getUInt(), false);
     delaySleep(SLEEP_MAX_TIME);
+    setClockScheduleEnabledTime(message.getUInt(), false);
     return;
   }
 
   if (message.sensor == MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID && message.type == V_VAR2) {
-    setClockScheduleIntervalHour(message.getByte(), false);
     delaySleep(SLEEP_MAX_TIME);
+    setClockScheduleIntervalHour(message.getByte(), false);
     return;
+  }
+
+  if (message.sensor == MY_TIME_SENSOR_ID && message.type == V_VAR1) {
+    delaySleep(SLEEP_MAX_TIME);
+    rtcDS3231.setEpoch(myTZ.toUTC(message.getULong()), false);
   }
 }
 
