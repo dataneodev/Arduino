@@ -25,7 +25,7 @@
 // Changed the following to work on 1.0
 //#include "WProgram.h"
 #include <Arduino.h>
-#include <TimeLib.h>
+#include <time.h>
 #include <Wire.h>
 
 // DateTime (get everything at once) from JeeLabs / Adafruit

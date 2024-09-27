@@ -189,6 +189,7 @@ DateTime RTClib::now(TwoWire & _Wire) {
 ///// ERIC'S ORIGINAL CODE FOLLOWS /////
 
 time_t DS3231::getNow(TwoWire & _Wire){
+
 	_Wire.beginTransmission(CLOCK_ADDRESS);
   _Wire.write(0);	// This is the first register address (Seconds)
   			// We'll read from here on for 7 bytes: secs reg, minutes reg, hours, days, months and years.
@@ -203,17 +204,13 @@ time_t DS3231::getNow(TwoWire & _Wire){
   uint16_t m = bcd2bin(_Wire.read());
   uint16_t y = bcd2bin(_Wire.read()) + 2000;
   
-  tmElements_t tm;
-  
-  tm.Year = y;
-tm.Month = m;
-tm.Day = d;
-  
-  tm.Hour = hh;
-tm.Minute = mm;
-tm.Second = ss;
+  uint8_t yOff = y >= 2000 ? y - 2000 : y;
+  uint32_t t;
+  uint16_t days = date2days(yOff, m, d);
+  t = time2long(days, hh, mm, ss);
+  t += SECONDS_FROM_1970_TO_2000;  // seconds from 1970 to 2000
 
-  return makeTime(tm);
+  return t;
 }
 
 byte DS3231::getSecond() {

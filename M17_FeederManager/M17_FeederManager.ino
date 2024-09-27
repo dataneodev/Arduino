@@ -60,7 +60,6 @@ HardwareSerial Serial2(USART2);
 #include <STM32LowPower.h>
 #include "Storage.h"
 #include <Timezone.h>
-#include <TimeLib.h>
 #include <STM32RTC.h>
 /* #endregion */
 
@@ -415,7 +414,7 @@ void receive(const MyMessage& message)  // MySensors
 
   if (message.sensor == MY_TIME_SENSOR_ID && message.type == V_VAR1) {
     delaySleep(SLEEP_MAX_TIME);
-    rtcDS3231.setEpoch(myTZ.toUTC(message.getULong()), false);
+    setClock((time_t)message.getULong());
   }
 }
 
@@ -488,6 +487,12 @@ void setClockScheduleEnabledTime(uint16_t time, bool onlyDataSave) {
   sendClockScheduleEnabledTime();
 }
 
+void setClock(time_t time) {
+  delaySleep(SLEEP_MAX_TIME);
+  rtcDS3231.setEpoch(myTZ.toUTC(time), false);
+  sendClock() ;
+}
+
 void setClockScheduleIntervalHour(uint8_t time, bool onlyDataSave) {
   delaySleep(SLEEP_MAX_TIME);
   EEStorage.setClockScheduleIntervalHour(time);
@@ -532,8 +537,11 @@ volatile uint32_t motionEnableTime = 0;
 volatile uint32_t clockEnableTime = 0;
 
 void motionEnabledAction() {
+  delaySleep(SLEEP_MAX_TIME);
   setEnable5V_2Output(true, false);
+  digitalWrite(OUT_5V_2, HIGH);
   motionEnableTime = myTZ.toLocal(rtcDS3231.getNow()) + EEStorage.motionDetectedEnabledTime();
+  sendEnable5V2Output();  
 }
 
 void motionDisabledAction() {
@@ -685,9 +693,15 @@ volatile bool canSleep;
 void delaySleep(u_int32_t delay) {
   u_int32_t now = millis();
 
+  u_int32_t newSleep = now + delay;
+
+  if (newSleep < sleepWaitTime && now > sleepSetTime) {
+    return;
+  }
+
   canSleep = false;
   sleepSetTime = now;
-  sleepWaitTime = now + delay;
+  sleepWaitTime = newSleep;
 }
 
 void compensateSleepDelay() {
@@ -733,6 +747,10 @@ void buttonInterrupt() {
     return;
   }
 
+  if(digitalRead(MOTION_PIN) != HIGH){
+    return;
+  }
+
   delaySleep(SLEEP_MAX_TIME);
 
   motionEnabledAction();
@@ -770,6 +788,7 @@ void setup() {
   // Select the STM32RTC::MODE_BCD or STM32RTC::MODE_MIX
   // By default the STM32RTC::MODE_BCD is selected.
   // rtc.setBinaryMode(STM32RTC::MODE_BCD);
+
   rtc.begin(true); /* reset the RTC else the binary mode is not changed */
 #else
   rtc.begin();
@@ -779,15 +798,14 @@ void setup() {
   rtcDS3231.enableOscillator(true, false, 0);
   rtcDS3231.setClockMode(false);
 
-  attachInterrupt(digitalPinToInterrupt(CLOCK_PIN), clockInterrupt, FALLING);
+  attachInterrupt(digitalPinToInterrupt(CLOCK_PIN), clockInterrupt, HIGH);
+  attachInterrupt(digitalPinToInterrupt(MOTION_PIN), buttonInterrupt, HIGH);
 
   LowPower.begin();
 
-  if (EEStorage.enableMotionDetection()) {
-    LowPower.attachInterruptWakeup(MOTION_PIN, buttonInterrupt, CHANGE, SLEEP_MODE);
-  }
-
-  LowPower.attachInterruptWakeup(PA3, serialWakeup, CHANGE, SLEEP_MODE);
+  LowPower.attachInterruptWakeup(MOTION_PIN, buttonInterrupt, CHANGE, SLEEP_MODE);
+  LowPower.enableWakeupFrom(&Serial2, serialWakeup);
+  // LowPower.attachInterruptWakeup(PA3, serialWakeup, CHANGE, SLEEP_MODE);
   LowPower.enableWakeupFrom(&rtc, alarmMatch);
 }
 
@@ -803,10 +821,12 @@ void loop() {
     rtcDS3231.enableOscillator(false, false, 0);
     Serial2.flush();
 
-    disableAutoActions();
-    setNewRTCClockAwake();
+    if (sleepWaitTime - sleepSetTime > SLEEP_RS485_TIME) {
+      disableAutoActions();
+      setNewRTCClockAwake();
+    }
 
-    LowPower.deepSleep();  //sleep
+    LowPower.sleep();  //sleep
 
     //weakup
     Serial2.flush();
