@@ -208,7 +208,10 @@ time_t DS3231::getNow(TwoWire & _Wire){
   uint32_t t;
   uint16_t days = date2days(yOff, m, d);
   t = time2long(days, hh, mm, ss);
-  t += SECONDS_FROM_1970_TO_2000;  // seconds from 1970 to 2000
+  
+  //#if defined (__AVR__)
+	 t += SECONDS_FROM_1970_TO_2000;  // seconds from 1970 to 2000
+//#endif
 
   return t;
 }
@@ -293,16 +296,9 @@ byte DS3231::getYear() {
 // epoch = UnixTime and starts at 01.01.1970 00:00:00
 // HINT: => the AVR time.h Lib is based on the year 2000
 void DS3231::setEpoch(time_t epoch, bool flag_localtime) {
-#if defined (__AVR__)
-	epoch -= SECONDS_FROM_1970_TO_2000;
-#endif
+
 	struct tm tmnow;
-	if (flag_localtime) {
-		localtime_r(&epoch, &tmnow);
-	}
-	else {
-		gmtime_r(&epoch, &tmnow);
-	}
+gmtime_r(&epoch, &tmnow);
 	setSecond(tmnow.tm_sec);
 	setMinute(tmnow.tm_min);
 	setHour(tmnow.tm_hour);

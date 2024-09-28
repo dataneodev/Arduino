@@ -111,6 +111,7 @@ EE EEPROM24C32;
 Storage EEStorage(&EEPROM24C32);
 DS3231 rtcDS3231;  // Set up access to the DS3231
 STM32RTC& rtc = STM32RTC::getInstance();
+static uint32_t atime = 2000;
 
 TimeChangeRule myDST = { "EDT", Last, Sun, Mar, 2, 120 };  // Daylight time = UTC - 4 hours
 TimeChangeRule mySTD = { "EST", Last, Sun, Nov, 2, 60 };   // Standard time = UTC - 5 hours
@@ -355,6 +356,9 @@ void sendClock() {
   mMessage.setSensor(MY_TIME_SENSOR_ID);
   mMessage.setType(V_VAR1);
   send(mMessage.set((uint32_t)myTZ.toLocal(rtcDS3231.getNow())));
+
+  mMessage.setType(V_VAR2);
+  send(mMessage.set((uint32_t)getTimeAtStartHour(myTZ.toLocal(rtcDS3231.getNow()))));
 }
 
 void receive(const MyMessage& message)  // MySensors
@@ -490,7 +494,7 @@ void setClockScheduleEnabledTime(uint16_t time, bool onlyDataSave) {
 void setClock(time_t time) {
   delaySleep(SLEEP_MAX_TIME);
   rtcDS3231.setEpoch(myTZ.toUTC(time), false);
-  sendClock() ;
+  sendClock();
 }
 
 void setClockScheduleIntervalHour(uint8_t time, bool onlyDataSave) {
@@ -538,14 +542,12 @@ volatile uint32_t clockEnableTime = 0;
 
 void motionEnabledAction() {
   delaySleep(SLEEP_MAX_TIME);
-  setEnable5V_2Output(true, false);
   digitalWrite(OUT_5V_2, HIGH);
   motionEnableTime = myTZ.toLocal(rtcDS3231.getNow()) + EEStorage.motionDetectedEnabledTime();
-  sendEnable5V2Output();  
+  sendEnable5V2Output();
 }
 
 void motionDisabledAction() {
-  clearMotionAction();
   setEnable5V_2Output(false, false);
 }
 
@@ -565,7 +567,12 @@ void clockEnabledAction() {
   clockEnableTime = myTZ.toLocal(rtcDS3231.getNow()) + EEStorage.clockScheduleEnabledTime();
 }
 
+void clearClockAction() {
+  clockEnableTime = 0;
+}
+
 void clockDisabledAction() {
+
   setEnable5V_1Output(false, false);
   setEnable5V_2Output(false, false);
   setEnable24VOutput(false, false);
@@ -583,12 +590,22 @@ void clockInterrupt() {
     clearMotionAction();
   }
 
+  if (EEStorage.enableClockSchedule() && !isClockActionEnabled()) {
+    clearClockAction();
+  }
+
   if (EEStorage.enableMotionDetection() && motionEnableTime != 0 && motionEnableTime < unixtime) {
-    motionDisabledAction();
+    if (isMotionActionEnabled()) {
+      motionDisabledAction();
+    }
+    clearMotionAction();
   }
 
   if (EEStorage.enableClockSchedule() && clockEnableTime != 0 && clockEnableTime < unixtime) {
-    clockDisabledAction();
+    if (isClockActionEnabled()) {
+      clockDisabledAction();
+    }
+    clearClockAction();
   }
 
   if (EEStorage.enableClockSchedule() && clockEnableTime == 0 && isClockActionTime(unixtime)) {
@@ -618,11 +635,17 @@ time_t getSleepTime(time_t now) {
   }
 
   time_t startScheduleTime = getTimeAtStartHour(next) - (BEFORE_CLOCK_ENABLE_TIME_PART * (float)EEStorage.clockScheduleEnabledTime());
-  return startScheduleTime - now;
+  time_t sleep = startScheduleTime - now;
+
+  if (sleep < 10) {
+    return 15;
+  }
+
+  return sleep;
 }
 
 bool isClockActionEnabled() {
-  return EEStorage.enable24VOutput() && EEStorage.enable5V1Output() && EEStorage.enable5V2Output();
+  return EEStorage.enable24VOutput() || EEStorage.enable5V1Output() || EEStorage.enable5V2Output();
 }
 
 bool isClockActionTime(time_t now) {
@@ -662,12 +685,10 @@ bool isClockActionTime(time_t test, time_t now) {
 }
 
 time_t getTimeAtStartHour(time_t now) {
-  tmElements_t tm;
-  breakTime(now, tm);
-
-  tm.Minute = 0;
-  tm.Second = 0;
-  return makeTime(tm);
+  struct tm tmnow;
+  gmtime_r(&now, &tmnow);
+  now -= (tmnow.tm_sec + tmnow.tm_min * 60);
+  return now;
 }
 
 bool isHourHandledBySchedule(uint8_t hour) {
@@ -747,7 +768,7 @@ void buttonInterrupt() {
     return;
   }
 
-  if(digitalRead(MOTION_PIN) != HIGH){
+  if (digitalRead(MOTION_PIN) != HIGH) {
     return;
   }
 
@@ -757,6 +778,10 @@ void buttonInterrupt() {
 }
 
 void alarmMatch(void* data) {
+  if (!EEStorage.enableClockSchedule()) {
+    return;
+  }
+
   if (isClockActionEnabled()) {
     return;
   }
@@ -806,7 +831,7 @@ void setup() {
   LowPower.attachInterruptWakeup(MOTION_PIN, buttonInterrupt, CHANGE, SLEEP_MODE);
   LowPower.enableWakeupFrom(&Serial2, serialWakeup);
   // LowPower.attachInterruptWakeup(PA3, serialWakeup, CHANGE, SLEEP_MODE);
-  LowPower.enableWakeupFrom(&rtc, alarmMatch);
+  LowPower.enableWakeupFrom(&rtc, alarmMatch, &atime);
 }
 
 void loop() {
