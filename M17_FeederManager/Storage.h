@@ -54,13 +54,19 @@ public:
     return _clockScheduleIntervalHour;
   }
 
-  void setEnable24VOutput(bool state) {
+  void setEnable24VOutput(bool state, bool save = true) {
     _enable24VOutput = state;
+     if(!save){
+      return;
+    }
     EEPROM24C32->writeByte(106, state ? TRUE_VALUE : FALSE_VALUE, false, false);
   }
 
-  void setEnable5V_1Output(bool state) {
+  void setEnable5V_1Output(bool state, bool save = true) {
     _enable5V1Output = state;
+     if(!save){
+      return;
+    }
     EEPROM24C32->writeByte(107, state ? TRUE_VALUE : FALSE_VALUE, false, false);
   }
 

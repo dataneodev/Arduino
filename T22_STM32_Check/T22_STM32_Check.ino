@@ -3,8 +3,6 @@
 #define SOFTWARE_VERION "1.0"
 #define SKETCH_NAME "M17_FeederManager"
 
-#define I2C1_REMAP 1
-
 // RS485
 HardwareSerial KKKKKK(PB7, PB6);
 
