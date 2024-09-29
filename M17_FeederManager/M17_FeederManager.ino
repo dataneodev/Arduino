@@ -494,13 +494,12 @@ volatile uint32_t clockEnableTime = 0;
 void startClockAutoAction() {
   clockEnableTime = myTZ.toLocal(rtcDS3231.getNow()) + EEStorage.clockScheduleEnabledTime();
 
-  if (!isAllMotionAutoActionEnabled()) {
     setEnable5V_1Output(true, false);
     setEnable5V_2Output(true, false);
     setEnable24VOutput(true, false);
     sendClockValue();
     sendTemperature();
-  }
+  
 }
 
 bool isAllClockActionEnabled() {
@@ -544,7 +543,7 @@ void clockInterrupt() {
 
   if (EEStorage.enableMotionDetection() && motionEnableTime != 0 && motionEnableTime < nowUnixtime) {
     bool clockAutoActionInProgress = clockEnableTime != 0 && clockEnableTime > nowUnixtime;
-    stopMotionAutoAction(clockAutoActionInProgress);
+    stopMotionAutoAction(clockAutoActionInProgress &&  isAnyClockActionEnabled());
   }
 
   if (EEStorage.enableClockSchedule() && !isAllClockActionEnabled()) {
@@ -553,7 +552,7 @@ void clockInterrupt() {
 
   if (EEStorage.enableClockSchedule() && clockEnableTime != 0 && clockEnableTime < nowUnixtime) {
     bool motionAutoActionInProgress = motionEnableTime != 0 && motionEnableTime > nowUnixtime;
-    stopClockAutoAction(motionAutoActionInProgress);
+    stopClockAutoAction(motionAutoActionInProgress && isAnyMotionAutoActionEnabled());
   }
 
   if (EEStorage.enableClockSchedule() && clockEnableTime == 0 && isClockAutoActionTime(nowUnixtime)) {
@@ -762,7 +761,7 @@ void setup() {
   rtcDS3231.enable32kHz(false);
   rtcDS3231.enableOscillator(true, false, 0);
 
-  attachInterrupt(digitalPinToInterrupt(CLOCK_PIN), clockInterrupt, RISING);
+  attachInterrupt(digitalPinToInterrupt(CLOCK_PIN), clockInterrupt, FALLING);
   attachInterrupt(digitalPinToInterrupt(MOTION_PIN), buttonInterrupt, RISING);
 
   LowPower.begin();
@@ -770,7 +769,7 @@ void setup() {
   LowPower.attachInterruptWakeup(MOTION_PIN, buttonInterrupt, RISING, SLEEP_MODE);
   LowPower.enableWakeupFrom(&RS485Serial, serialWakeup);
   LowPower.enableWakeupFrom(&rtc, alarmMatch, &atime);
-  LowPower.attachInterruptWakeup(PB7, serialWakeup, RISING, SLEEP_MODE);
+  LowPower.attachInterruptWakeup(PB7, serialWakeup, CHANGE, SLEEP_MODE);
 }
 
 void loop() {
