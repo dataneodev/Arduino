@@ -1,18 +1,17 @@
 /* #region  user configuration */
 
-#define EEPROM_RESET 0x68  // zmienić wartość aby zresetować ustawienia
+#define EEPROM_RESET 0x68 // zmienić wartość aby zresetować ustawienia
 
 /* #endregion  user configuration */
 
 /* #region  const configuration */
+// RS485
+HardwareSerial RS485Serial(PB7, PB6);
 // MY SENSORS
 #define SOFTWARE_VERION "1.0"
 #define SKETCH_NAME "M17_FeederManager"
 
-// RS485
-HardwareSerial RS485Serial(PB7, PB6);
-
-#define MY_NODE_ID 80  // id węzła my sensors - każdy sterownik musi miec inny numer
+#define MY_NODE_ID 96
 
 #define MY_24V_STATUS_SENSOR_ID 1
 #define MY_5_1V_STATUS_SENSOR_ID 2
@@ -20,13 +19,14 @@ HardwareSerial RS485Serial(PB7, PB6);
 #define MY_MOTION_DETECTION_STATUS_SENSOR_ID 4
 #define MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID 5
 #define MY_TIME_SENSOR_ID 6
+#define MY_TEMPERATURE_ID 7
 
 #define ARDUINO_ARCH_STM32F1
-#define MY_DISABLED_SERIAL         // manual configure Serial
-#define MY_RS485                   // Enable RS485 transport layer
-#define MY_RS485_DE_PIN PB5        // Define this to enables DE-pin management on defined pin
-#define MY_RS485_BAUD_RATE 9600    // Set RS485 baud rate to use
-#define MY_RS485_HWSERIAL RS485Serial  //
+#define MY_DISABLED_SERIAL            // manual configure Serial
+#define MY_RS485                      // Enable RS485 transport layer
+#define MY_RS485_DE_PIN PB5           // Define this to enables DE-pin management on defined pin
+#define MY_RS485_BAUD_RATE 9600       // Set RS485 baud rate to use
+#define MY_RS485_HWSERIAL RS485Serial //
 #define MY_RS485_SOH_COUNT 6
 #define MY_TRANSPORT_WAIT_READY_MS 1
 
@@ -42,60 +42,35 @@ HardwareSerial RS485Serial(PB7, PB6);
 
 #define OUT_24V PA3
 
-#define SLEEP_START_UP 30000  // 10 sekund
-#define SLEEP_MAX_TIME 10000  // 10 sekund
-#define SLEEP_RS485_TIME 5    //5 ms
+#define SLEEP_START_UP 30000 // 10 sekund
+#define SLEEP_MAX_TIME 10000 // 10 sekund
+#define SLEEP_RS485_TIME 5   // 5 ms
 
 #define BEFORE_CLOCK_ENABLE_TIME_PART 0.6
 #define NEXT_CLOCK_ENABLE_TIME_PART 0.4
-
 /* #endregion */
 
 /* #region Imports */
-//
-#include <DS3231.h>
+#include "DS3231.h"
 #include <MySensors.h>
 #include <24C32.h>
 #include <Wire.h>
 #include <STM32LowPower.h>
-#include "Storage.h"
-#include <Timezone.h>
 #include <STM32RTC.h>
+#include "Storage.h"
+#include "Timezone.h"
+
 /* #endregion */
 
 /* #region Class definition */
-
-class StateTime {
-private:
-  unsigned long startState;
-
-public:
-  void stateStart() {
-    startState = millis();
-  }
-
-  bool isElapsed(unsigned long elapsed) {
-    unsigned long current = millis();
-
-    if (startState > current) {
-      startState = current;
-      return false;
-    }
-
-    if (startState + elapsed < current) {
-      return true;
-    }
-
-    return false;
-  }
-};
-
-class StateChangeManager {
+class StateChangeManager
+{
 private:
   bool _states[10];
 
 public:
-  bool isStateChanged(bool state, int index) {
+  bool isStateChanged(bool state, int index)
+  {
     bool changed = _states[index] != state;
     _states[index] = state;
 
@@ -109,45 +84,44 @@ MyMessage mMessage;
 StateChangeManager SCM;
 EE EEPROM24C32;
 Storage EEStorage(&EEPROM24C32);
-DS3231 rtcDS3231;  // Set up access to the DS3231
-STM32RTC& rtc = STM32RTC::getInstance();
+DS3231 rtcDS3231; // Set up access to the DS3231
+STM32RTC &rtc = STM32RTC::getInstance();
 static uint32_t atime = 2000;
 
-TimeChangeRule myDST = { "EDT", Last, Sun, Mar, 2, 120 };  // Daylight time = UTC - 4 hours
-TimeChangeRule mySTD = { "EST", Last, Sun, Nov, 2, 60 };   // Standard time = UTC - 5 hours
+TimeChangeRule myDST = {"EDT", Last, Sun, Mar, 2, 120}; // Daylight time = UTC - 4 hours
+TimeChangeRule mySTD = {"EST", Last, Sun, Nov, 2, 60};  // Standard time = UTC - 5 hours
 Timezone myTZ(myDST, mySTD);
 /* #endregion */
-
 
 /* #region  Power Optimization */
 
 /**
-  * @brief  System Clock Configuration Reduced with big peripheral reduction
-  *         The system Clock is configured as follow :
-  *            System Clock source            = PLL (HSE)
-  *            SYSCLK(Hz)                     = 72000000 --> 48000000
-  *            HCLK(Hz)                       = 72000000 --> 12000000
-  *            AHB Prescaler                  = 1        --> /4
-  *            APB1 Prescaler                 = 2        --> /1
-  *            APB2 Prescaler                 = 1
-  *            PLL_Source                     = HSE     --> HSE Pre DIV2
-  *            PLL_Mul                        = 9       --> 12
-  *            Flash Latency(WS)              = 2       --> 1
-  *            ADC Prescaler                  = 6       --> 2
-  *            USB Prescaler                  = 1.5     --> 1
-  * @param  None
-  * @retval None
-  */
+ * @brief  System Clock Configuration Reduced with big peripheral reduction
+ *         The system Clock is configured as follow :
+ *            System Clock source            = PLL (HSE)
+ *            SYSCLK(Hz)                     = 72000000 --> 48000000
+ *            HCLK(Hz)                       = 72000000 --> 12000000
+ *            AHB Prescaler                  = 1        --> /4
+ *            APB1 Prescaler                 = 2        --> /1
+ *            APB2 Prescaler                 = 1
+ *            PLL_Source                     = HSE     --> HSE Pre DIV2
+ *            PLL_Mul                        = 9       --> 12
+ *            Flash Latency(WS)              = 2       --> 1
+ *            ADC Prescaler                  = 6       --> 2
+ *            USB Prescaler                  = 1.5     --> 1
+ * @param  None
+ * @retval None
+ */
 extern "C" void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
- 
+
   /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
+   * in the RCC_OscInitTypeDef structure.
+   */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV2;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
@@ -159,21 +133,20 @@ extern "C" void SystemClock_Config(void)
   {
     Error_Handler();
   }
- 
+
   /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+   */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV4;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
- 
+
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USB;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC | RCC_PERIPHCLK_USB;
   PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
   PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
@@ -182,8 +155,9 @@ extern "C" void SystemClock_Config(void)
   }
 }
 
-void setAllPinsAnalog(void) {
-  GPIO_InitTypeDef GPIO_InitStruct = { 0, 0, 0, 0 };
+void setAllPinsAnalog(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0, 0, 0, 0};
 
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
@@ -209,7 +183,8 @@ void setAllPinsAnalog(void) {
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 }
 
-void disableClocks() {
+void disableClocks()
+{
   __HAL_RCC_GPIOA_CLK_DISABLE();
   __HAL_RCC_GPIOB_CLK_DISABLE();
   __HAL_RCC_GPIOC_CLK_DISABLE();
@@ -239,10 +214,9 @@ void disableClocks() {
 
 /* #endregion  Power Optimalization */
 
-
 /* #region  inicjalize */
-void inicjalizePins() {
-
+void inicjalizePins()
+{
   pinMode(OUT_5V_1, OUTPUT);
   digitalWrite(OUT_5V_1, LOW);
 
@@ -257,13 +231,15 @@ void inicjalizePins() {
   pinMode(MOTION_PIN, INPUT);
 }
 
-void updatePinsState() {
+void updatePinsState()
+{
   digitalWrite(OUT_5V_1, EEStorage.enable5V1Output() ? HIGH : LOW);
   digitalWrite(OUT_5V_2, EEStorage.enable5V2Output() ? HIGH : LOW);
   digitalWrite(OUT_24V, EEStorage.enable24VOutput() ? HIGH : LOW);
 }
 
-void inicjalizeI2C() {
+void inicjalizeI2C()
+{
   Wire.setSDA(SDA_PIN);
   Wire.setSCL(SCL_PIN);
   Wire.begin();
@@ -273,23 +249,26 @@ void inicjalizeI2C() {
 
 /* #region  mysensors */
 bool isPresentedToController = false;
-void presentation()  // MySensors
+void presentation() // MySensors
 {
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
   presentToControler();
   isPresentedToController = true;
 }
 
-void presentToControler() {
+void presentToControler()
+{
   present(MY_24V_STATUS_SENSOR_ID, S_BINARY, "24V Relay");
   present(MY_5_1V_STATUS_SENSOR_ID, S_BINARY, "5V 1 Relay");
   present(MY_5_2V_STATUS_SENSOR_ID, S_BINARY, "5V 2 Relay");
   present(MY_MOTION_DETECTION_STATUS_SENSOR_ID, S_BINARY, "Motion detection");
   present(MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID, S_BINARY, "Clock schedule");
-  present(MY_TIME_SENSOR_ID, S_CUSTOM, "Clock");
+  present(MY_TIME_SENSOR_ID, S_TEMP, "Temperature");
+  present(MY_TIME_SENSOR_ID, S_CUSTOM, "Internal clock");
 }
 
-void sendAllMySensorsStatus() {
+void sendAllMySensorsStatus()
+{
   sendEnable24VOutputStatus();
   sendEnable5V1Output();
   sendEnable5V2Output();
@@ -300,141 +279,169 @@ void sendAllMySensorsStatus() {
   sendEnableClockSchedule();
   sendClockScheduleEnabledTime();
   sendClockScheduleIntervalHour();
-  sendClock();
+  sendClockValue();
+  sendTemperature();
 }
 
-void sendEnable24VOutputStatus() {
+void sendEnable24VOutputStatus()
+{
   mMessage.setSensor(MY_24V_STATUS_SENSOR_ID);
   mMessage.setType(V_STATUS);
   send(mMessage.set(EEStorage.enable24VOutput()));
 }
 
-void sendEnable5V1Output() {
+void sendEnable5V1Output()
+{
   mMessage.setSensor(MY_5_1V_STATUS_SENSOR_ID);
   mMessage.setType(V_STATUS);
   send(mMessage.set(EEStorage.enable5V1Output()));
 }
 
-void sendEnable5V2Output() {
+void sendEnable5V2Output()
+{
   mMessage.setSensor(MY_5_2V_STATUS_SENSOR_ID);
   mMessage.setType(V_STATUS);
   send(mMessage.set(EEStorage.enable5V2Output()));
 }
 
-void sendEnableMotionDetection() {
+void sendEnableMotionDetection()
+{
   mMessage.setSensor(MY_MOTION_DETECTION_STATUS_SENSOR_ID);
   mMessage.setType(V_STATUS);
   send(mMessage.set(EEStorage.enableMotionDetection()));
 }
 
-void sendMotionDetectedEnabledTime() {
+void sendMotionDetectedEnabledTime()
+{
   mMessage.setSensor(MY_MOTION_DETECTION_STATUS_SENSOR_ID);
   mMessage.setType(V_VAR1);
   send(mMessage.set(EEStorage.motionDetectedEnabledTime()));
 }
 
-void sendEnableClockSchedule() {
+void sendEnableClockSchedule()
+{
   mMessage.setSensor(MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID);
   mMessage.setType(V_STATUS);
   send(mMessage.set(EEStorage.enableClockSchedule()));
 }
 
-void sendClockScheduleEnabledTime() {
+void sendClockScheduleEnabledTime()
+{
   mMessage.setSensor(MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID);
   mMessage.setType(V_VAR1);
   send(mMessage.set(EEStorage.clockScheduleEnabledTime()));
 }
 
-void sendClockScheduleIntervalHour() {
+void sendClockScheduleIntervalHour()
+{
   mMessage.setSensor(MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID);
   mMessage.setType(V_VAR2);
   send(mMessage.set(EEStorage.clockScheduleIntervalHour()));
 }
 
-void sendClock() {
+void sendClockValue()
+{
   mMessage.setSensor(MY_TIME_SENSOR_ID);
   mMessage.setType(V_VAR1);
   send(mMessage.set((uint32_t)myTZ.toLocal(rtcDS3231.getNow())));
-
-  mMessage.setType(V_VAR2);
-  send(mMessage.set((uint32_t)getTimeAtStartHour(myTZ.toLocal(rtcDS3231.getNow()))));
 }
 
-void receive(const MyMessage& message)  // MySensors
+void sendTemperature()
+{
+  mMessage.setSensor(MY_TEMPERATURE_ID);
+  mMessage.setType(V_TEMP);
+  send(mMessage.set(rtcDS3231.getTemperature(), 2));
+}
+
+void receive(const MyMessage &message) // MySensors
 {
   if (message.isAck())
     return;
 
   delaySleep(SLEEP_MAX_TIME);
 
-  if (message.sensor == MY_24V_STATUS_SENSOR_ID && message.type == V_STATUS) {
+  if (message.sensor == MY_24V_STATUS_SENSOR_ID && message.type == V_STATUS)
+  {
+    setEnable24VOutput(message.getBool(), true);
     delaySleep(SLEEP_MAX_TIME);
-    setEnable24VOutput(message.getBool(), false);
     return;
   }
 
-  if (message.sensor == MY_5_1V_STATUS_SENSOR_ID && message.type == V_STATUS) {
+  if (message.sensor == MY_5_1V_STATUS_SENSOR_ID && message.type == V_STATUS)
+  {
+    setEnable5V_1Output(message.getBool(), true);
     delaySleep(SLEEP_MAX_TIME);
-    setEnable5V_1Output(message.getBool(), false);
     return;
   }
 
-  if (message.sensor == MY_5_2V_STATUS_SENSOR_ID && message.type == V_STATUS) {
+  if (message.sensor == MY_5_2V_STATUS_SENSOR_ID && message.type == V_STATUS)
+  {
+    setEnable5V_2Output(message.getBool(), true);
     delaySleep(SLEEP_MAX_TIME);
-    setEnable5V_2Output(message.getBool(), false);
     return;
   }
 
-  if (message.sensor == MY_MOTION_DETECTION_STATUS_SENSOR_ID && message.type == V_STATUS) {
+  if (message.sensor == MY_MOTION_DETECTION_STATUS_SENSOR_ID && message.type == V_STATUS)
+  {
+
+    setEnableMotionDetection(message.getBool());
     delaySleep(SLEEP_MAX_TIME);
-    setEnableMotionDetection(message.getBool(), false);
     return;
   }
 
-  if (message.sensor == MY_MOTION_DETECTION_STATUS_SENSOR_ID && message.type == V_VAR1) {
+  if (message.sensor == MY_MOTION_DETECTION_STATUS_SENSOR_ID && message.type == V_VAR1)
+  {
+
+    setMotionDetectedEnabledTime(message.getUInt());
     delaySleep(SLEEP_MAX_TIME);
-    setMotionDetectedEnabledTime(message.getUInt(), false);
     return;
   }
 
-  if (message.sensor == MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID && message.type == V_STATUS) {
+  if (message.sensor == MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID && message.type == V_STATUS)
+  {
+
+    setEnableClockSchedule(message.getBool());
     delaySleep(SLEEP_MAX_TIME);
-    setEnableClockSchedule(message.getBool(), false);
     return;
   }
 
-  if (message.sensor == MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID && message.type == V_VAR1) {
+  if (message.sensor == MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID && message.type == V_VAR1)
+  {
+
+    setClockScheduleEnabledTime(message.getUInt());
     delaySleep(SLEEP_MAX_TIME);
-    setClockScheduleEnabledTime(message.getUInt(), false);
     return;
   }
 
-  if (message.sensor == MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID && message.type == V_VAR2) {
+  if (message.sensor == MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID && message.type == V_VAR2)
+  {
+
+    setClockScheduleIntervalHour(message.getByte());
     delaySleep(SLEEP_MAX_TIME);
-    setClockScheduleIntervalHour(message.getByte(), false);
     return;
   }
 
-  if (message.sensor == MY_TIME_SENSOR_ID && message.type == V_VAR1) {
-    delaySleep(SLEEP_MAX_TIME);
+  if (message.sensor == MY_TIME_SENSOR_ID && message.type == V_VAR1)
+  {
+
     setClock((time_t)message.getULong());
+    delaySleep(SLEEP_MAX_TIME);
   }
 }
 
-void receiveTime(uint32_t ts) {
+void receiveTime(uint32_t ts)
+{
   delaySleep(SLEEP_MAX_TIME);
   rtcDS3231.setEpoch(myTZ.toUTC(ts), false);
 }
 /* #endregion */
 
-
 /* #region actions */
-void setEnable24VOutput(bool enabled, bool onlyDataSave) {
-  delaySleep(SLEEP_MAX_TIME);
-  EEStorage.setEnable24VOutput(enabled);
-
-  if (onlyDataSave) {
-    return;
+void setEnable24VOutput(bool enabled, bool save)
+{
+  if (save)
+  {
+    EEStorage.setEnable24VOutput(enabled);
   }
 
   digitalWrite(OUT_24V, enabled ? HIGH : LOW);
@@ -442,12 +449,11 @@ void setEnable24VOutput(bool enabled, bool onlyDataSave) {
   sendEnable24VOutputStatus();
 }
 
-void setEnable5V_1Output(bool enabled, bool onlyDataSave) {
-  delaySleep(SLEEP_MAX_TIME);
-  EEStorage.setEnable5V_1Output(enabled);
-
-  if (onlyDataSave) {
-    return;
+void setEnable5V_1Output(bool enabled, bool save)
+{
+  if (save)
+  {
+    EEStorage.setEnable5V_1Output(enabled);
   }
 
   digitalWrite(OUT_5V_1, enabled ? HIGH : LOW);
@@ -455,12 +461,11 @@ void setEnable5V_1Output(bool enabled, bool onlyDataSave) {
   sendEnable5V1Output();
 }
 
-void setEnable5V_2Output(bool enabled, bool onlyDataSave) {
-  delaySleep(SLEEP_MAX_TIME);
-  EEStorage.setEnable5V_2Output(enabled);
-
-  if (onlyDataSave) {
-    return;
+void setEnable5V_2Output(bool enabled, bool save)
+{
+  if (save)
+  {
+    EEStorage.setEnable5V_2Output(enabled);
   }
 
   digitalWrite(OUT_5V_2, enabled ? HIGH : LOW);
@@ -468,152 +473,171 @@ void setEnable5V_2Output(bool enabled, bool onlyDataSave) {
   sendEnable5V2Output();
 }
 
-void setEnableClockSchedule(bool enabled, bool onlyDataSave) {
-  delaySleep(SLEEP_MAX_TIME);
+void setEnableClockSchedule(bool enabled)
+{
   EEStorage.setEnableClockSchedule(enabled);
-
-  if (onlyDataSave) {
-    return;
-  }
-
   sendEnableClockSchedule();
 }
 
-void setClockScheduleEnabledTime(uint16_t time, bool onlyDataSave) {
-  delaySleep(SLEEP_MAX_TIME);
+void setClockScheduleEnabledTime(uint16_t time)
+{
   EEStorage.setClockScheduleEnabledTime(time);
-
-  if (onlyDataSave) {
-    return;
-  }
-
   sendClockScheduleEnabledTime();
 }
 
-void setClock(time_t time) {
-  delaySleep(SLEEP_MAX_TIME);
+void setClock(time_t time)
+{
   rtcDS3231.setEpoch(myTZ.toUTC(time), false);
-  sendClock();
+  sendClockValue();
 }
 
-void setClockScheduleIntervalHour(uint8_t time, bool onlyDataSave) {
-  delaySleep(SLEEP_MAX_TIME);
+void setClockScheduleIntervalHour(uint8_t time)
+{
   EEStorage.setClockScheduleIntervalHour(time);
-
-  if (onlyDataSave) {
-    return;
-  }
-
   sendClockScheduleIntervalHour();
 }
 
-
-void setEnableMotionDetection(bool enabled, bool onlyDataSave) {
-  delaySleep(SLEEP_MAX_TIME);
-  bool previous = EEStorage.enableMotionDetection();
-
+void setEnableMotionDetection(bool enabled)
+{
   EEStorage.setEnableMotionDetection(enabled);
-
-  if (onlyDataSave) {
-    return;
-  }
-
   sendEnableMotionDetection();
 }
 
-void setMotionDetectedEnabledTime(uint16_t time, bool onlyDataSave) {
-  delaySleep(SLEEP_MAX_TIME);
+void setMotionDetectedEnabledTime(uint16_t time)
+{
   EEStorage.setMotionDetectedEnabledTime(time);
-
-  if (onlyDataSave) {
-    return;
-  }
-
   sendMotionDetectedEnabledTime();
 }
 /* #endregion */
 
-
 /* #region auto action */
-
+// motion
 volatile uint32_t motionEnableTime = 0;
-volatile uint32_t clockEnableTime = 0;
-
-void motionEnabledAction() {
-  delaySleep(SLEEP_MAX_TIME);
-  digitalWrite(OUT_5V_2, HIGH);
+void startMotionAutoAction()
+{
   motionEnableTime = myTZ.toLocal(rtcDS3231.getNow()) + EEStorage.motionDetectedEnabledTime();
-  sendEnable5V2Output();
+
+  if (!isAllMotionAutoActionEnabled())
+  {
+    setEnable5V_2Output(true, false);
+  }
 }
 
-void motionDisabledAction() {
-  setEnable5V_2Output(false, false);
+void stopMotionAutoAction(bool clockAutoActionInProgress)
+{
+  if (isAnyMotionAutoActionEnabled() && !clockAutoActionInProgress)
+  {
+    setEnable5V_2Output(false, true);
+  }
+
+  clearMotionAutoAction();
 }
 
-void clearMotionAction() {
+void clearMotionAutoAction()
+{
   motionEnableTime = 0;
 }
 
-bool isMotionActionEnabled() {
+bool isAnyMotionAutoActionEnabled()
+{
   return EEStorage.enable5V2Output();
 }
 
-void clockEnabledAction() {
-  setEnable5V_1Output(true, false);
-  setEnable5V_2Output(true, false);
-  setEnable24VOutput(true, false);
+bool isAllMotionAutoActionEnabled()
+{
+  return isAnyMotionAutoActionEnabled();
+}
 
+// clock
+volatile uint32_t clockEnableTime = 0;
+
+void startClockAutoAction()
+{
   clockEnableTime = myTZ.toLocal(rtcDS3231.getNow()) + EEStorage.clockScheduleEnabledTime();
+
+  if (!isAllMotionAutoActionEnabled())
+  {
+    setEnable5V_1Output(true, false);
+    setEnable5V_2Output(true, false);
+    setEnable24VOutput(true, false);
+  }
 }
 
-void clearClockAction() {
+bool isAllClockActionEnabled()
+{
+  return EEStorage.enable24VOutput() && EEStorage.enable5V1Output() && EEStorage.enable5V2Output();
+}
+
+bool isAnyClockActionEnabled()
+{
+  return EEStorage.enable24VOutput() || EEStorage.enable5V1Output() || EEStorage.enable5V2Output();
+}
+
+void stopClockAutoAction(bool motionAutoActionInProgress)
+{
+  if (isAnyClockActionEnabled())
+  {
+    setEnable5V_1Output(false, true);
+
+    if (!motionAutoActionInProgress)
+    {
+      setEnable5V_2Output(false, true);
+    }
+
+    setEnable24VOutput(false, true);
+  }
+
+  clearClockAutoAction();
+}
+
+void clearClockAutoAction()
+{
   clockEnableTime = 0;
 }
 
-void clockDisabledAction() {
-
-  setEnable5V_1Output(false, false);
-  setEnable5V_2Output(false, false);
-  setEnable24VOutput(false, false);
+void clearAllAutoActions()
+{
+  clearClockAutoAction();
+  clearMotionAutoAction();
 }
 
-void disableAutoActions() {
-  motionEnableTime = 0;
-  clockEnableTime = 0;
-}
+// clock interrupt
+void clockInterrupt()
+{
+  uint32_t nowUnixtime = myTZ.toLocal(rtcDS3231.getNow());
 
-void clockInterrupt() {
-  uint32_t unixtime = myTZ.toLocal(rtcDS3231.getNow());
-
-  if (EEStorage.enableClockSchedule() && !isMotionActionEnabled()) {
-    clearMotionAction();
+  if (EEStorage.enableMotionDetection() && !isAllMotionAutoActionEnabled())
+  {
+    clearMotionAutoAction();
   }
 
-  if (EEStorage.enableClockSchedule() && !isClockActionEnabled()) {
-    clearClockAction();
+  if (EEStorage.enableMotionDetection() && motionEnableTime != 0 && motionEnableTime < nowUnixtime)
+  {
+    bool clockAutoActionInProgress = clockEnableTime != 0 && clockEnableTime > nowUnixtime;
+    stopMotionAutoAction(clockAutoActionInProgress);
   }
 
-  if (EEStorage.enableMotionDetection() && motionEnableTime != 0 && motionEnableTime < unixtime) {
-    if (isMotionActionEnabled()) {
-      motionDisabledAction();
-    }
-    clearMotionAction();
+  if (EEStorage.enableClockSchedule() && !isAllClockActionEnabled())
+  {
+    clearClockAutoAction();
   }
 
-  if (EEStorage.enableClockSchedule() && clockEnableTime != 0 && clockEnableTime < unixtime) {
-    if (isClockActionEnabled()) {
-      clockDisabledAction();
-    }
-    clearClockAction();
+  if (EEStorage.enableClockSchedule() && clockEnableTime != 0 && clockEnableTime < nowUnixtime)
+  {
+    bool motionAutoActionInProgress = motionEnableTime != 0 && motionEnableTime > nowUnixtime;
+    stopClockAutoAction(motionAutoActionInProgress);
   }
 
-  if (EEStorage.enableClockSchedule() && clockEnableTime == 0 && isClockActionTime(unixtime)) {
-    clockEnabledAction();
+  if (EEStorage.enableClockSchedule() && clockEnableTime == 0 && isClockAutoActionTime(nowUnixtime))
+  {
+    startClockAutoAction();
   }
 }
 
-void setNewRTCClockAwake() {
-  if (!EEStorage.enableClockSchedule()) {
+void setNewRTCClockAwake()
+{
+  if (!EEStorage.enableClockSchedule())
+  {
     return;
   }
 
@@ -623,12 +647,15 @@ void setNewRTCClockAwake() {
   rtc.setAlarmEpoch(now + getSleepTime(myTZ.toLocal(now)));
 }
 
-time_t getSleepTime(time_t now) {
+time_t getSleepTime(time_t now)
+{
   time_t next = now;
 
-  while (true) {
+  while (true)
+  {
     next += 3600;
-    if (isHourHandledBySchedule(hour(next))) {
+    if (isHourHandledBySchedule(hour(next)))
+    {
       break;
     }
   }
@@ -636,69 +663,78 @@ time_t getSleepTime(time_t now) {
   time_t startScheduleTime = getTimeAtStartHour(next) - (BEFORE_CLOCK_ENABLE_TIME_PART * (float)EEStorage.clockScheduleEnabledTime());
   time_t sleep = startScheduleTime - now;
 
-  if (sleep < 10) {
+  if (sleep < 10)
+  {
     return 15;
   }
 
   return sleep;
 }
 
-bool isClockActionEnabled() {
-  return EEStorage.enable24VOutput() || EEStorage.enable5V1Output() || EEStorage.enable5V2Output();
-}
-
-bool isClockActionTime(time_t now) {
-  if (!EEStorage.enableClockSchedule()) {
+bool isClockAutoActionTime(time_t now)
+{
+  if (!EEStorage.enableClockSchedule())
+  {
     return false;
   }
 
-  if (isClockActionTime(now, now)) {
+  if (isClockAutoActionTimeCompare(now, now))
+  {
     return true;
   }
 
-  if (isClockActionTime(now + 3600, now)) {
+  if (isClockAutoActionTimeCompare(now + 3600, now))
+  {
     return true;
   }
 
   return false;
 }
 
-bool isClockActionTime(time_t test, time_t now) {
-  if (!isHourHandledBySchedule(hour(test))) {
+bool isClockAutoActionTimeCompare(time_t test, time_t now)
+{
+  if (!isHourHandledBySchedule(hour(test)))
+  {
     return false;
   }
 
   time_t startHour = getTimeAtStartHour(test);
 
   time_t startScheduleTime = startHour - (BEFORE_CLOCK_ENABLE_TIME_PART * (float)EEStorage.clockScheduleEnabledTime());
-  if (now < startScheduleTime) {
+  if (now < startScheduleTime)
+  {
     return false;
   }
 
   time_t endScheduleTime = startHour + (NEXT_CLOCK_ENABLE_TIME_PART * (float)EEStorage.clockScheduleEnabledTime());
-  if (now > endScheduleTime) {
+  if (now > endScheduleTime)
+  {
     return false;
   }
 
   return true;
 }
 
-time_t getTimeAtStartHour(time_t now) {
+time_t getTimeAtStartHour(time_t now)
+{
   struct tm tmnow;
   gmtime_r(&now, &tmnow);
   now -= (tmnow.tm_sec + tmnow.tm_min * 60);
   return now;
 }
 
-bool isHourHandledBySchedule(uint8_t hour) {
+bool isHourHandledBySchedule(uint8_t hour)
+{
   uint8_t check = 0;
 
-  while (check < 24) {
-    if (check == hour) {
+  while (check < 24)
+  {
+    check += EEStorage.clockScheduleIntervalHour();
+
+    if (check == hour)
+    {
       return true;
     }
-
-    check += EEStorage.clockScheduleIntervalHour();
   }
   return false;
 }
@@ -710,12 +746,14 @@ volatile u_int32_t sleepWaitTime;
 volatile u_int32_t sleepSetTime;
 volatile bool canSleep;
 
-void delaySleep(u_int32_t delay) {
+void delaySleep(u_int32_t delay)
+{
   u_int32_t now = millis();
 
   u_int32_t newSleep = now + delay;
 
-  if (newSleep < sleepWaitTime && now > sleepSetTime) {
+  if (newSleep < sleepWaitTime && now > sleepSetTime)
+  {
     return;
   }
 
@@ -724,64 +762,74 @@ void delaySleep(u_int32_t delay) {
   sleepWaitTime = newSleep;
 }
 
-void compensateSleepDelay() {
-  if (canSleep) {
+void compensateSleepDelay()
+{
+  if (canSleep)
+  {
     return;
   }
 
-  if (EEStorage.enable24VOutput()) {
+  if (EEStorage.enable24VOutput())
+  {
     return;
   }
 
-  if (EEStorage.enable5V1Output()) {
+  if (EEStorage.enable5V1Output())
+  {
     return;
   }
 
-  if (EEStorage.enable5V2Output()) {
+  if (EEStorage.enable5V2Output())
+  {
     return;
   }
 
   u_int32_t now = millis();
 
-  if (sleepSetTime > now) {
+  if (sleepSetTime > now)
+  {
     delaySleep(SLEEP_MAX_TIME);
     return;
   }
 
-  if (sleepWaitTime < now) {
+  if (sleepWaitTime < now)
+  {
     canSleep = true;
     return;
   }
 }
 
-void serialWakeup() {
+void serialWakeup()
+{
   delaySleep(SLEEP_RS485_TIME);
 }
 
-void buttonInterrupt() {
-  if (!EEStorage.enableMotionDetection()) {
+void buttonInterrupt()
+{
+  if (!EEStorage.enableMotionDetection())
+  {
     return;
   }
 
-  if (isMotionActionEnabled()) {
-    return;
-  }
-
-  if (digitalRead(MOTION_PIN) != HIGH) {
+  if (digitalRead(MOTION_PIN) != HIGH)
+  {
     return;
   }
 
   delaySleep(SLEEP_MAX_TIME);
 
-  motionEnabledAction();
+  startMotionAutoAction();
 }
 
-void alarmMatch(void* data) {
-  if (!EEStorage.enableClockSchedule()) {
+void alarmMatch(void *data)
+{
+  if (!EEStorage.enableClockSchedule())
+  {
     return;
   }
 
-  if (isClockActionEnabled()) {
+  if (isAllClockActionEnabled())
+  {
     return;
   }
 
@@ -789,12 +837,13 @@ void alarmMatch(void* data) {
 }
 /* #endregion */
 
-
 /* #region main functions */
-void before() {
+void before()
+{
+  delaySleep(SLEEP_START_UP);
+
   setAllPinsAnalog();
   disableClocks();
-  delaySleep(SLEEP_START_UP);
 
   Serial.begin(9600);
 
@@ -804,7 +853,8 @@ void before() {
   updatePinsState();
 }
 
-void setup() {
+void setup()
+{
 #if defined(RTC_BINARY_NONE)
   // Select RTC clock source: LSI_CLOCK, LSE_CLOCK or HSE_CLOCK.
   // By default the LSI is selected as source.
@@ -820,7 +870,6 @@ void setup() {
 
   rtcDS3231.enable32kHz(false);
   rtcDS3231.enableOscillator(true, false, 0);
-  rtcDS3231.setClockMode(false);
 
   attachInterrupt(digitalPinToInterrupt(CLOCK_PIN), clockInterrupt, HIGH);
   attachInterrupt(digitalPinToInterrupt(MOTION_PIN), buttonInterrupt, HIGH);
@@ -828,34 +877,40 @@ void setup() {
   LowPower.begin();
 
   LowPower.attachInterruptWakeup(MOTION_PIN, buttonInterrupt, CHANGE, SLEEP_MODE);
-  LowPower.enableWakeupFrom(&RS485Serial, serialWakeup);  
+  LowPower.enableWakeupFrom(&RS485Serial, serialWakeup);
   LowPower.enableWakeupFrom(&rtc, alarmMatch, &atime);
   LowPower.attachInterruptWakeup(PB7, serialWakeup, CHANGE, SLEEP_MODE);
 }
 
-void loop() {
-  if (SCM.isStateChanged(isPresentedToController, 0)) {
+void loop()
+{
+  if (SCM.isStateChanged(isPresentedToController, 0))
+  {
     delaySleep(SLEEP_MAX_TIME);
     sendAllMySensorsStatus();
     requestTime();
     delaySleep(SLEEP_MAX_TIME);
   }
 
-  if (canSleep) {
+  if (canSleep)
+  {
     rtcDS3231.enableOscillator(false, false, 0);
     RS485Serial.flush();
 
-    if (sleepWaitTime - sleepSetTime > SLEEP_RS485_TIME) {
-      disableAutoActions();
+    if (sleepWaitTime - sleepSetTime > SLEEP_RS485_TIME)
+    {
+      clearAllAutoActions();
       setNewRTCClockAwake();
     }
 
-    LowPower.deepSleep();  //sleep
+    LowPower.deepSleep(); // sleep
 
-    //weakup
+    // weakup
     RS485Serial.flush();
     rtcDS3231.enableOscillator(true, false, 0);
-  } else {
+  }
+  else
+  {
     compensateSleepDelay();
   }
 }
