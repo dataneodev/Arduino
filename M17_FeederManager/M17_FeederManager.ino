@@ -645,11 +645,10 @@ bool isHourHandledBySchedule(uint8_t hour) {
   uint8_t check = 0;
 
   while (check < 24) {
-    check += EEStorage.clockScheduleIntervalHour();
-
     if (check == hour) {
       return true;
     }
+    check += EEStorage.clockScheduleIntervalHour();
   }
   return false;
 }
