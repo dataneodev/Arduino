@@ -84,7 +84,12 @@ EE EEPROM24C32;
 Storage EEStorage(&EEPROM24C32);
 DS3231 rtcDS3231;  // Set up access to the DS3231
 STM32RTC &rtc = STM32RTC::getInstance();
-static uint32_t atime = 2000;
+
+#if defined(RTC_SSR_SS)
+static uint32_t atime = 678;
+#else
+static uint32_t atime = 1000;
+#endif
 
 TimeChangeRule myDST = { "EDT", Last, Sun, Mar, 2, 120 };  // Daylight time = UTC - 4 hours
 TimeChangeRule mySTD = { "EST", Last, Sun, Nov, 2, 60 };   // Standard time = UTC - 5 hours
@@ -494,12 +499,11 @@ volatile uint32_t clockEnableTime = 0;
 void startClockAutoAction() {
   clockEnableTime = myTZ.toLocal(rtcDS3231.getNow()) + EEStorage.clockScheduleEnabledTime();
 
-    setEnable5V_1Output(true, false);
-    setEnable5V_2Output(true, false);
-    setEnable24VOutput(true, false);
-    sendClockValue();
-    sendTemperature();
-  
+  setEnable5V_1Output(true, false);
+  setEnable5V_2Output(true, false);
+  setEnable24VOutput(true, false);
+  sendClockValue();
+  sendTemperature();
 }
 
 bool isAllClockActionEnabled() {
@@ -543,7 +547,7 @@ void clockInterrupt() {
 
   if (EEStorage.enableMotionDetection() && motionEnableTime != 0 && motionEnableTime < nowUnixtime) {
     bool clockAutoActionInProgress = clockEnableTime != 0 && clockEnableTime > nowUnixtime;
-    stopMotionAutoAction(clockAutoActionInProgress &&  isAnyClockActionEnabled());
+    stopMotionAutoAction(clockAutoActionInProgress && isAnyClockActionEnabled());
   }
 
   if (EEStorage.enableClockSchedule() && !isAllClockActionEnabled()) {
@@ -565,30 +569,33 @@ void setNewRTCClockAwake() {
     return;
   }
 
-  time_t now = rtcDS3231.getNow();
+  time_t now = myTZ.toLocal(rtcDS3231.getNow());
+  time_t sleepTime = getSleepTime(now);
 
   rtc.setEpoch(now);
-  rtc.setAlarmEpoch(now + getSleepTime(myTZ.toLocal(now)));
+  rtc.setAlarmEpoch(sleepTime, rtc.MATCH_YYMMDDHHMMSS);
 }
 
 time_t getSleepTime(time_t now) {
   time_t next = now;
+  byte i = 0;
 
-  while (true) {
+  while (i <= 24) {
+    i += 1;
     next += 3600;
-    if (isHourHandledBySchedule(hour(next))) {
+
+    if (isHourHandledBySchedule(hour(next)) && !isClockAutoActionTimeCompare(next, now)) {
       break;
     }
   }
 
-  time_t startScheduleTime = getTimeAtStartHour(next) - (BEFORE_CLOCK_ENABLE_TIME_PART * (float)EEStorage.clockScheduleEnabledTime());
-  time_t sleep = startScheduleTime - now;
+  time_t awake = getTimeAtStartHour(next) - (BEFORE_CLOCK_ENABLE_TIME_PART * (float)EEStorage.clockScheduleEnabledTime());
 
-  if (sleep < 10) {
-    return 15;
+  if (awake - now < 10) {
+    awake = now + 10;
   }
 
-  return sleep;
+  return awake;
 }
 
 bool isClockAutoActionTime(time_t now) {
