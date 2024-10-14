@@ -12,6 +12,10 @@ HardwareSerial RS485Serial(PB7, PB6);
 #define SKETCH_NAME "M17_FeederManager"
 
 #define MY_NODE_ID 96
+#define MY_PARENT_NODE_ID 10	
+#define MY_PARENT_NODE_IS_STATIC
+#define MY_TRANSPORT_SANITY_CHECK
+#define MY_TRANSPORT_SANITY_CHECK_INTERVAL 10800000 //3h
 
 #define MY_24V_STATUS_SENSOR_ID 1
 #define MY_5_1V_STATUS_SENSOR_ID 2
@@ -545,17 +549,18 @@ void clockInterrupt() {
     clearMotionAutoAction();
   }
 
-  if (EEStorage.enableMotionDetection() && motionEnableTime != 0 && motionEnableTime < nowUnixtime) {
-    bool clockAutoActionInProgress = clockEnableTime != 0 && clockEnableTime > nowUnixtime;
-    stopMotionAutoAction(clockAutoActionInProgress && isAnyClockActionEnabled());
-  }
-
-  if (EEStorage.enableClockSchedule() && !isAllClockActionEnabled()) {
+   if (EEStorage.enableClockSchedule() && !isAllClockActionEnabled()) {
     clearClockAutoAction();
   }
 
+  if (EEStorage.enableMotionDetection() && motionEnableTime != 0 && motionEnableTime < nowUnixtime) {
+    bool clockAutoActionInProgress = clockEnableTime != 0 && clockEnableTime > nowUnixtime + 10;
+    stopMotionAutoAction(clockAutoActionInProgress && isAnyClockActionEnabled());
+  }
+ 
+
   if (EEStorage.enableClockSchedule() && clockEnableTime != 0 && clockEnableTime < nowUnixtime) {
-    bool motionAutoActionInProgress = motionEnableTime != 0 && motionEnableTime > nowUnixtime;
+    bool motionAutoActionInProgress = motionEnableTime != 0 && motionEnableTime > nowUnixtime + 10;
     stopClockAutoAction(motionAutoActionInProgress && isAnyMotionAutoActionEnabled());
   }
 
@@ -674,6 +679,10 @@ void delaySleep(u_int32_t delay) {
   sleepWaitTime = newSleep;
 }
 
+bool isRS485Sleep() {
+  return sleepWaitTime - sleepSetTime == SLEEP_RS485_TIME ;
+}
+
 void compensateSleepDelay() {
   if (canSleep) {
     return;
@@ -790,7 +799,7 @@ void loop() {
     rtcDS3231.enableOscillator(false, false, 0);
     RS485Serial.flush();
 
-    if (sleepWaitTime - sleepSetTime > SLEEP_RS485_TIME) {
+    if (!isRS485Sleep()) {
       clearAllAutoActions();
       setNewRTCClockAwake();
     }
