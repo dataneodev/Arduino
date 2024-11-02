@@ -1,0 +1,301 @@
+.sfm-floating-menu{
+    position: fixed;
+    z-index: 99;
+}
+
+.sfm-live-demo .sfm-floating-menu{
+    position: absolute;
+}
+
+.sfm-floating-menu{
+    display: flex;
+}
+
+.sfm-floating-menu.vertical{
+    flex-direction: column;
+}
+
+.sfm-floating-menu.top-left{
+    left: 0;
+    top: 0;
+}
+
+.sfm-floating-menu.top-right{
+    right: 0;
+    top: 0;
+}
+
+.sfm-floating-menu.middle-left{
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.sfm-floating-menu.middle-right{
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.sfm-floating-menu.top-middle{
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.sfm-floating-menu.bottom-middle{
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.sfm-floating-menu.bottom-right{
+    right: 0;
+    bottom: 0;
+}
+
+.sfm-floating-menu.bottom-left{
+    left: 0;
+    bottom: 0;
+}
+
+.sfm-floating-menu a.sfm-shape-button{
+    background: #000000;
+    text-align: center;
+    transition: background 0.3s ease;
+    text-decoration: none;
+    color: #FFF;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.sfm-floating-menu i{
+    position: relative;
+}
+
+.sfm-floating-menu .sfm-button{
+    position: relative;
+    filter: drop-shadow(var(--sfm-button-shadow-x, 0) var(--sfm-button-shadow-y, 0) var(--sfm-button-shadow-blur, 0) var(--sfm-button-shadow-color, transparent));
+}
+
+.sfm-floating-menu .sfm-button.sfm-edit a.sfm-shape-button{
+    background: red !important;
+    color: #FFF !important;
+}
+
+.sfm-floating-menu .sfm-button.sfm-edit .sfm-tool-tip a{
+    background: red !important;
+}
+
+.sfm-floating-menu .sfm-button.sfm-edit .sfm-tool-tip:after{
+    border-color: transparent transparent transparent red !important;
+}
+
+.sfm-floating-menu.top-left.horizontal .sfm-button.sfm-edit .sfm-tool-tip:after,
+.sfm-floating-menu.top-middle.horizontal .sfm-button.sfm-edit .sfm-tool-tip:after,
+.sfm-floating-menu.top-right.horizontal .sfm-button.sfm-edit .sfm-tool-tip:after{
+    border-color: transparent transparent red transparent !important;
+}
+.sfm-floating-menu.top-left.vertical .sfm-button.sfm-edit .sfm-tool-tip:after,
+.sfm-floating-menu.top-middle.vertical .sfm-button.sfm-edit .sfm-tool-tip:after,
+.sfm-floating-menu.bottom-left.vertical .sfm-button.sfm-edit .sfm-tool-tip:after,
+.sfm-floating-menu.bottom-middle.vertical .sfm-button.sfm-edit .sfm-tool-tip:after,
+.sfm-floating-menu.middle-left.vertical .sfm-button.sfm-edit .sfm-tool-tip:after{
+    border-color: transparent red transparent transparent !important;
+}
+.sfm-floating-menu.top-right.vertical .sfm-button.sfm-edit .sfm-tool-tip:after,
+.sfm-floating-menu.middle-right.vertical .sfm-button.sfm-edit .sfm-tool-tip:after,
+.sfm-floating-menu.bottom-right.vertical .sfm-button.sfm-edit .sfm-tool-tip:after{
+    border-color: transparent transparent transparent red !important;
+}
+.sfm-floating-menu.bottom-left.horizontal .sfm-button.sfm-edit .sfm-tool-tip:after,
+.sfm-floating-menu.bottom-middle.horizontal .sfm-button.sfm-edit .sfm-tool-tip:after,
+.sfm-floating-menu.bottom-right.horizontal .sfm-button.sfm-edit .sfm-tool-tip:after,
+.sfm-floating-menu.middle-left.horizontal .sfm-button.sfm-edit .sfm-tool-tip:after,
+.sfm-floating-menu.middle-right.horizontal .sfm-button.sfm-edit .sfm-tool-tip:after{
+    border-color: red transparent transparent transparent !important;
+}
+
+.sfm-floating-menu .sfm-button.sfm-edit a.sfm-shape-button i {
+    -webkit-animation:sfm-spin 4s linear infinite;
+    -moz-animation:sfm-spin 4s linear infinite;
+    animation:sfm-spin 4s linear infinite;
+}
+@-moz-keyframes sfm-spin { 100% { -moz-transform: rotate(360deg); } }
+@-webkit-keyframes sfm-spin { 100% { -webkit-transform: rotate(360deg); } }
+@keyframes sfm-spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+
+.sfm-floating-menu.sfm-round a.sfm-shape-button{
+    clip-path: circle(50% at 50% 50%);
+}
+
+.sfm-floating-menu.sfm-triangle a.sfm-shape-button{
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.sfm-floating-menu.sfm-rhombus a.sfm-shape-button{
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+.sfm-floating-menu.sfm-pentagon a.sfm-shape-button{
+    clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+}
+
+.sfm-floating-menu.sfm-hexagon a.sfm-shape-button{
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.sfm-floating-menu.sfm-star a.sfm-shape-button{
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.sfm-floating-menu.sfm-rabbet a.sfm-shape-button{
+    clip-path: polygon(0% 15%, 15% 15%, 15% 0%, 85% 0%, 85% 15%, 100% 15%, 100% 85%, 85% 85%, 85% 100%, 15% 100%, 15% 85%, 0% 85%);
+}
+
+.sfm-floating-menu.sfm-oval a.sfm-shape-button{
+    clip-path: ellipse(50% 35% at 50% 50%);
+}
+
+.sfm-floating-menu .sfm-tool-tip{
+    position: absolute;
+    background: #000000;
+    font-size: 0.8em;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease-in-out;
+}
+
+.sfm-floating-menu .sfm-button:hover .sfm-tool-tip{
+    opacity: 1;
+    visibility: visible;
+}
+
+.sfm-floating-menu .sfm-tool-tip a{
+    color: #FFF;
+    display: block;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.sfm-floating-menu .sfm-tool-tip:after{
+    content: "";
+    position: absolute;
+    border-width: 0.35em;
+    border-style: solid;
+}
+
+.sfm-floating-menu.horizontal .sfm-tool-tip a{
+    padding: 0.6em 0.3em;
+}
+
+.sfm-floating-menu.vertical .sfm-tool-tip a{
+    padding: 0.3em 0.6em;
+}
+
+/* Top Left - Horizontal */
+.sfm-floating-menu.top-left.horizontal .sfm-tool-tip,
+.sfm-floating-menu.top-middle.horizontal .sfm-tool-tip,
+.sfm-floating-menu.top-right.horizontal .sfm-tool-tip{
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    top: 100%;
+    left: 50%;
+    transform: translate(-50%, 20px);
+}
+
+.sfm-floating-menu.top-left.horizontal .sfm-tool-tip:after,
+.sfm-floating-menu.top-middle.horizontal .sfm-tool-tip:after,
+.sfm-floating-menu.top-right.horizontal .sfm-tool-tip:after{
+    border-color: transparent transparent #000000 transparent;
+    left: 50%;
+    bottom: 100%;
+    transform: translateX(-50%);
+}
+
+/* Top Left - Vertical */
+.sfm-floating-menu.top-left.vertical .sfm-tool-tip,
+.sfm-floating-menu.top-middle.vertical .sfm-tool-tip,
+.sfm-floating-menu.bottom-left.vertical .sfm-tool-tip,
+.sfm-floating-menu.bottom-middle.vertical .sfm-tool-tip,
+.sfm-floating-menu.middle-left.vertical .sfm-tool-tip{
+    top: 50%;
+    left: 100%;
+    transform: translate(20px, -50%);
+}
+
+.sfm-floating-menu.top-left.vertical .sfm-tool-tip:after,
+.sfm-floating-menu.top-middle.vertical .sfm-tool-tip:after,
+.sfm-floating-menu.bottom-left.vertical .sfm-tool-tip:after,
+.sfm-floating-menu.bottom-middle.vertical .sfm-tool-tip:after,
+.sfm-floating-menu.middle-left.vertical .sfm-tool-tip:after{
+    border-color: transparent #000000 transparent transparent;
+    top: 50%;
+    right: 100%;
+    transform: translateY(-50%);
+}
+
+/* Top Right - Vertical */
+.sfm-floating-menu.top-right.vertical .sfm-tool-tip,
+.sfm-floating-menu.middle-right.vertical .sfm-tool-tip,
+.sfm-floating-menu.bottom-right.vertical .sfm-tool-tip{
+    top: 50%;
+    right: 100%;
+    transform: translate(-20px, -50%);
+}
+
+.sfm-floating-menu.top-right.vertical .sfm-tool-tip:after,
+.sfm-floating-menu.middle-right.vertical .sfm-tool-tip:after,
+.sfm-floating-menu.bottom-right.vertical .sfm-tool-tip:after{
+    border-color: transparent transparent transparent #000000;
+    top: 50%;
+    left: 100%;
+    transform: translateY(-50%);
+}
+
+/* Bottom Left - Horizontal */
+.sfm-floating-menu.bottom-left.horizontal .sfm-tool-tip,
+.sfm-floating-menu.bottom-middle.horizontal .sfm-tool-tip,
+.sfm-floating-menu.bottom-right.horizontal .sfm-tool-tip,
+.sfm-floating-menu.middle-left.horizontal .sfm-tool-tip,
+.sfm-floating-menu.middle-right.horizontal .sfm-tool-tip{
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    bottom: 100%;
+    left: 50%;
+    transform: translate(-50%, -20px);
+}
+
+.sfm-floating-menu.bottom-left.horizontal .sfm-tool-tip:after,
+.sfm-floating-menu.bottom-middle.horizontal .sfm-tool-tip:after,
+.sfm-floating-menu.bottom-right.horizontal .sfm-tool-tip:after,
+.sfm-floating-menu.middle-left.horizontal .sfm-tool-tip:after,
+.sfm-floating-menu.middle-right.horizontal .sfm-tool-tip:after{
+    border-color: #000000 transparent transparent transparent;
+    left: 50%;
+    top: 100%;
+    transform: translateX(-50%);
+}
+
+/* Shadow */
+
+.sfm-shadow-fields {
+    display: flex;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+}
+
+.sfm-shadow-fields li>label {
+    text-align: center;
+    display: block;
+}
+
+.sfm-shadow-fields li input[type="number"] {
+    width: 60px;
+    text-align: center;
+}

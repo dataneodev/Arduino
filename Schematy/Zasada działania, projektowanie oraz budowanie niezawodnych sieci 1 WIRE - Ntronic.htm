@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="pl-PL" prefix="og: https://ogp.me/ns#"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="profile" href="http://gmpg.org/xfn/11">
+
+        
+		<!-- All in One SEO 4.6.9.1 - aioseo.com -->
+		<meta name="description" content="Czym jest 1 Wire®? Protokół pierwotnie zaprojektowany żeby ułatwić komunikację urządzeniom znajdującym się w niewielkiej odległości. Przykład stanowią układy scalone znajdujące się w niedużej odległości względem siebie na obwodzie drukowanym chcące wymieniać miedzy sobą informację. Chodziło o rozszerzenie możliwości komunikacyjnych układów scalonych z wykorzystaniem tylko jednej linii danych. Z czasem protokół 1WIRE rozszerzył się do">
+		<meta name="robots" content="max-image-preview:large">
+		<link rel="canonical" href="https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/">
+		<meta name="generator" content="All in One SEO (AIOSEO) 4.6.9.1">
+		<meta property="og:locale" content="pl_PL">
+		<meta property="og:site_name" content="Ntronic - Projektowanie urządzeń elektronicznych">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Zasada działania, projektowanie oraz budowanie niezawodnych sieci 1 WIRE - Ntronic">
+		<meta property="og:description" content="Czym jest 1 Wire®? Protokół pierwotnie zaprojektowany żeby ułatwić komunikację urządzeniom znajdującym się w niewielkiej odległości. Przykład stanowią układy scalone znajdujące się w niedużej odległości względem siebie na obwodzie drukowanym chcące wymieniać miedzy sobą informację. Chodziło o rozszerzenie możliwości komunikacyjnych układów scalonych z wykorzystaniem tylko jednej linii danych. Z czasem protokół 1WIRE rozszerzył się do">
+		<meta property="og:url" content="https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/">
+		<meta property="og:image" content="https://ntronic.pl/wp-content/uploads/2019/05/cropped-pierwsza-wersja.png">
+		<meta property="og:image:secure_url" content="https://ntronic.pl/wp-content/uploads/2019/05/cropped-pierwsza-wersja.png">
+		<meta property="og:image:width" content="1381">
+		<meta property="og:image:height" content="325">
+		<meta property="article:published_time" content="2019-10-31T15:00:06+00:00">
+		<meta property="article:modified_time" content="2023-06-24T12:57:47+00:00">
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="Zasada działania, projektowanie oraz budowanie niezawodnych sieci 1 WIRE - Ntronic">
+		<meta name="twitter:description" content="Czym jest 1 Wire®? Protokół pierwotnie zaprojektowany żeby ułatwić komunikację urządzeniom znajdującym się w niewielkiej odległości. Przykład stanowią układy scalone znajdujące się w niedużej odległości względem siebie na obwodzie drukowanym chcące wymieniać miedzy sobą informację. Chodziło o rozszerzenie możliwości komunikacyjnych układów scalonych z wykorzystaniem tylko jednej linii danych. Z czasem protokół 1WIRE rozszerzył się do">
+		<meta name="twitter:image" content="https://ntronic.pl/wp-content/uploads/2019/05/cropped-pierwsza-wersja.png">
+		<script type="text/javascript" async="" charset="utf-8" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/recaptcha__pl.js" crossorigin="anonymous" integrity="sha384-RTXzFSpuipPvsSi794VNjkI4DEcysoK+zdnkPPyzIQIGd1TJCyDfCDPRLUjQrSwq"></script><script async="" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/b6de4418b16f76e5663a98ef9.js"></script><script async="" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/a" data-sumo-site-id="eeb91b00808898004747b1004586a100db722200d3b8700053bc920022c49000" data-sumo-platform="wordpress"></script><script type="application/ld+json" class="aioseo-schema">
+			{"@context":"https:\/\/schema.org","@graph":[{"@type":"BlogPosting","@id":"https:\/\/ntronic.pl\/jak-projektowac-niezawodna-siec-1wire\/#blogposting","name":"Zasada dzia\u0142ania, projektowanie oraz budowanie niezawodnych sieci 1 WIRE - Ntronic","headline":"Zasada dzia\u0142ania, projektowanie oraz budowanie niezawodnych sieci 1 WIRE","author":{"@id":"https:\/\/ntronic.pl\/author\/norbert\/#author"},"publisher":{"@id":"https:\/\/ntronic.pl\/#organization"},"image":{"@type":"ImageObject","url":"https:\/\/ntronic.pl\/wp-content\/uploads\/2019\/10\/telephone-wires.png","width":1200,"height":628,"caption":"Jak nie projektowa\u0107 sieci 1 wire"},"datePublished":"2019-10-31T16:00:06+01:00","dateModified":"2023-06-24T14:57:47+02:00","inLanguage":"pl-PL","mainEntityOfPage":{"@id":"https:\/\/ntronic.pl\/jak-projektowac-niezawodna-siec-1wire\/#webpage"},"isPartOf":{"@id":"https:\/\/ntronic.pl\/jak-projektowac-niezawodna-siec-1wire\/#webpage"},"articleSection":"Baza Wiedzy \/ Blog, onewire, projektowanie sieci 1wire, Sie\u0107 1wire"},{"@type":"BreadcrumbList","@id":"https:\/\/ntronic.pl\/jak-projektowac-niezawodna-siec-1wire\/#breadcrumblist","itemListElement":[{"@type":"ListItem","@id":"https:\/\/ntronic.pl\/#listItem","position":1,"name":"Dom","item":"https:\/\/ntronic.pl\/","nextItem":"https:\/\/ntronic.pl\/jak-projektowac-niezawodna-siec-1wire\/#listItem"},{"@type":"ListItem","@id":"https:\/\/ntronic.pl\/jak-projektowac-niezawodna-siec-1wire\/#listItem","position":2,"name":"Zasada dzia\u0142ania, projektowanie oraz budowanie niezawodnych sieci 1 WIRE","previousItem":"https:\/\/ntronic.pl\/#listItem"}]},{"@type":"Organization","@id":"https:\/\/ntronic.pl\/#organization","name":"Ntronic","description":"Projektowanie urz\u0105dze\u0144 elektronicznych","url":"https:\/\/ntronic.pl\/","logo":{"@type":"ImageObject","url":"https:\/\/ntronic.pl\/wp-content\/uploads\/2024\/03\/cropped-Ntronic-Logo-1.webp","@id":"https:\/\/ntronic.pl\/jak-projektowac-niezawodna-siec-1wire\/#organizationLogo","width":1380,"height":338},"image":{"@id":"https:\/\/ntronic.pl\/jak-projektowac-niezawodna-siec-1wire\/#organizationLogo"}},{"@type":"Person","@id":"https:\/\/ntronic.pl\/author\/norbert\/#author","url":"https:\/\/ntronic.pl\/author\/norbert\/","name":"Norbert","image":{"@type":"ImageObject","@id":"https:\/\/ntronic.pl\/jak-projektowac-niezawodna-siec-1wire\/#authorImage","url":"https:\/\/secure.gravatar.com\/avatar\/4251354810429e80640d4ec4663aa5e5?s=96&d=monsterid&r=g","width":96,"height":96,"caption":"Norbert"}},{"@type":"WebPage","@id":"https:\/\/ntronic.pl\/jak-projektowac-niezawodna-siec-1wire\/#webpage","url":"https:\/\/ntronic.pl\/jak-projektowac-niezawodna-siec-1wire\/","name":"Zasada dzia\u0142ania, projektowanie oraz budowanie niezawodnych sieci 1 WIRE - Ntronic","description":"Czym jest 1 Wire\u00ae? Protok\u00f3\u0142 pierwotnie zaprojektowany \u017ceby u\u0142atwi\u0107 komunikacj\u0119 urz\u0105dzeniom znajduj\u0105cym si\u0119 w niewielkiej odleg\u0142o\u015bci. Przyk\u0142ad stanowi\u0105 uk\u0142ady scalone znajduj\u0105ce si\u0119 w niedu\u017cej odleg\u0142o\u015bci wzgl\u0119dem siebie na obwodzie drukowanym chc\u0105ce wymienia\u0107 miedzy sob\u0105 informacj\u0119. Chodzi\u0142o o rozszerzenie mo\u017cliwo\u015bci komunikacyjnych uk\u0142ad\u00f3w scalonych z wykorzystaniem tylko jednej linii danych. Z czasem protok\u00f3\u0142 1WIRE rozszerzy\u0142 si\u0119 do","inLanguage":"pl-PL","isPartOf":{"@id":"https:\/\/ntronic.pl\/#website"},"breadcrumb":{"@id":"https:\/\/ntronic.pl\/jak-projektowac-niezawodna-siec-1wire\/#breadcrumblist"},"author":{"@id":"https:\/\/ntronic.pl\/author\/norbert\/#author"},"creator":{"@id":"https:\/\/ntronic.pl\/author\/norbert\/#author"},"image":{"@type":"ImageObject","url":"https:\/\/ntronic.pl\/wp-content\/uploads\/2019\/10\/telephone-wires.png","@id":"https:\/\/ntronic.pl\/jak-projektowac-niezawodna-siec-1wire\/#mainImage","width":1200,"height":628,"caption":"Jak nie projektowa\u0107 sieci 1 wire"},"primaryImageOfPage":{"@id":"https:\/\/ntronic.pl\/jak-projektowac-niezawodna-siec-1wire\/#mainImage"},"datePublished":"2019-10-31T16:00:06+01:00","dateModified":"2023-06-24T14:57:47+02:00"},{"@type":"WebSite","@id":"https:\/\/ntronic.pl\/#website","url":"https:\/\/ntronic.pl\/","name":"Ntronic","description":"Projektowanie urz\u0105dze\u0144 elektronicznych","inLanguage":"pl-PL","publisher":{"@id":"https:\/\/ntronic.pl\/#organization"}}]}
+		</script>
+		<!-- All in One SEO -->
+
+<script>window._wca = window._wca || [];</script>
+
+	<!-- This site is optimized with the Yoast SEO plugin v23.3 - https://yoast.com/wordpress/plugins/seo/ -->
+	<title>Zasada działania, projektowanie oraz budowanie niezawodnych sieci 1 WIRE - Ntronic</title>
+	<meta name="description" content="Fenomen stosowania protokołu 1WIRE opiera się na połączeniu wielu czujników z urządzeniem odpytującym, jedną magistralą tworzącą wspólną sieć.">
+	<link rel="canonical" href="https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/">
+	<meta property="og:locale" content="pl_PL">
+	<meta property="og:type" content="article">
+	<meta property="og:title" content="Zasada działania, projektowanie oraz budowanie niezawodnych sieci 1 WIRE - Ntronic">
+	<meta property="og:description" content="Fenomen stosowania protokołu 1WIRE opiera się na połączeniu wielu czujników z urządzeniem odpytującym, jedną magistralą tworzącą wspólną sieć.">
+	<meta property="og:url" content="https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/">
+	<meta property="og:site_name" content="Ntronic">
+	<meta property="article:publisher" content="https://www.facebook.com/NorbertSzymczykCEO">
+	<meta property="article:published_time" content="2019-10-31T15:00:06+00:00">
+	<meta property="article:modified_time" content="2023-06-24T12:57:47+00:00">
+	<meta property="og:image" content="https://ntronic.pl/wp-content/uploads/2019/10/telephone-wires.png">
+	<meta property="og:image:width" content="1200">
+	<meta property="og:image:height" content="628">
+	<meta property="og:image:type" content="image/png">
+	<meta name="author" content="Norbert">
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:label1" content="Napisane przez">
+	<meta name="twitter:data1" content="Norbert">
+	<meta name="twitter:label2" content="Szacowany czas czytania">
+	<meta name="twitter:data2" content="14 minut">
+	<script type="application/ld+json" class="yoast-schema-graph">{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/#article","isPartOf":{"@id":"https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/"},"author":{"name":"Norbert","@id":"https://ntronic.pl/#/schema/person/e0b10a379047fe1268a253315315af70"},"headline":"Zasada działania, projektowanie oraz budowanie niezawodnych sieci 1 WIRE","datePublished":"2019-10-31T15:00:06+00:00","dateModified":"2023-06-24T12:57:47+00:00","mainEntityOfPage":{"@id":"https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/"},"wordCount":2463,"commentCount":0,"publisher":{"@id":"https://ntronic.pl/#organization"},"image":{"@id":"https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/#primaryimage"},"thumbnailUrl":"https://ntronic.pl/wp-content/uploads/2019/10/telephone-wires.png","keywords":["onewire","projektowanie sieci 1wire","Sieć 1wire"],"articleSection":["Baza Wiedzy / Blog"],"inLanguage":"pl-PL","potentialAction":[{"@type":"CommentAction","name":"Comment","target":["https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/#respond"]}]},{"@type":"WebPage","@id":"https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/","url":"https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/","name":"Zasada działania, projektowanie oraz budowanie niezawodnych sieci 1 WIRE - Ntronic","isPartOf":{"@id":"https://ntronic.pl/#website"},"primaryImageOfPage":{"@id":"https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/#primaryimage"},"image":{"@id":"https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/#primaryimage"},"thumbnailUrl":"https://ntronic.pl/wp-content/uploads/2019/10/telephone-wires.png","datePublished":"2019-10-31T15:00:06+00:00","dateModified":"2023-06-24T12:57:47+00:00","description":"Fenomen stosowania protokołu 1WIRE opiera się na połączeniu wielu czujników z urządzeniem odpytującym, jedną magistralą tworzącą wspólną sieć.","breadcrumb":{"@id":"https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/#breadcrumb"},"inLanguage":"pl-PL","potentialAction":[{"@type":"ReadAction","target":["https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/"]}]},{"@type":"ImageObject","inLanguage":"pl-PL","@id":"https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/#primaryimage","url":"https://ntronic.pl/wp-content/uploads/2019/10/telephone-wires.png","contentUrl":"https://ntronic.pl/wp-content/uploads/2019/10/telephone-wires.png","width":1200,"height":628,"caption":"Jak nie projektować sieci 1 wire"},{"@type":"BreadcrumbList","@id":"https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Strona główna","item":"https://ntronic.pl/"},{"@type":"ListItem","position":2,"name":"Zasada działania, projektowanie oraz budowanie niezawodnych sieci 1 WIRE"}]},{"@type":"WebSite","@id":"https://ntronic.pl/#website","url":"https://ntronic.pl/","name":"Ntronic","description":"Projektowanie urządzeń elektronicznych","publisher":{"@id":"https://ntronic.pl/#organization"},"potentialAction":[{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://ntronic.pl/?s={search_term_string}"},"query-input":"required name=search_term_string"}],"inLanguage":"pl-PL"},{"@type":"Organization","@id":"https://ntronic.pl/#organization","name":"Ntronic","url":"https://ntronic.pl/","logo":{"@type":"ImageObject","inLanguage":"pl-PL","@id":"https://ntronic.pl/#/schema/logo/image/","url":"https://ntronic.pl/wp-content/uploads/2019/05/pierwsza-wersja.png","contentUrl":"https://ntronic.pl/wp-content/uploads/2019/05/pierwsza-wersja.png","width":1381,"height":373,"caption":"Ntronic"},"image":{"@id":"https://ntronic.pl/#/schema/logo/image/"},"sameAs":["https://www.facebook.com/NorbertSzymczykCEO"]},{"@type":"Person","@id":"https://ntronic.pl/#/schema/person/e0b10a379047fe1268a253315315af70","name":"Norbert","image":{"@type":"ImageObject","inLanguage":"pl-PL","@id":"https://ntronic.pl/#/schema/person/image/","url":"https://secure.gravatar.com/avatar/4251354810429e80640d4ec4663aa5e5?s=96&d=monsterid&r=g","contentUrl":"https://secure.gravatar.com/avatar/4251354810429e80640d4ec4663aa5e5?s=96&d=monsterid&r=g","caption":"Norbert"}}]}</script>
+	<!-- / Yoast SEO plugin. -->
+
+
+<script type="application/javascript" id="pys-version-script">console.log('PixelYourSite Free version 9.7.1');</script>
+<link rel="dns-prefetch" href="https://stats.wp.com/">
+<link rel="dns-prefetch" href="https://fonts.googleapis.com/">
+<link rel="alternate" type="application/rss+xml" title="Ntronic » Kanał z wpisami" href="https://ntronic.pl/feed/">
+<link rel="alternate" type="application/rss+xml" title="Ntronic » Kanał z komentarzami" href="https://ntronic.pl/comments/feed/">
+<link rel="alternate" type="application/rss+xml" title="Ntronic » Zasada działania, projektowanie oraz budowanie niezawodnych sieci 1 WIRE Kanał z komentarzami" href="https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/feed/">
+		<!-- This site uses the Google Analytics by MonsterInsights plugin v9.2.1 - Using Analytics tracking - https://www.monsterinsights.com/ -->
+							<script src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/google-analytics_analytics.js" data-cfasync="false" data-wpfc-render="false" type="text/javascript" async=""></script>
+			<script data-cfasync="false" data-wpfc-render="false" type="text/javascript">
+				var mi_version = '9.2.1';
+				var mi_track_user = true;
+				var mi_no_track_reason = '';
+								var MonsterInsightsDefaultLocations = {"page_location":"https:\/\/ntronic.pl\/jak-projektowac-niezawodna-siec-1wire\/"};
+				if ( typeof MonsterInsightsPrivacyGuardFilter === 'function' ) {
+					var MonsterInsightsLocations = (typeof MonsterInsightsExcludeQuery === 'object') ? MonsterInsightsPrivacyGuardFilter( MonsterInsightsExcludeQuery ) : MonsterInsightsPrivacyGuardFilter( MonsterInsightsDefaultLocations );
+				} else {
+					var MonsterInsightsLocations = (typeof MonsterInsightsExcludeQuery === 'object') ? MonsterInsightsExcludeQuery : MonsterInsightsDefaultLocations;
+				}
+
+								var disableStrs = [
+										'ga-disable-G-708DZS5VY3',
+									];
+
+				/* Function to detect opted out users */
+				function __gtagTrackerIsOptedOut() {
+					for (var index = 0; index < disableStrs.length; index++) {
+						if (document.cookie.indexOf(disableStrs[index] + '=true') > -1) {
+							return true;
+						}
+					}
+
+					return false;
+				}
+
+				/* Disable tracking if the opt-out cookie exists. */
+				if (__gtagTrackerIsOptedOut()) {
+					for (var index = 0; index < disableStrs.length; index++) {
+						window[disableStrs[index]] = true;
+					}
+				}
+
+				/* Opt-out function */
+				function __gtagTrackerOptout() {
+					for (var index = 0; index < disableStrs.length; index++) {
+						document.cookie = disableStrs[index] + '=true; expires=Thu, 31 Dec 2099 23:59:59 UTC; path=/';
+						window[disableStrs[index]] = true;
+					}
+				}
+
+				if ('undefined' === typeof gaOptout) {
+					function gaOptout() {
+						__gtagTrackerOptout();
+					}
+				}
+								window.dataLayer = window.dataLayer || [];
+
+				window.MonsterInsightsDualTracker = {
+					helpers: {},
+					trackers: {},
+				};
+				if (mi_track_user) {
+					function __gtagDataLayer() {
+						dataLayer.push(arguments);
+					}
+
+					function __gtagTracker(type, name, parameters) {
+						if (!parameters) {
+							parameters = {};
+						}
+
+						if (parameters.send_to) {
+							__gtagDataLayer.apply(null, arguments);
+							return;
+						}
+
+						if (type === 'event') {
+														parameters.send_to = monsterinsights_frontend.v4_id;
+							var hookName = name;
+							if (typeof parameters['event_category'] !== 'undefined') {
+								hookName = parameters['event_category'] + ':' + name;
+							}
+
+							if (typeof MonsterInsightsDualTracker.trackers[hookName] !== 'undefined') {
+								MonsterInsightsDualTracker.trackers[hookName](parameters);
+							} else {
+								__gtagDataLayer('event', name, parameters);
+							}
+							
+						} else {
+							__gtagDataLayer.apply(null, arguments);
+						}
+					}
+
+					__gtagTracker('js', new Date());
+					__gtagTracker('set', {
+						'developer_id.dZGIzZG': true,
+											});
+					if ( MonsterInsightsLocations.page_location ) {
+						__gtagTracker('set', MonsterInsightsLocations);
+					}
+										__gtagTracker('config', 'G-708DZS5VY3', {"forceSSL":"true"} );
+															window.gtag = __gtagTracker;										(function () {
+						/* https://developers.google.com/analytics/devguides/collection/analyticsjs/ */
+						/* ga and __gaTracker compatibility shim. */
+						var noopfn = function () {
+							return null;
+						};
+						var newtracker = function () {
+							return new Tracker();
+						};
+						var Tracker = function () {
+							return null;
+						};
+						var p = Tracker.prototype;
+						p.get = noopfn;
+						p.set = noopfn;
+						p.send = function () {
+							var args = Array.prototype.slice.call(arguments);
+							args.unshift('send');
+							__gaTracker.apply(null, args);
+						};
+						var __gaTracker = function () {
+							var len = arguments.length;
+							if (len === 0) {
+								return;
+							}
+							var f = arguments[len - 1];
+							if (typeof f !== 'object' || f === null || typeof f.hitCallback !== 'function') {
+								if ('send' === arguments[0]) {
+									var hitConverted, hitObject = false, action;
+									if ('event' === arguments[1]) {
+										if ('undefined' !== typeof arguments[3]) {
+											hitObject = {
+												'eventAction': arguments[3],
+												'eventCategory': arguments[2],
+												'eventLabel': arguments[4],
+												'value': arguments[5] ? arguments[5] : 1,
+											}
+										}
+									}
+									if ('pageview' === arguments[1]) {
+										if ('undefined' !== typeof arguments[2]) {
+											hitObject = {
+												'eventAction': 'page_view',
+												'page_path': arguments[2],
+											}
+										}
+									}
+									if (typeof arguments[2] === 'object') {
+										hitObject = arguments[2];
+									}
+									if (typeof arguments[5] === 'object') {
+										Object.assign(hitObject, arguments[5]);
+									}
+									if ('undefined' !== typeof arguments[1].hitType) {
+										hitObject = arguments[1];
+										if ('pageview' === hitObject.hitType) {
+											hitObject.eventAction = 'page_view';
+										}
+									}
+									if (hitObject) {
+										action = 'timing' === arguments[1].hitType ? 'timing_complete' : hitObject.eventAction;
+										hitConverted = mapArgs(hitObject);
+										__gtagTracker('event', action, hitConverted);
+									}
+								}
+								return;
+							}
+
+							function mapArgs(args) {
+								var arg, hit = {};
+								var gaMap = {
+									'eventCategory': 'event_category',
+									'eventAction': 'event_action',
+									'eventLabel': 'event_label',
+									'eventValue': 'event_value',
+									'nonInteraction': 'non_interaction',
+									'timingCategory': 'event_category',
+									'timingVar': 'name',
+									'timingValue': 'value',
+									'timingLabel': 'event_label',
+									'page': 'page_path',
+									'location': 'page_location',
+									'title': 'page_title',
+									'referrer' : 'page_referrer',
+								};
+								for (arg in args) {
+																		if (!(!args.hasOwnProperty(arg) || !gaMap.hasOwnProperty(arg))) {
+										hit[gaMap[arg]] = args[arg];
+									} else {
+										hit[arg] = args[arg];
+									}
+								}
+								return hit;
+							}
+
+							try {
+								f.hitCallback();
+							} catch (ex) {
+							}
+						};
+						__gaTracker.create = newtracker;
+						__gaTracker.getByName = newtracker;
+						__gaTracker.getAll = function () {
+							return [];
+						};
+						__gaTracker.remove = noopfn;
+						__gaTracker.loaded = true;
+						window['__gaTracker'] = __gaTracker;
+					})();
+									} else {
+										console.log("");
+					(function () {
+						function __gtagTracker() {
+							return null;
+						}
+
+						window['__gtagTracker'] = __gtagTracker;
+						window['gtag'] = __gtagTracker;
+					})();
+									}
+			</script>
+				<!-- / Google Analytics by MonsterInsights -->
+		<script type="text/javascript">
+/* <![CDATA[ */
+window._wpemojiSettings = {"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/15.0.3\/72x72\/","ext":".png","svgUrl":"https:\/\/s.w.org\/images\/core\/emoji\/15.0.3\/svg\/","svgExt":".svg","source":{"concatemoji":"https:\/\/ntronic.pl\/wp-includes\/js\/wp-emoji-release.min.js?ver=6.5.5"}};
+/*! This file is auto-generated */
+!function(i,n){var o,s,e;function c(e){try{var t={supportTests:e,timestamp:(new Date).valueOf()};sessionStorage.setItem(o,JSON.stringify(t))}catch(e){}}function p(e,t,n){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);var t=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data),r=(e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(n,0,0),new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data));return t.every(function(e,t){return e===r[t]})}function u(e,t,n){switch(t){case"flag":return n(e,"\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f","\ud83c\udff3\ufe0f\u200b\u26a7\ufe0f")?!1:!n(e,"\ud83c\uddfa\ud83c\uddf3","\ud83c\uddfa\u200b\ud83c\uddf3")&&!n(e,"\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f","\ud83c\udff4\u200b\udb40\udc67\u200b\udb40\udc62\u200b\udb40\udc65\u200b\udb40\udc6e\u200b\udb40\udc67\u200b\udb40\udc7f");case"emoji":return!n(e,"\ud83d\udc26\u200d\u2b1b","\ud83d\udc26\u200b\u2b1b")}return!1}function f(e,t,n){var r="undefined"!=typeof WorkerGlobalScope&&self instanceof WorkerGlobalScope?new OffscreenCanvas(300,150):i.createElement("canvas"),a=r.getContext("2d",{willReadFrequently:!0}),o=(a.textBaseline="top",a.font="600 32px Arial",{});return e.forEach(function(e){o[e]=t(a,e,n)}),o}function t(e){var t=i.createElement("script");t.src=e,t.defer=!0,i.head.appendChild(t)}"undefined"!=typeof Promise&&(o="wpEmojiSettingsSupports",s=["flag","emoji"],n.supports={everything:!0,everythingExceptFlag:!0},e=new Promise(function(e){i.addEventListener("DOMContentLoaded",e,{once:!0})}),new Promise(function(t){var n=function(){try{var e=JSON.parse(sessionStorage.getItem(o));if("object"==typeof e&&"number"==typeof e.timestamp&&(new Date).valueOf()<e.timestamp+604800&&"object"==typeof e.supportTests)return e.supportTests}catch(e){}return null}();if(!n){if("undefined"!=typeof Worker&&"undefined"!=typeof OffscreenCanvas&&"undefined"!=typeof URL&&URL.createObjectURL&&"undefined"!=typeof Blob)try{var e="postMessage("+f.toString()+"("+[JSON.stringify(s),u.toString(),p.toString()].join(",")+"));",r=new Blob([e],{type:"text/javascript"}),a=new Worker(URL.createObjectURL(r),{name:"wpTestEmojiSupports"});return void(a.onmessage=function(e){c(n=e.data),a.terminate(),t(n)})}catch(e){}c(n=f(s,u,p))}t(n)}).then(function(e){for(var t in e)n.supports[t]=e[t],n.supports.everything=n.supports.everything&&n.supports[t],"flag"!==t&&(n.supports.everythingExceptFlag=n.supports.everythingExceptFlag&&n.supports[t]);n.supports.everythingExceptFlag=n.supports.everythingExceptFlag&&!n.supports.flag,n.DOMReady=!1,n.readyCallback=function(){n.DOMReady=!0}}).then(function(){return e}).then(function(){var e;n.supports.everything||(n.readyCallback(),(e=n.source||{}).concatemoji?t(e.concatemoji):e.wpemoji&&e.twemoji&&(t(e.twemoji),t(e.wpemoji)))}))}((window,document),window._wpemojiSettings);
+/* ]]> */
+</script>
+<style id="wp-emoji-styles-inline-css" type="text/css">
+
+	img.wp-smiley, img.emoji {
+		display: inline !important;
+		border: none !important;
+		box-shadow: none !important;
+		height: 1em !important;
+		width: 1em !important;
+		margin: 0 0.07em !important;
+		vertical-align: -0.1em !important;
+		background: none !important;
+		padding: 0 !important;
+	}
+</style>
+<link rel="stylesheet" id="wp-block-library-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/style.min.css" type="text/css" media="all">
+<style id="wp-block-library-theme-inline-css" type="text/css">
+.wp-block-audio figcaption{color:#555;font-size:13px;text-align:center}.is-dark-theme .wp-block-audio figcaption{color:#ffffffa6}.wp-block-audio{margin:0 0 1em}.wp-block-code{border:1px solid #ccc;border-radius:4px;font-family:Menlo,Consolas,monaco,monospace;padding:.8em 1em}.wp-block-embed figcaption{color:#555;font-size:13px;text-align:center}.is-dark-theme .wp-block-embed figcaption{color:#ffffffa6}.wp-block-embed{margin:0 0 1em}.blocks-gallery-caption{color:#555;font-size:13px;text-align:center}.is-dark-theme .blocks-gallery-caption{color:#ffffffa6}.wp-block-image figcaption{color:#555;font-size:13px;text-align:center}.is-dark-theme .wp-block-image figcaption{color:#ffffffa6}.wp-block-image{margin:0 0 1em}.wp-block-pullquote{border-bottom:4px solid;border-top:4px solid;color:currentColor;margin-bottom:1.75em}.wp-block-pullquote cite,.wp-block-pullquote footer,.wp-block-pullquote__citation{color:currentColor;font-size:.8125em;font-style:normal;text-transform:uppercase}.wp-block-quote{border-left:.25em solid;margin:0 0 1.75em;padding-left:1em}.wp-block-quote cite,.wp-block-quote footer{color:currentColor;font-size:.8125em;font-style:normal;position:relative}.wp-block-quote.has-text-align-right{border-left:none;border-right:.25em solid;padding-left:0;padding-right:1em}.wp-block-quote.has-text-align-center{border:none;padding-left:0}.wp-block-quote.is-large,.wp-block-quote.is-style-large,.wp-block-quote.is-style-plain{border:none}.wp-block-search .wp-block-search__label{font-weight:700}.wp-block-search__button{border:1px solid #ccc;padding:.375em .625em}:where(.wp-block-group.has-background){padding:1.25em 2.375em}.wp-block-separator.has-css-opacity{opacity:.4}.wp-block-separator{border:none;border-bottom:2px solid;margin-left:auto;margin-right:auto}.wp-block-separator.has-alpha-channel-opacity{opacity:1}.wp-block-separator:not(.is-style-wide):not(.is-style-dots){width:100px}.wp-block-separator.has-background:not(.is-style-dots){border-bottom:none;height:1px}.wp-block-separator.has-background:not(.is-style-wide):not(.is-style-dots){height:2px}.wp-block-table{margin:0 0 1em}.wp-block-table td,.wp-block-table th{word-break:normal}.wp-block-table figcaption{color:#555;font-size:13px;text-align:center}.is-dark-theme .wp-block-table figcaption{color:#ffffffa6}.wp-block-video figcaption{color:#555;font-size:13px;text-align:center}.is-dark-theme .wp-block-video figcaption{color:#ffffffa6}.wp-block-video{margin:0 0 1em}.wp-block-template-part.has-background{margin-bottom:0;margin-top:0;padding:1.25em 2.375em}
+</style>
+<link rel="stylesheet" id="mediaelement-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/mediaelementplayer-legacy.min.css" type="text/css" media="all">
+<link rel="stylesheet" id="wp-mediaelement-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/wp-mediaelement.min.css" type="text/css" media="all">
+<style id="jetpack-sharing-buttons-style-inline-css" type="text/css">
+.jetpack-sharing-buttons__services-list{display:flex;flex-direction:row;flex-wrap:wrap;gap:0;list-style-type:none;margin:5px;padding:0}.jetpack-sharing-buttons__services-list.has-small-icon-size{font-size:12px}.jetpack-sharing-buttons__services-list.has-normal-icon-size{font-size:16px}.jetpack-sharing-buttons__services-list.has-large-icon-size{font-size:24px}.jetpack-sharing-buttons__services-list.has-huge-icon-size{font-size:36px}@media print{.jetpack-sharing-buttons__services-list{display:none!important}}.editor-styles-wrapper .wp-block-jetpack-sharing-buttons{gap:0;padding-inline-start:0}ul.jetpack-sharing-buttons__services-list.has-background{padding:1.25em 2.375em}
+</style>
+<style id="classic-theme-styles-inline-css" type="text/css">
+/*! This file is auto-generated */
+.wp-block-button__link{color:#fff;background-color:#32373c;border-radius:9999px;box-shadow:none;text-decoration:none;padding:calc(.667em + 2px) calc(1.333em + 2px);font-size:1.125em}.wp-block-file__button{background:#32373c;color:#fff;text-decoration:none}
+</style>
+<style id="global-styles-inline-css" type="text/css">
+body{--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgba(6,147,227,1) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgba(252,185,0,1) 0%,rgba(255,105,0,1) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgba(255,105,0,1) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: 36px;--wp--preset--font-size--x-large: 42px;--wp--preset--font-family--inter: "Inter", sans-serif;--wp--preset--font-family--cardo: Cardo;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgba(255, 255, 255, 1), 6px 6px rgba(0, 0, 0, 1);--wp--preset--shadow--crisp: 6px 6px 0px rgba(0, 0, 0, 1);}:where(.is-layout-flex){gap: 0.5em;}:where(.is-layout-grid){gap: 0.5em;}body .is-layout-flex{display: flex;}body .is-layout-flex{flex-wrap: wrap;align-items: center;}body .is-layout-flex > *{margin: 0;}body .is-layout-grid{display: grid;}body .is-layout-grid > *{margin: 0;}:where(.wp-block-columns.is-layout-flex){gap: 2em;}:where(.wp-block-columns.is-layout-grid){gap: 2em;}:where(.wp-block-post-template.is-layout-flex){gap: 1.25em;}:where(.wp-block-post-template.is-layout-grid){gap: 1.25em;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}
+.wp-block-navigation a:where(:not(.wp-element-button)){color: inherit;}
+:where(.wp-block-post-template.is-layout-flex){gap: 1.25em;}:where(.wp-block-post-template.is-layout-grid){gap: 1.25em;}
+:where(.wp-block-columns.is-layout-flex){gap: 2em;}:where(.wp-block-columns.is-layout-grid){gap: 2em;}
+.wp-block-pullquote{font-size: 1.5em;line-height: 1.6;}
+</style>
+<link rel="stylesheet" id="cookie-notice-front-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/front.min.css" type="text/css" media="all">
+<link rel="stylesheet" id="responsive-lightbox-swipebox-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/swipebox.min.css" type="text/css" media="all">
+<link rel="stylesheet" id="fontawesome-6.3.0-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/fontawesome-6.3.0.css" type="text/css" media="all">
+<link rel="stylesheet" id="eleganticons-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/eleganticons.css" type="text/css" media="all">
+<link rel="stylesheet" id="essentialicon-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/essentialicon.css" type="text/css" media="all">
+<link rel="stylesheet" id="iconfont-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/icofont.css" type="text/css" media="all">
+<link rel="stylesheet" id="materialdesignicons-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/materialdesignicons.css" type="text/css" media="all">
+<link rel="stylesheet" id="sfm-style-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/style.css" type="text/css" media="all">
+<style id="sfm-style-inline-css" type="text/css">
+.sfm-floating-menu a.sfm-shape-button{height:50px;width:50px}.sfm-floating-menu a.sfm-shape-button{font-size:16px}.sfm-floating-menu i{top:0px}.sfm-floating-menu.horizontal{margin:0 -2.5px}.sfm-floating-menu.vertical{margin:-2.5px 0}.sfm-floating-menu.horizontal .sfm-button{margin:0 2.5px}.sfm-floating-menu.vertical .sfm-button{margin:2.5px 0}.sfm-floating-menu.top-left,.sfm-floating-menu.top-right,.sfm-floating-menu.top-middle{top:0px}.sfm-floating-menu.bottom-left,.sfm-floating-menu.bottom-right,.sfm-floating-menu.bottom-middle{bottom:0px}.sfm-floating-menu.top-left,.sfm-floating-menu.bottom-left,.sfm-floating-menu.middle-left{left:0px}.sfm-floating-menu.top-right,.sfm-floating-menu.bottom-right,.sfm-floating-menu.middle-right{right:0px}.sfm-floating-menu{z-index:999}.sfm-floating-menu .sfm-6543fbff29927 a.sfm-shape-button{background:#000000}.sfm-floating-menu .sfm-6543fbff29927 a.sfm-shape-button{color:#FFFFFF}.sfm-floating-menu .sfm-6543fbff29927:hover a.sfm-shape-button{background:#000000}.sfm-floating-menu .sfm-6543fbff29927:hover a.sfm-shape-button{color:#FFFFFF}.sfm-floating-menu .sfm-6543fbff29927 .sfm-tool-tip{background:#000000}.sfm-floating-menu.top-left.horizontal .sfm-6543fbff29927 .sfm-tool-tip:after,.sfm-floating-menu.top-middle.horizontal .sfm-6543fbff29927 .sfm-tool-tip:after,.sfm-floating-menu.top-right.horizontal .sfm-6543fbff29927 .sfm-tool-tip:after{border-color:transparent transparent #000000 transparent}.sfm-floating-menu.top-left.vertical .sfm-6543fbff29927 .sfm-tool-tip:after,.sfm-floating-menu.top-middle.vertical .sfm-6543fbff29927 .sfm-tool-tip:after,.sfm-floating-menu.bottom-left.vertical .sfm-6543fbff29927 .sfm-tool-tip:after,.sfm-floating-menu.bottom-middle.vertical .sfm-6543fbff29927 .sfm-tool-tip:after,.sfm-floating-menu.middle-left.vertical .sfm-6543fbff29927 .sfm-tool-tip:after{border-color:transparent #000000 transparent transparent}.sfm-floating-menu.top-right.vertical .sfm-6543fbff29927 .sfm-tool-tip:after,.sfm-floating-menu.middle-right.vertical .sfm-6543fbff29927 .sfm-tool-tip:after,.sfm-floating-menu.bottom-right.vertical .sfm-6543fbff29927 .sfm-tool-tip:after{border-color:transparent transparent transparent #000000}.sfm-floating-menu.bottom-left.horizontal .sfm-6543fbff29927 .sfm-tool-tip:after,.sfm-floating-menu.bottom-middle.horizontal .sfm-6543fbff29927 .sfm-tool-tip:after,.sfm-floating-menu.bottom-right.horizontal .sfm-6543fbff29927 .sfm-tool-tip:after,.sfm-floating-menu.middle-left.horizontal .sfm-6543fbff29927 .sfm-tool-tip:after,.sfm-floating-menu.middle-right.horizontal .sfm-6543fbff29927 .sfm-tool-tip:after{border-color:#000000 transparent transparent transparent}.sfm-floating-menu .sfm-6543fbff29927 .sfm-tool-tip a{color:#FFFFFF}.sfm-floating-menu .sfm-tool-tip a{font-family:Open Sans}.sfm-floating-menu .sfm-tool-tip a{font-weight:400;font-style:normal}.sfm-floating-menu .sfm-tool-tip a{text-transform:none}.sfm-floating-menu .sfm-tool-tip a{text-decoration:none}.sfm-floating-menu .sfm-tool-tip a{font-size:16px}.sfm-floating-menu .sfm-tool-tip a{line-height:1}.sfm-floating-menu .sfm-tool-tip a{letter-spacing:0px}.sfm-floating-menu .sfm-button{--sfm-button-shadow-x:0px}.sfm-floating-menu .sfm-button{--sfm-button-shadow-y:0px}.sfm-floating-menu .sfm-button{--sfm-button-shadow-blur:0px}
+</style>
+<link rel="stylesheet" id="sfm-fonts-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/css.css" type="text/css" media="all">
+<link rel="stylesheet" id="wpsm_tabs_r-font-awesome-front-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/font-awesome.min.css" type="text/css" media="all">
+<link rel="stylesheet" id="wpsm_tabs_r_bootstrap-front-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/bootstrap-front.css" type="text/css" media="all">
+<link rel="stylesheet" id="wpsm_tabs_r_animate-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/animate_002.css" type="text/css" media="all">
+<link rel="stylesheet" id="ufbl-custom-select-css-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/jquery.selectbox.css" type="text/css" media="all">
+<link rel="stylesheet" id="ufbl-front-css-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/frontend.css" type="text/css" media="all">
+<link rel="stylesheet" id="woocommerce-layout-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/woocommerce-layout.css" type="text/css" media="all">
+<style id="woocommerce-layout-inline-css" type="text/css">
+
+	.infinite-scroll .woocommerce-pagination {
+		display: none;
+	}
+</style>
+<link rel="stylesheet" id="woocommerce-smallscreen-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/woocommerce-smallscreen.css" type="text/css" media="only screen and (max-width: 768px)">
+<link rel="stylesheet" id="woocommerce-general-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/woocommerce.css" type="text/css" media="all">
+<style id="woocommerce-inline-inline-css" type="text/css">
+.woocommerce form .form-row .required { visibility: visible; }
+</style>
+<link rel="stylesheet" id="wp-date-remover-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/wp-date-remover-public.css" type="text/css" media="all">
+<link rel="stylesheet" id="wpforms-classic-full-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/wpforms-full.min.css" type="text/css" media="all">
+<link rel="stylesheet" id="animate-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/animate.css" type="text/css" media="all">
+<link rel="stylesheet" id="font-awesome-v4-shims-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/v4-shims.css" type="text/css" media="all">
+<link rel="stylesheet" id="owl-carousel-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/owl.carousel.css" type="text/css" media="all">
+<link rel="stylesheet" id="nivo-lightbox-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/nivo-lightbox.css" type="text/css" media="all">
+<link rel="stylesheet" id="total-style-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/style_002.css" type="text/css" media="all">
+<style id="total-style-inline-css" type="text/css">
+:root{--total-template-color:#990000;--total-template-transparent-color:rgba(153,0,0,0.9);--total-sidebar-width:30%;--total-container-width:1170px;--total-fluid-container-width:80%;--total-container-padding:80px;--total-content-header-color:#000000;--total-content-text-color :#333333;--total-content-link-color :#dd4040;--total-content-link-hov-color :;--total-title-color :#000000;--total-tagline-color :#000000;--total-logo-width :261px;--total-footer-bg-url:url(https://ntronic.pl/wp-content/themes/total/images/footer-bg.jpg);--total-footer-bg-size:auto;--total-footer-bg-repeat:repeat;--total-footer-bg-position:center center;--total-footer-bg-attachment:scroll;--total-footer-bg-overlay:;--total-footer-bg-color:#222222;--total-top-footer-title-color:#EEEEEE;--total-top-footer-text-color:#EEEEEE;--total-footer-anchor-color:#EEEEEE;--total-bottom-footer-text-color:#EEEEEE;--total-bottom-footer-anchor-color:#EEEEEE}:root{}.ht-header{border-top:4px solid var(--total-template-color)}#ht-colophon{border-top:4px solid var(--total-template-color)}@media screen and (max-width:1170px){.ht-container,.elementor-section.elementor-section-boxed.elementor-section-stretched>.elementor-container,.elementor-template-full-width .elementor-section.elementor-section-boxed>.elementor-container{width:auto !important;padding-left:30px !important;padding-right:30px !important} body.ht-boxed #ht-page{width:95% !important} .ht-slide-caption{width:80% !important}}
+</style>
+<link rel="stylesheet" id="total-fonts-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/4e591f0cdab780795359e32754dbe58d.css" type="text/css" media="all">
+<link rel="stylesheet" id="tablepress-default-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/default.css" type="text/css" media="all">
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/frontend-gtag.min.js" id="monsterinsights-frontend-script-js" async="async" data-wp-strategy="async"></script>
+<script data-cfasync="false" data-wpfc-render="false" type="text/javascript" id="monsterinsights-frontend-script-js-extra">/* <![CDATA[ */
+var monsterinsights_frontend = {"js_events_tracking":"true","download_extensions":"doc,pdf,ppt,zip,xls,docx,pptx,xlsx","inbound_paths":"[]","home_url":"https:\/\/ntronic.pl","hash_tracking":"false","v4_id":"G-708DZS5VY3"};/* ]]> */
+</script>
+<script type="text/javascript" id="cookie-notice-front-js-before">
+/* <![CDATA[ */
+var cnArgs = {"ajaxUrl":"https:\/\/ntronic.pl\/wp-admin\/admin-ajax.php","nonce":"bd46113395","hideEffect":"fade","position":"bottom","onScroll":false,"onScrollOffset":100,"onClick":false,"cookieName":"cookie_notice_accepted","cookieTime":2592000,"cookieTimeRejected":2592000,"globalCookie":false,"redirection":false,"cache":false,"revokeCookies":false,"revokeCookiesOpt":"automatic"};
+/* ]]> */
+</script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/front.min.js" id="cookie-notice-front-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/jquery.min.js" id="jquery-core-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/jquery-migrate.min.js" id="jquery-migrate-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/jquery.swipebox.min.js" id="responsive-lightbox-swipebox-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/underscore.min.js" id="underscore-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/infinite-scroll.pkgd.min.js" id="responsive-lightbox-infinite-scroll-js"></script>
+<script type="text/javascript" id="responsive-lightbox-js-before">
+/* <![CDATA[ */
+var rlArgs = {"script":"swipebox","selector":"lightbox","customEvents":"","activeGalleries":true,"animation":true,"hideCloseButtonOnMobile":false,"removeBarsOnMobile":false,"hideBars":true,"hideBarsDelay":5000,"videoMaxWidth":1080,"useSVG":true,"loopAtEnd":false,"woocommerce_gallery":false,"ajaxurl":"https:\/\/ntronic.pl\/wp-admin\/admin-ajax.php","nonce":"ebd89d2e36","preview":false,"postId":338,"scriptExtension":false};
+/* ]]> */
+</script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/front.js" id="responsive-lightbox-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/jquery.selectbox-0.2.min.js" id="ufbl-custom-select-js-js"></script>
+<script type="text/javascript" id="ufbl-front-js-js-extra">
+/* <![CDATA[ */
+var frontend_js_obj = {"default_error_message":"This field is required","ajax_url":"https:\/\/ntronic.pl\/wp-admin\/admin-ajax.php","ajax_nonce":"78088336ad"};
+/* ]]> */
+</script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/frontend.js" id="ufbl-front-js-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/jquery.blockUI.min.js" id="jquery-blockui-js" defer="defer" data-wp-strategy="defer"></script>
+<script type="text/javascript" id="wc-add-to-cart-js-extra">
+/* <![CDATA[ */
+var wc_add_to_cart_params = {"ajax_url":"\/wp-admin\/admin-ajax.php","wc_ajax_url":"\/?wc-ajax=%%endpoint%%","i18n_view_cart":"Zobacz koszyk","cart_url":"https:\/\/ntronic.pl\/cart\/","is_cart":"","cart_redirect_after_add":"no"};
+/* ]]> */
+</script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/add-to-cart.min.js" id="wc-add-to-cart-js" defer="defer" data-wp-strategy="defer"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/js.cookie.min.js" id="js-cookie-js" defer="defer" data-wp-strategy="defer"></script>
+<script type="text/javascript" id="woocommerce-js-extra">
+/* <![CDATA[ */
+var woocommerce_params = {"ajax_url":"\/wp-admin\/admin-ajax.php","wc_ajax_url":"\/?wc-ajax=%%endpoint%%"};
+/* ]]> */
+</script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/woocommerce.min.js" id="woocommerce-js" defer="defer" data-wp-strategy="defer"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/wp-date-remover-public.js" id="wp-date-remover-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/s-202444.js" id="woocommerce-analytics-js" defer="defer" data-wp-strategy="defer"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/imagesloaded.min.js" id="imagesloaded-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/jquery.stellar.js" id="jquery-stellar-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/jquery.bind-first-0.2.3.min.js" id="jquery-bind-first-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/js.cookie-2.1.3.min.js" id="js-cookie-pys-js"></script>
+<script type="text/javascript" id="pys-js-extra">
+/* <![CDATA[ */
+var pysOptions = {"staticEvents":{"facebook":{"init_event":[{"delay":0,"type":"static","name":"PageView","pixelIds":["148563083252847"],"eventID":"511a3fe6-83ff-4101-acac-4d6987b4643f","params":{"post_category":"Baza Wiedzy \/ Blog","page_title":"Zasada dzia\u0142ania, projektowanie oraz budowanie niezawodnych sieci 1 WIRE","post_type":"post","post_id":338,"plugin":"PixelYourSite","user_role":"guest","event_url":"ntronic.pl\/jak-projektowac-niezawodna-siec-1wire\/"},"e_id":"init_event","ids":[],"hasTimeWindow":false,"timeWindow":0,"woo_order":"","edd_order":""}]}},"dynamicEvents":[],"triggerEvents":[],"triggerEventTypes":[],"facebook":{"pixelIds":["148563083252847"],"advancedMatching":{"external_id":"dbcacebcceeebacbdefeddef"},"advancedMatchingEnabled":true,"removeMetadata":false,"contentParams":{"post_type":"post","post_id":338,"content_name":"Zasada dzia\u0142ania, projektowanie oraz budowanie niezawodnych sieci 1 WIRE","categories":"Baza Wiedzy \/ Blog","tags":"onewire, projektowanie sieci 1wire, Sie\u0107 1wire"},"commentEventEnabled":true,"wooVariableAsSimple":false,"downloadEnabled":true,"formEventEnabled":true,"serverApiEnabled":true,"wooCRSendFromServer":false,"send_external_id":null},"debug":"","siteUrl":"https:\/\/ntronic.pl","ajaxUrl":"https:\/\/ntronic.pl\/wp-admin\/admin-ajax.php","ajax_event":"c1480edc50","enable_remove_download_url_param":"1","cookie_duration":"7","last_visit_duration":"60","enable_success_send_form":"","ajaxForServerEvent":"1","ajaxForServerStaticEvent":"1","send_external_id":"1","external_id_expire":"180","google_consent_mode":"1","gdpr":{"ajax_enabled":false,"all_disabled_by_api":false,"facebook_disabled_by_api":false,"analytics_disabled_by_api":false,"google_ads_disabled_by_api":false,"pinterest_disabled_by_api":false,"bing_disabled_by_api":false,"externalID_disabled_by_api":false,"facebook_prior_consent_enabled":true,"analytics_prior_consent_enabled":true,"google_ads_prior_consent_enabled":null,"pinterest_prior_consent_enabled":true,"bing_prior_consent_enabled":true,"cookiebot_integration_enabled":false,"cookiebot_facebook_consent_category":"marketing","cookiebot_analytics_consent_category":"statistics","cookiebot_tiktok_consent_category":"marketing","cookiebot_google_ads_consent_category":null,"cookiebot_pinterest_consent_category":"marketing","cookiebot_bing_consent_category":"marketing","consent_magic_integration_enabled":false,"real_cookie_banner_integration_enabled":false,"cookie_notice_integration_enabled":false,"cookie_law_info_integration_enabled":false,"analytics_storage":{"enabled":true,"value":"granted","filter":false},"ad_storage":{"enabled":true,"value":"granted","filter":false},"ad_user_data":{"enabled":true,"value":"granted","filter":false},"ad_personalization":{"enabled":true,"value":"granted","filter":false}},"cookie":{"disabled_all_cookie":false,"disabled_start_session_cookie":false,"disabled_advanced_form_data_cookie":false,"disabled_landing_page_cookie":false,"disabled_first_visit_cookie":false,"disabled_trafficsource_cookie":false,"disabled_utmTerms_cookie":false,"disabled_utmId_cookie":false},"tracking_analytics":{"TrafficSource":"direct","TrafficLanding":"undefined","TrafficUtms":[],"TrafficUtmsId":[]},"woo":{"enabled":true,"enabled_save_data_to_orders":true,"addToCartOnButtonEnabled":true,"addToCartOnButtonValueEnabled":true,"addToCartOnButtonValueOption":"price","singleProductId":null,"removeFromCartSelector":"form.woocommerce-cart-form .remove","addToCartCatchMethod":"add_cart_hook","is_order_received_page":false,"containOrderId":false},"edd":{"enabled":false}};
+/* ]]> */
+</script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/public.js" id="pys-js"></script>
+<link rel="https://api.w.org/" href="https://ntronic.pl/wp-json/"><link rel="alternate" type="application/json" href="https://ntronic.pl/wp-json/wp/v2/posts/338"><link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://ntronic.pl/xmlrpc.php?rsd">
+<link rel="shortlink" href="https://ntronic.pl/?p=338">
+<link rel="alternate" type="application/json+oembed" href="https://ntronic.pl/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fntronic.pl%2Fjak-projektowac-niezawodna-siec-1wire%2F">
+<link rel="alternate" type="text/xml+oembed" href="https://ntronic.pl/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fntronic.pl%2Fjak-projektowac-niezawodna-siec-1wire%2F&amp;format=xml">
+	<style>img#wpstats{display:none}</style>
+		<!-- Google site verification - Google for WooCommerce -->
+<meta name="google-site-verification" content="T2qI9TCFZTsYp5GNjko7WqQoB06t_e-Lv6t_840IGrk">
+	<noscript><style>.woocommerce-product-gallery{ opacity: 1 !important; }</style></noscript>
+	<meta name="generator" content="Elementor 3.23.4; features: additional_custom_breakpoints, e_lazyload; settings: css_print_method-external, google_font-enabled, font_display-auto">
+			<style>
+				.e-con.e-parent:nth-of-type(n+4):not(.e-lazyloaded):not(.e-no-lazyload),
+				.e-con.e-parent:nth-of-type(n+4):not(.e-lazyloaded):not(.e-no-lazyload) * {
+					background-image: none !important;
+				}
+				@media screen and (max-height: 1024px) {
+					.e-con.e-parent:nth-of-type(n+3):not(.e-lazyloaded):not(.e-no-lazyload),
+					.e-con.e-parent:nth-of-type(n+3):not(.e-lazyloaded):not(.e-no-lazyload) * {
+						background-image: none !important;
+					}
+				}
+				@media screen and (max-height: 640px) {
+					.e-con.e-parent:nth-of-type(n+2):not(.e-lazyloaded):not(.e-no-lazyload),
+					.e-con.e-parent:nth-of-type(n+2):not(.e-lazyloaded):not(.e-no-lazyload) * {
+						background-image: none !important;
+					}
+				}
+			</style>
+			<style id="wp-fonts-local" type="text/css">
+@font-face{font-family:Inter;font-style:normal;font-weight:300 900;font-display:fallback;src:url('https://ntronic.pl/wp-content/plugins/woocommerce/assets/fonts/Inter-VariableFont_slnt,wght.woff2') format('woff2');font-stretch:normal;}
+@font-face{font-family:Cardo;font-style:normal;font-weight:400;font-display:fallback;src:url('https://ntronic.pl/wp-content/plugins/woocommerce/assets/fonts/cardo_normal_400.woff2') format('woff2');}
+</style>
+<link rel="icon" href="https://ntronic.pl/wp-content/uploads/2019/05/Ikona-100x100.png" sizes="32x32">
+<link rel="icon" href="https://ntronic.pl/wp-content/uploads/2019/05/Ikona-300x300.png" sizes="192x192">
+<link rel="apple-touch-icon" href="https://ntronic.pl/wp-content/uploads/2019/05/Ikona-300x300.png">
+<meta name="msapplication-TileImage" content="https://ntronic.pl/wp-content/uploads/2019/05/Ikona-300x300.png">
+    <script src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/wp-emoji-release.min.js" defer="defer"></script></head>
+
+    <body class="post-template-default single single-post postid-338 single-format-standard wp-custom-logo wp-embed-responsive theme-total woocommerce-js he-total ht-wide ht_no_sidebar_condensed ht-titlebar-enabled ht-sticky-header elementor-default elementor-kit-1709 cookies-set cookies-accepted">
+        <div id="ht-page"><a class="skip-link screen-reader-text" href="#ht-content">Skip to content</a>        <header id="ht-masthead" class="ht-site-header">
+            <div class="ht-header headroom headroom--not-bottom headroom--not-top headroom--unpinned">
+                <div class="ht-container">
+                    <div id="ht-site-branding">
+                        <a href="https://ntronic.pl/" class="custom-logo-link" rel="home"><img fetchpriority="high" width="1380" height="338" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/cropped-Ntronic-Logo-1.webp" class="custom-logo" alt="Ntronic" decoding="async" srcset="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/cropped-Ntronic-Logo-1.webp 1380w, Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/cropped-Ntronic-Logo-1-300x73.webp 300w, Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/cropped-Ntronic-Logo-1-1024x251.webp 1024w, Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/cropped-Ntronic-Logo-1-768x188.webp 768w, Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/cropped-Ntronic-Logo-1-600x147.webp 600w" sizes="(max-width: 1380px) 100vw, 1380px"></a>                    </div>
+
+                    <nav id="ht-site-navigation" class="ht-main-navigation">
+                                <a href="#" class="toggle-bar"><span></span></a>
+        <div class="ht-menu ht-clearfix"><ul id="menu-main-menu" class="ht-clearfix sf-js-enabled sf-arrows"><li id="menu-item-41" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home menu-item-41"><a href="https://ntronic.pl/">Start</a></li>
+<li id="menu-item-774" class="menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor current-menu-ancestor current-menu-parent current-post-parent menu-item-has-children menu-item-774"><a href="https://ntronic.pl/category/baza-wiedzy-blog/" class="sf-with-ul">Blog<button class="ht-dropdown"></button></a>
+<ul class="sub-menu" style="display: none;">
+	<li id="menu-item-4909" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-4909"><a href="https://ntronic.pl/zasilanie-urzadzen-z-baterii/">Baterie Li-Ion w zasilaniu urządzeń</a></li>
+	<li id="menu-item-4564" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-4564"><a href="https://ntronic.pl/oswietlenie-klatki-schodowej/">Automatyczne oświetlenie schodów</a></li>
+	<li id="menu-item-4353" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-4353"><a href="https://ntronic.pl/rs232/">Jak działa interfejs RS232</a></li>
+	<li id="menu-item-1433" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-1433"><a href="https://ntronic.pl/jak-dziala-modbus/">Modbus RTU</a></li>
+	<li id="menu-item-2461" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2461"><a href="https://ntronic.pl/modbus-tcp/">Modbus TCP / IP</a></li>
+	<li id="menu-item-1787" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-1787"><a href="https://ntronic.pl/rs-485/">Jak działa RS-485?</a></li>
+	<li id="menu-item-3108" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-3108"><a href="https://ntronic.pl/pomiar-temperatury-w-przemysle/">Pomiar temperatury w przemyśle</a></li>
+	<li id="menu-item-3012" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-3012"><a href="https://ntronic.pl/monitoring-temperatury-ziarna/">Monitoring temperatury ziarna w silosie zbożowym</a></li>
+	<li id="menu-item-2799" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2799"><a href="https://ntronic.pl/czujnik-temperatury-ds18b20/">Fenomen czujnika temperatury DS18B20 – szczegółowe objaśnienie</a></li>
+	<li id="menu-item-840" class="menu-item menu-item-type-post_type menu-item-object-post current-menu-item menu-item-840"><a href="https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/" aria-current="page">Niezawodne sieci 1 WIRE</a></li>
+	<li id="menu-item-2327" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2327"><a href="https://ntronic.pl/izolacja-galwaniczna/">Izolacja Galwaniczna</a></li>
+	<li id="menu-item-2523" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2523"><a href="https://ntronic.pl/tryby-transmisji-simplex-half-duplex-full-duplex/">Half Duplex Full Duplex Simplex — podstawowe tryby transmisji</a></li>
+	<li id="menu-item-2369" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2369"><a href="https://ntronic.pl/wielopunktowy-system-monitoringu-temperatury-wilgotnosci-i-cisnienia/">Wielopunktowy SYSTEM MONITORINGU temperatury, wilgotności i ciśnienia</a></li>
+	<li id="menu-item-202" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-202"><a href="https://ntronic.pl/td2-przetwornik-wielopunktowego-pomiaru-na-modbus/">TD2 – Przetwornik Wielopunktowego Pomiaru</a></li>
+	<li id="menu-item-43" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-43"><a href="https://ntronic.pl/td1-01-przetwornik-wielopunktowego-pomiaru-temperatury-na-modbus/">TD1.01 – Przetwornik Pomiaru Temperatury</a></li>
+</ul>
+</li>
+<li id="menu-item-40" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-40"><a href="https://ntronic.pl/o-firmie/" class="sf-with-ul">O Firmie<button class="ht-dropdown"></button></a>
+<ul class="sub-menu" style="display: none;">
+	<li id="menu-item-1803" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1803"><a href="https://ntronic.pl/o-firmie/">O Firmie</a></li>
+	<li id="menu-item-342" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-342"><a href="https://ntronic.pl/realizacje/">Realizacje</a></li>
+	<li id="menu-item-3166" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-3166"><a href="https://ntronic.pl/projektowanie-urzadzen-elektronicznych/">Jak projektujemy</a></li>
+	<li id="menu-item-52" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-52"><a href="https://ntronic.pl/kontakt/">Kontakt</a></li>
+</ul>
+</li>
+<li id="menu-item-2586" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-2586"><a href="https://ntronic.pl/shop" class="sf-with-ul">Sklep<button class="ht-dropdown"></button></a>
+<ul class="sub-menu" style="display: none;">
+	<li id="menu-item-5368" class="menu-item menu-item-type-taxonomy menu-item-object-product_cat menu-item-has-children menu-item-5368"><a href="https://ntronic.pl/product-category/sterowniki-led/" class="sf-with-ul">Sterowniki LED<button class="ht-dropdown"></button></a>
+	<ul class="sub-menu" style="display: none;">
+		<li id="menu-item-5371" class="menu-item menu-item-type-taxonomy menu-item-object-product_cat menu-item-5371"><a href="https://ntronic.pl/product-category/sterowniki-led/zestawy-schodowe/">Zestawy schodowe</a></li>
+		<li id="menu-item-5370" class="menu-item menu-item-type-taxonomy menu-item-object-product_cat menu-item-5370"><a href="https://ntronic.pl/product-category/sterowniki-led/sterowniki/">Sterowniki</a></li>
+		<li id="menu-item-5369" class="menu-item menu-item-type-taxonomy menu-item-object-product_cat menu-item-5369"><a href="https://ntronic.pl/product-category/sterowniki-led/czujki-ruchu/">Czujki ruchu</a></li>
+	</ul>
+</li>
+	<li id="menu-item-5372" class="menu-item menu-item-type-taxonomy menu-item-object-product_cat menu-item-5372"><a href="https://ntronic.pl/product-category/automatyka/">Automatyka i przemysł</a></li>
+</ul>
+</li>
+<li id="menu-item-5367" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-5367"><a href="https://ntronic.pl/cart/">Koszyk</a></li>
+<li id="menu-item-3737" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3737"><a href="tel:+48%20518%20459%20388">+48 518 459 388</a></li>
+<li id="menu-item-3738" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-3738"><a href="mailto:norbert.szymczyk@ntronic.pl">Norbert.szymczyk@ntronic.pl</a></li>
+</ul></div>                    </nav>
+                </div>
+            </div>
+        </header>
+        <div id="ht-content" class="ht-site-content ht-clearfix" style="padding-top: 98px;">            <header class="ht-main-header">
+                <div class="ht-container">
+                    <h1 class="ht-main-title">Zasada działania, projektowanie oraz budowanie niezawodnych sieci 1 WIRE</h1>                    <nav role="navigation" aria-label="Breadcrumbs" class="breadcrumb-trail breadcrumbs" itemprop="breadcrumb"><ul class="trail-items" itemscope="" itemtype="http://schema.org/BreadcrumbList"><meta name="numberOfItems" content="3"><meta name="itemListOrder" content="Ascending"><li itemprop="itemListElement" itemscope="" itemtype="http://schema.org/ListItem" class="trail-item trail-begin"><a href="https://ntronic.pl/" rel="home" itemprop="item"><span itemprop="name">Home</span></a><meta itemprop="position" content="1"></li><li itemprop="itemListElement" itemscope="" itemtype="http://schema.org/ListItem" class="trail-item"><a href="https://ntronic.pl/category/baza-wiedzy-blog/" itemprop="item"><span itemprop="name">Baza Wiedzy / Blog</span></a><meta itemprop="position" content="2"></li><li itemprop="itemListElement" itemscope="" itemtype="http://schema.org/ListItem" class="trail-item trail-end"><span itemprop="name">Zasada działania, projektowanie oraz budowanie niezawodnych sieci 1 WIRE</span><meta itemprop="position" content="3"></li></ul></nav>                </div>
+            </header>
+                    <div class="ht-container">
+            <div id="primary" class="content-area">
+                <main id="main" class="site-main">
+
+                    
+                        
+<article id="post-338" class="post-338 post type-post status-publish format-standard has-post-thumbnail category-baza-wiedzy-blog tag-onewire tag-projektowanie-sieci-1wire tag-siec-1wire">
+
+    <div class="entry-content">
+        <div class="single-entry-meta">
+            <span class="entry-date published updated"><span class="ht-day">31</span><span class="ht-month-year">paź 2019</span></span><span class="byline"> by <span class="author vcard"><a class="url fn n" href="https://ntronic.pl/author/norbert/">Norbert</a></span></span><a href="https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/#respond"><i class="far fa-comment" aria-hidden="true"></i> No Comments</a>        </div><!-- .entry-meta -->
+
+        <div class="single-featured-img"><img width="640" height="335" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/telephone-wires.png" class="attachment-large size-large wp-post-image" alt="" decoding="async" srcset="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/telephone-wires.png 1200w, Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/telephone-wires-600x314.png 600w" sizes="(max-width: 640px) 100vw, 640px"></div><h2 class="wp-block-heading">Czym jest 1 Wire<em>®</em>?</h2><p>Protokół
+ pierwotnie zaprojektowany żeby ułatwić komunikację  urządzeniom 
+znajdującym się w niewielkiej odległości. Przykład stanowią układy 
+scalone znajdujące się w niedużej odległości względem siebie na obwodzie
+ drukowanym chcące wymieniać miedzy sobą informację. Chodziło o 
+rozszerzenie możliwości komunikacyjnych układów scalonych z 
+wykorzystaniem tylko jednej linii danych. <strong>Z czasem protokół 
+1WIRE rozszerzył się do zastosowań tworzących sieci komunikujących się 
+urządzeń, będących w odległości znacznie większej niż obszar pojedynczej
+ płytki drukowanej – nawet 500m!</strong></p><div class="wp-block-image"><figure class="alignright is-resized"><img decoding="async" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/500m.png" alt="" class="wp-image-695" width="472" height="299" srcset="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/500m.png 797w, Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/500m-600x381.png 600w" sizes="(max-width: 472px) 100vw, 472px"><figcaption class="wp-element-caption">Połączenie sondy temperaturowej z przetwornikiem na dystansie 500 metrów.</figcaption></figure></div><p>Przykładem takiego połączenia jest komunikowanie się <strong><a href="https://ntronic.pl/tempi1n" target="_blank" rel="noreferrer noopener">Sondy temperaturowej</a></strong> z<strong> <a href="https://ntronic.pl/td2" target="_blank" rel="noreferrer noopener">Przetwornikiem pomiarowym TD2</a></strong>, podczas testów udało się skomunikować je za pomocą zwykłego przewodu typu linka 3 x 0,75 mm<sup>2</sup>  na dystansie 500m, a na dystansie 400m tych czujników było ponad 20. </p><p>Idea działania w dużym uproszczeniu polega na tym, że urządzenie nadrzędne nazywane <strong>Masterem, </strong>w naszym przypadku przetwornik TD2. Wysyła stosowne komendy do czujników zwanych <strong>Slave-ami. </strong>W naszym przypadku slave`m jest  <strong><a href="https://ntronic.pl/tempi1n" target="_blank" rel="noreferrer noopener">sonda temperaturowa Ntronic</a></strong>
+ ). Slave-ów może być kilka na jednej magistrali. Jeśli dane polecenie 
+dotyczy konkretnego urządzenia slave`a, podejmuje on stosowne działania.
+ To znaczy np zwraca zmierzoną wartość, albo uruchamia przetwornik 
+analogowo — cyfrowy.</p><h2 class="wp-block-heading">Podstawowe pojęcia</h2><p>Oczywiście
+ cały fenomen stosowania protokołu 1 wire nie opiera się na połączeniu 
+jednego czujnika z urządzeniem odpytującym, można tworzyć całe 
+niezawodne sieci 1 wire urządzeń typu slave połączonych do urządzenia 
+master jedną magistralą tworzącą wspólną sieć. Urządzenie odpytujące 
+(Master) odróżnia urządzenia slave na podstawie unikalnych 64-bitowych 
+numerów seryjnych.</p><figure class="wp-block-image"><img loading="lazy" decoding="async" width="1024" height="262" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/ONEWIRE-1024x262.png" alt="" class="wp-image-711" srcset="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/ONEWIRE-1024x262.png 1024w, Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/ONEWIRE-600x154.png 600w, Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/ONEWIRE-300x77.png 300w, Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/ONEWIRE-768x197.png 768w, Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/ONEWIRE.png 1207w" sizes="(max-width: 1024px) 100vw, 1024px"></figure><p>Każda
+ sieć może być inna pod względem topologii i wykorzystanych urządzeń. 
+Podczas rozważań dotyczących projektowania niezawodnej sieci 1 wire 
+wyewoluowały dwa terminy opisujące sieć pod kątem jej wydajności. Te 
+terminy to <strong>waga </strong>i <strong>promień</strong>.</p><h4 class="wp-block-heading">Promień</h4><p>Jest
+ to długość magistrali mierzona od urządzenia Master do najbardziej 
+odległego urządzenia Slave. Z reguły mierzy się ją w metrach. </p><h4 class="wp-block-heading">Waga</h4><p>Jest to całkowita długość magistrali stanowiąca połączenie ze wszystkimi urządzeniami w sieci 1WIRE. </p><div class="wp-block-image"><figure class="alignright is-resized"><img loading="lazy" decoding="async" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/30m.png" alt="" class="wp-image-724" width="337" height="398" srcset="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/30m.png 767w, Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/30m-600x710.png 600w" sizes="(max-width: 337px) 100vw, 337px"><figcaption class="wp-element-caption">Przykładowa konfiguracja urządzenia  <strong><a href="https://ntronic.pl/td1-01-przetwornik-wielopunktowego-pomiaru-temperatury-na-modbus/">TD1.01</a></strong> z 3-ema  <a rel="noreferrer noopener" href="https://ntronic.pl/DS18B20" target="_blank">czujnikami temperatury</a> w topologi gwiazdy.</figcaption></figure></div><p><span style="text-decoration: underline;">Przykładowo</span>:
+ konfiguracja sieci urządzeń 1WIRE w której występuje 1 Master i 3 
+Slave-y, w której do każdego Slave`a  poprowadzono oddzielne przewody, 
+kolejno 30m, 20m i 10m. Punktem wspólnym połączenia magistrali są 
+zaciski Mastera</p><p><strong>Promień </strong>tej sieci wynosi 30m, natomiast <strong>wagę </strong>wyliczamy sumując wszystkie odcinki magistrali: 30m + 20m + 10m = 60m.</p><p>Im
+ większa waga sieci tym dłuższy jest czas narastania sygnałów 
+komunikacyjnych na magistrali. Z kolei promień sieci 1WIRE wpływa na 
+efekty odbicia sygnału (efekty falowe).  </p><p><strong>Waga stanowi 
+główne ograniczenie każdej sieci 1WIRE i jej maksymalna wartość zależy 
+od rodzaju sterownika Master. Dla przykładu waga sieci  </strong><a href="https://ntronic.pl/td2" target="_blank" rel="noreferrer noopener"><strong>Przetwornika pomiarowego TD2</strong></a><strong> może wynosić nawet 400m. Każda dodatkowa sonda </strong><a href="https://ntronic.pl/tempi1n" target="_blank" rel="noreferrer noopener"><strong>Sonda temperaturowa</strong></a><strong>
+ skraca tą wagę o 1m, nie licząc przewodu doprowadzającego. Ponadto 
+każdy węzeł w sieci 1WIRE skraca wagę o 3m. Wynika z tego prosty 
+wniosek,  waga może składać się z wielu urządzeń Slave na stosunkowo 
+krótkiej magistrali lub bardzo niewielu urządzeń podrzędnych na wielu 
+przewodach. Jeśli chcielibyśmy podłączyć 40 </strong><a href="https://ntronic.pl/tempi1n" target="_blank" rel="noreferrer noopener"><strong>czujników temperatury</strong></a><strong> do sieci 1 wire z urządzeniem  </strong><a href="https://ntronic.pl/td2-przetwornik-wielopunktowego-pomiaru-na-modbus/" target="_blank" rel="noreferrer noopener"><strong>TD2</strong></a><strong> musimy pamiętać że do dyspozycji mamy już nie 400m, a ok 360m. Wynika to z faktu, że każdy czujnik dodał wagę sieci ok 1m.</strong></p><p>Pomimo
+ faktu, że waga sieci zależna jest od wielu czynników, najbardziej 
+istotnym z nich jest pojemność magistrali. Dla przykładu, stosując 
+nieekranowaną skrętkę  kategorii CAT 5 (UTP) dodajemy do magistrali ok 
+52pF na każdy metr. Każde zabezpieczenie typu ESD można przyjąć, że 
+stanowi obciążenie magistrali ok 24pF. Przyjmuje się, że każdy czynnik 
+dodający do magistrali pojemność większa niż 24pF skraca jej wagę o 
+0,5m. Szerzej o wpływie stosowanych przewodów w sekcji dobór przewodów 
+poniżej.</p><h2 class="wp-block-heading">Topologie sieci 1WIRE</h2><p>Struktury
+ sieci 1WIRE mogą przybierać dosyć swobodną formę. Pomimo tego zwykle 
+możemy je „wpasować” w kilka generalnych kategorii. Kategorie te 
+podzielić możemy ze względu na rozmieszczenie urządzeń Slave i sposób 
+organizacji połączeni.</p><h4 class="wp-block-heading">Topologia liniowa</h4><p>Magistrala
+ 1WIRE rozpoczyna się od urządzenia Master i „ciągnie się” do ostatniego
+ urządzenia w sieci. Każde z urządzeń typu Slave jest bezpośrednio 
+podpięte pod magistralę lub za pomocą nieznacznych odgałęzień (krótszych
+ niż 3m). Można powiedzieć, że sieć przechodzi przez każde z urządzeń 
+Slave. <strong>Jest to najbardziej rekomendowany typ sieci 1WIRE.</strong></p><figure class="wp-block-image"><img decoding="async" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/Sie%C4%87-liniowa-1024x226.png" alt="" class="wp-image-746"></figure><p>Na
+ rysunku powyżej mamy jedno urządzenie Master i 4 Slave`y. Przy 
+założeniu, że odległość do najdalszego Slave`a wynosi 200m, a 
+odgałęzienia do każdego z 3 pozostałych Slave-ów mierzą po 2m, mamy Wagę
+ sieci wynoszącą: 200 + 3*2 + 4*1 = 210m.</p><h4 class="wp-block-heading">Topologia rozgałęziona</h4><div class="wp-block-image"><figure class="alignright is-resized"><img loading="lazy" decoding="async" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/Stubbed-network-1024x386.png" alt="" class="wp-image-753" width="648" height="244"></figure></div><p>Jest
+ tu podobnie jak w przypadku topologii liniowej. Magistrala 1WIRE 
+rozpoczyna się od urządzenia Master i „ciągnie się” do ostatniego 
+urządzenia w sieci. Odróżnić ją możemy natomiast po fakcie, że 
+„dołączone są” inne urządzenie Slave o długości odgałęzień dłuższych niż
+ rekomendowane 3m. Wielu projektantów po raz pierwszy buduje takie sieci
+ ze względu na prostotę wykonania. Jednak ta forma sieci może prowadzić 
+do problemów z powodu odbić sygnału (efekty falowe). Jeśli długości 
+odgałęzień dostroją się „w sam raz” sieć może działać. Minusem takiego 
+dopasowania jest fakt że nawet najmniejsza zmiana w sieci może 
+spowodować, zakłócenia w jej funkcjonowaniu. <strong>Budowanie tego rodzaju topologii sieci 1WIRE nie jest zalecane</strong>!</p><p>Wyliczenie
+ wagi sieci z rysunku powyżej: sumaryczna długość magistrali + 
+obciążenie każdego z Slave`ów + obciążenie każdego z węzłów, więc: 200 +
+ 3*7 + 3*1+3*3 = 239m</p><h4 class="wp-block-heading">Topologia gwiazdy</h4><div class="wp-block-image"><figure class="alignright is-resized"><img loading="lazy" decoding="async" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/Star-network-1024x586.png" alt="" class="wp-image-759" width="613" height="350"></figure></div><p>W
+ topologii gwiazdy magistrala 1WIRE podzielona jest na końcu głównym lub
+ w pobliżu Master`a i rozciąga się na wiele gałęzi o różnych 
+długościach. Urządzenia Slave umieszczone są wzdłuż odgałęzień lub na 
+ich końcach.<br>Ze względu na efekty falowe, a konkretnie na efekt 
+odbicia fali od jej wielu końców, sygnały odbite mogą podróżować na 
+odległości większe niż, nie tylko promień sieci, ale równie jej waga. 
+Powoduje to w konsekwencji tłumienie się sygnałów. Przy długich 
+odgałęzieniach bardzo trudno jest kontrolować to zjawisko i efekt 
+tłumienia. <strong>Topologia gwiazdy nie jest zalecanym sposobem budowania sieci 1WIRE.</strong></p><p>Przy
+ założeniach, że odległość od Mastera do „punktu rozgałęzienia” sieci 
+wynosi 200m, każdy slave oddalony jest o 10m od tego punktu waga sieci 
+wynosi: 200 + 3 + 3*10+ 3*1 = 236m</p><h4 class="wp-block-heading">Połączenie kilku topologii</h4><p>Jeśli
+ chcielibyśmy wykorzystać połączenie różnych topologii przy znacznej 
+wadze sieci, efekt odbicia sygnałów są bardzo trudne do określenia. 
+Dowolna konfiguracja sieci gałęziowej lub gwieździstej może działać w 
+danym momencie. Będzie ona siecią o bardzo precyzyjnym stopniu 
+dostrojenia pod kątem efektów falowych. Jest to bardzo niepożądane, gdyż
+ nawet zmiana pogody może powodować zakłócenia działania takiej sieci. 
+Przy znacznych wagach sieci 1WIRE nie jest zalecane wykorzystanie 
+topologii połączonej.</p><h4 class="wp-block-heading">Dopasowanie rozproszonej impedancji</h4><div class="wp-block-image"><figure class="alignright is-resized"><img loading="lazy" decoding="async" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/Stubbed-network150-1024x386.png" alt="" class="wp-image-864" width="629" height="237" srcset="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/Stubbed-network150-1024x386.png 1024w, Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/Stubbed-network150-600x226.png 600w, Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/Stubbed-network150-300x113.png 300w, Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/Stubbed-network150-768x289.png 768w, Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/Stubbed-network150.png 1216w" sizes="(max-width: 629px) 100vw, 629px"></figure></div><p>
+ Przy rozgałęzianiu sieci 1WIRE w miejscu rozgałęzienia następuje punkt 
+niedopasowania impedancji. Odbicia od końca gałęzi docierają z powrotem 
+do głównej szyny sieci, opóźnione to zależny od długości gałęzi. Mogą 
+one zakłócać komunikację z innymi układami. Aby temu zaradzić można 
+zastosować szeregowe rezystory w gałęziach sieci redukując problem 
+spowodowany niedopasowaniem impedancji i zmniejszać problem z odbiciami.
+ Dzięki zastosowaniu rezystancji w tym punkcie, odbicia wygenerowane w 
+gałęzi nie docierają do głównej szyny sieci.</p><p>Powszechnie przyjmuje
+ się, że wartość dodanego rezystora powinna wynosić ok 150Ω.  Wartość ta
+ zmniejsza niedopasowanie impedancji o około 20% i tłumi powstałe w 
+gałęzi odbicie o około 40%. Dodanie takiego opornika pogarsza odporność 
+sieci na szum o około 80%, więc czasem nie obędzie się bez testów sieci z
+ taką wartością i zastąpienie opornika mniejszym np. 100 Ω. </p><h2 class="wp-block-heading">Dobór przewodów</h2><p>W
+ przypadku gdy całkowita długość magistrali 1WIRE wynosi do ok 100m, a 
+na całą sieć składa się kilka urządzeń Slave, dobór okablowania nie 
+powinien stanowić dużego problemu. Taka sieć będzie działać nawet na 
+zwykłym przewodzie 3×0,5m<sup>2</sup>. Im dłuższa jest nasza sieć, tym ważniejsze stają się właściwości kabla, a tym samym jego wybór.</p><p>Dwa najbardziej popularne rodzaje okablowania wykorzystywanego do budowania niezawodnej sieci 1 wire to:<br>– nieekranowana skrętka, zwykle kategorii CAT5 UTP lub lepszej<br>– płaski telefoniczny kabel taśmowy (26 AWG)<br>W starszych instalacjach 1WIRE zwykle stosowano kabel wstążkowy. Ze względu na<strong> niską pojemność i rezystancję jednostkową to nieekranowana skrętka jest obecnie rekomendowanym okablowaniem w sieciach 1WIRE.</strong>  Im dłuższa długość sieci tym rodzaj zastosowanego okablowania ma większe znaczenie. </p><div class="wp-block-image"><figure class="alignright is-resized"><img loading="lazy" decoding="async" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/Phone_ribbon.png" alt="" class="wp-image-807" width="455" height="252" srcset="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/Phone_ribbon.png 997w, Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/Phone_ribbon-600x333.png 600w" sizes="(max-width: 455px) 100vw, 455px"><figcaption class="wp-element-caption">Podłączenie sygnałów sieci 1WIRE w 6 żyłowym kablu telefonicznym  </figcaption></figure></div><p>Jeśli
+ chcemy zastosować płaski kabel telefoniczny zalecane jest wykorzystać 
+zieloną żyłę jako DATA LINE, czerwoną jako GND, natomiast zasilanie 
+(+5V) podłączyć do czarnej oraz białej. Pozostałe żyły pozostawić nie 
+podłączone. Wykorzystanie pojedynczej żyły powrotnej jest celowe, gdyż 
+podłączając sygnał GND do dwóch żył zwiększylibyśmy pojemność na linii 
+danych. Skutkowałoby to zwiększeniem wagi całej sieci. </p><div class="wp-block-image"><figure class="alignright is-resized"><img loading="lazy" decoding="async" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/TWISTED-PAIR-1024x321.png" alt="" class="wp-image-791" width="457" height="143"><figcaption class="wp-element-caption"> Podłączenie sygnałów sieci 1WIRE w dwóch parach nieekranowanej skrętki typu UTP </figcaption></figure></div><p>Chcąc
+ wykorzystać nieekranowaną skrętkę, do utworzenia sieci 1WIRE 
+potrzebujemy dwóch par przewodów. Najważniejsze jest aby linia DATA LINE
+ oraz masa znajdowały się na jednej wspólnej parze przewodów.</p><p>Istotną
+ kwestią podczas doboru rodzaju przewodów w instalacjach 1WIRE jest 
+odporność ogniowa. Kabel zainstalowany w przestrzeni  powietrznej między
+ sufitem, a następną podłogą lub dachem. Powinien być zainstalowany w 
+metalowym kanale lub musi spełniać lokalne przepisy przeciwpożarowe. W 
+przypadku pożaru kabel nie może wytwarzać szkodliwych lub 
+niebezpiecznych gazów, które mogłyby przedostać się do innych części 
+konstrukcji. </p><h4 class="wp-block-heading">Przewody w sieci 1WIRE – Generalne zasady</h4><ul><li>Używaj wysokiej jakości skrętki CAT5E lub lepszej (nieekranowanej). Stosuj praktyki okablowania CAT.</li>
+
+<li>Niewykorzystane przewody w kablu 1WIRE pozostawić niepodpięte – 
+połączenie ich z GND skutkuje niepożądanym zwiększeniem pojemności na 
+linii danych </li>
+
+<li>Używaj tego samego rodzaju okablowania dla całej sieci. Najlepiej 
+ten sam kabel. Pomaga to uniknąć niedopasowania impedancji produkcyjnej.</li>
+
+<li>Stosuj jakiś wewnętrzny schemat kolorów w skrętce.Wybierając 
+konkretny kolor kabla dla całej instalacji kabli 1-Wire, możesz łatwo 
+odróżnić go od innych kabli skrętki, które mogą być nośnikiem innych 
+sygnałów. Możesz więc zarezerwować kolor pomarańczowy na przykład dla 
+kabli 1-Wire i inny kolor dla kabli Ethernet. Ważne jest, aby to 
+udokumentować i zachować spójność.</li>
+
+<li>Staraj się unikać prowadzenia sieci 1WIRE w pobliżu silnych pól 
+Elektromagnetycznych, generowanych np przez silniki. Kabel 1WIRE działa 
+jak antena. Wszelkie indukowane szumy na przewodach mogą stanowić źródła
+ problemów. Indukowane szumy stanowią źródło błędów transmisji danych 
+(lub brak transmisji danych w ogóle).</li>
+
+<li>Indukowane przepięcia mocy na okablowaniu wynikające z działania 
+innych urządzeń (np zwarcia w instalacji, czy też uderzenia pioruna) w 
+najlepszym wypadku mogą prowadzić tylko do błędów transmisji. Jeśli 
+natomiast poziom indukowanej energii jest zbyt duży, może to grozić 
+uszkodzeniu urządzeniom będącym na magistrali.</li>
+
+<li>Jeśli źródłem zakłóceń w działaniu sieci 1WIRE jest składowa wspólna
+ RF. W celu stłumienia tego zakłócenia można wykorzystać rdzeń ferrytowy
+ toroidalny . Spróbuj kilka razy zapętlić kabel 1WIRE przez pojedynczy 
+rdzeń. Możesz eksperymentować z wielkością toroidu i liczbą zwojów 
+potrzebnych do uzyskania pożądanego tłumienia.</li></ul><h2 class="wp-block-heading">Jak projektować niezawodną sieć 1 wire – PODSUMOWANIE</h2><p>Sieć
+ 1WIRE może być wykorzystana zarówno w małej instalacji. Przykładem może
+ być zbieranie pomiarów z czujników w szafie rozdzielczej instalacji 
+automatyki przemysłowej w jakiejś fabryce. Może też być rozmieszczona na
+ obiekcie w którym waga całej sieci wynosi nawet 500m. Przykładem tego 
+może być badanie rozkładu temperaturowego w silosie zbożowym, czy też 
+inne potrzeby HACCP. </p><p>Budując zarówno sieci o małej jak i dużej 
+wadze dobrze jest kierować się generalnymi zasadami pozwalającymi 
+uporządkować pracę oraz uniknąć niepotrzebnych błędów. Tak więc zanim 
+wykonasz jakieś czynności fizyczne zaplanuj swoją sieć na papierze. 
+Uwzględnij jej przyszły rozwój o kolejne urządzenia Slave. Niezawodna 
+sieć 1 wire wymaga następującego przygotowania:</p><ul><li>Zrób 
+szczegółowy rysunek projektu sieci. Poza tym, że jest bardzo przydatny w
+ celach informacyjnych, znacznie ułatwi ci przeprowadzenie konsultacji w
+ sprawie poprawności projektu . Zachowaj dobrą dokumentację, na przykład
+ po dodaniu lub zmianie komponentu lub części w sieci. Podczas gdy 
+niektóre urządzenia 1WIRE mogą działać przez całe życie, inne mogą mieć 
+znacznie krótszy okres użytkowania i mogą wymagać wymiany zgodnie z 
+harmonogramem.</li>
+
+<li>Projektuj zgodnie z topologią liniową. Topologie gwieździste oraz rozproszone są niezalecane.</li>
+
+<li>Oblicz wagę swojej sieci.</li>
+
+<li>Oszacować potrzebną moc jak należy dostarczyć do Slave-ów. Dla przykładu urządzenie Master <strong><a href="https://ntronic.pl/td2-przetwornik-wielopunktowego-pomiaru-na-modbus/">TD2</a></strong>
+ posiada wyjście +5V o wydajności 200mA . Jeśli pobór prądu przez 
+urządzenia Slave na magistrali przekracza lub zbliża się do tej 
+wartości, sugerowane jest zasilenie urządzeń Slave z osobnego źródła 
+zasilania +5V. </li>
+
+<li>Unikaj tworzenia pętli uziemienia, upewniając się, że w urządzeniu głównym magistrali jest tylko jeden punkt uziemienia sieci.</li>
+
+<li>W przypadku instalacji na zewnątrz. Rozważ ochronę sieci, przed 
+naturalnymi oraz  wywołanymi przez człowieka  zakłóceniami 
+elektromagnetycznymi. (błyskawica, linie energetyczne itp).</li>
+
+<li>Umieść w swoim projekcie dostępne punkty ochrony, takie jak 
+przejście z wnętrza na zewnątrz budynku. Chodzi o ochronę np innego 
+drogiego sprzętu przed siecią i odwrotnie. Spodziewaj się, że w końcu 
+wydarzy się najgorszy scenariusz (np.  uderzenie pioruna bezpośrednie 
+lub w sąsiedztwie )</li></ul><p><a href="tel:+48518459388">tel: +48 518 459 388</a><br><a href="mailto:norbert.szymczyk@ntronic.pl" target="_blank" rel="noreferrer noopener">norbert.szymczyk@ntronic.pl</a></p><div class="wpforms-container wpforms-container-full wpforms-block wpforms-block-211761ba-c7c0-44c7-8943-d06f39ea62c7" id="wpforms-168"><form id="wpforms-form-168" class="wpforms-validate wpforms-form" data-formid="168" method="post" enctype="multipart/form-data" action="/jak-projektowac-niezawodna-siec-1wire/" data-token="3bcd3d181d5f460424b0a28251db422f" data-token-time="1730572854" novalidate="novalidate"><noscript class="wpforms-error-noscript">Aby wypełnić ten formularz, włącz obsługę JavaScript w przeglądarce.</noscript><div class="wpforms-field-container"><div id="wpforms-168-field_1-container" class="wpforms-field wpforms-field-email" data-field-id="1"><label class="wpforms-field-label" for="wpforms-168-field_1">Adres email: <span class="wpforms-required-label">*</span></label><input type="email" id="wpforms-168-field_1" class="wpforms-field-medium wpforms-field-required" name="wpforms[fields][1]" spellcheck="false" required=""></div><div id="wpforms-168-field_6-container" class="wpforms-field wpforms-field-text" data-field-id="6"><label class="wpforms-field-label" for="wpforms-168-field_6">Telefon <span class="wpforms-required-label">*</span></label><input type="text" id="wpforms-168-field_6" class="wpforms-field-medium wpforms-field-required" name="wpforms[fields][6]" required=""></div><div id="wpforms-168-field_2-container" class="wpforms-field wpforms-field-textarea" data-field-id="2"><label class="wpforms-field-label" for="wpforms-168-field_2">Treść: <span class="wpforms-required-label">*</span></label><textarea id="wpforms-168-field_2" class="wpforms-field-medium wpforms-field-required" name="wpforms[fields][2]" required=""></textarea></div><div id="wpforms-168-field_0-container" class="wpforms-field wpforms-field-name" data-field-id="0"><label class="wpforms-field-label" for="wpforms-168-field_0">Podpis: <span class="wpforms-required-label">*</span></label><input type="text" id="wpforms-168-field_0" class="wpforms-field-medium wpforms-field-required" name="wpforms[fields][0]" required=""></div></div><!-- .wpforms-field-container --><div class="wpforms-field wpforms-field-hp"><label for="wpforms-168-field-hp" class="wpforms-field-label">Message</label><input type="text" name="wpforms[hp]" id="wpforms-168-field-hp" class="wpforms-field-medium"></div><div class="wpforms-recaptcha-container wpforms-is-recaptcha wpforms-is-recaptcha-type-v2"><div class="g-recaptcha" data-sitekey="6Le9WSIpAAAAALrnV-RtzkgSzDSCAgEngUHEVmPs" data-recaptcha-id="0"><div style="width: 304px; height: 78px;"><div><iframe title="reCAPTCHA" width="304" height="78" role="presentation" name="a-x2ydi18jhosn" frameborder="0" scrolling="no" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation allow-modals allow-popups-to-escape-sandbox allow-storage-access-by-user-activation" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/anchor.htm"></iframe></div><textarea id="g-recaptcha-response" name="g-recaptcha-response" class="g-recaptcha-response" style="width: 250px; height: 40px; border: 1px solid rgb(193, 193, 193); margin: 10px 25px; padding: 0px; resize: none; display: none;"></textarea></div><iframe style="display: none;"></iframe></div><input type="text" name="g-recaptcha-hidden" class="wpforms-recaptcha-hidden" style="position:absolute!important;clip:rect(0,0,0,0)!important;height:1px!important;width:1px!important;border:0!important;overflow:hidden!important;padding:0!important;margin:0!important;" data-rule-recaptcha="1"></div><div class="wpforms-submit-container"><input type="hidden" name="wpforms[id]" value="168"><input type="hidden" name="page_title" value="Zasada działania, projektowanie oraz budowanie niezawodnych sieci 1 WIRE"><input type="hidden" name="page_url" value="https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/"><input type="hidden" name="page_id" value="338"><input type="hidden" name="wpforms[post_id]" value="338"><button type="submit" name="wpforms[submit]" id="wpforms-submit-168" class="wpforms-submit" data-alt-text="Wysyłanie..." data-submit-text="Wyślij" aria-live="assertive" value="wpforms-submit">Wyślij</button></div></form></div>  <!-- .wpforms-container --><div class="code-block code-block-1" style="margin: 8px 0; clear: both;">
+<a "<a="" data-sumome-listbuilder-id="ef22f063-707e-4be1-a020-26acc812e564"> <img src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/Norbert-Zapis-na-Mail.jpg"></a></div>
+<!-- CONTENT END 1 -->
+
+            </div><!-- .entry-content -->
+
+</article><!-- #post-## -->
+
+
+                        
+        <div id="comments" class="comments-area">
+
+            
+            
+            	<div id="respond" class="comment-respond">
+		<h3 id="reply-title" class="comment-reply-title">Dodaj komentarz <small><a rel="nofollow" id="cancel-comment-reply-link" href="https://ntronic.pl/jak-projektowac-niezawodna-siec-1wire/#respond" style="display:none;">Anuluj pisanie odpowiedzi</a></small></h3><p class="must-log-in">Musisz się <a href="https://ntronic.pl/wp-login.php?redirect_to=https%3A%2F%2Fntronic.pl%2Fjak-projektowac-niezawodna-siec-1wire%2F">zalogować</a>, aby móc dodać komentarz.</p>	</div><!-- #respond -->
+	
+        </div><!-- #comments -->
+        
+                    
+                </main>
+            </div>
+
+            
+        </div>
+
+        </div><!-- #content --><footer id="ht-colophon" class="ht-site-footer">            <div id="ht-main-footer">
+                <div class="ht-container">
+                    <div class="ht-main-footer col-4-1-1-1-1">
+                                                        <div class="ht-footer ht-footer1">
+                                    <aside id="custom_html-3" class="widget_text widget widget_custom_html"><h5 class="widget-title">Facebook</h5><div class="textwidget custom-html-widget"><iframe src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/page.htm" width="260" height="250" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe></div></aside><aside id="block-11" class="widget widget_block"><a href="https://ntronic.pl/regulamin_sklepu/">Regulamin sklepu</a></aside><aside id="block-12" class="widget widget_block"><a href="https://ntronic.pl/polityka-prywatnosci-2/">Polityka prywatności</a></aside>	
+                                </div>
+                                                                <div class="ht-footer ht-footer2">
+                                    <aside id="total_contact_info-2" class="widget widget_total_contact_info">        <div class="ht-contact-info">
+            <h5 class="widget-title">Ntronic Norbert Szymczyk</h5>
+            <ul>
+                                    <li><i class="fas fa-phone"></i>+48 518459388</li>
+                
+                                    <li><i class="far fa-envelope"></i>norbert.szymczyk@ntronic.pl</li>
+                
+                                    <li><i class="fas fa-globe-asia"></i>www.ntronic.pl</li>
+                
+                                    <li><i class="fas fa-map-marker-alt"></i><p>ul.Dunikowskiego 20,<br>
+07-415 Olszewo-Borki</p>
+</li>
+                
+                            </ul>
+        </div>
+        </aside>	
+                                </div>
+                                                                <div class="ht-footer ht-footer3">
+                                    <aside id="mc4wp_form_widget-5" class="widget widget_mc4wp_form_widget"><h5 class="widget-title">Newsletter</h5><script>(function() {
+	window.mc4wp = window.mc4wp || {
+		listeners: [],
+		forms: {
+			on: function(evt, cb) {
+				window.mc4wp.listeners.push(
+					{
+						event   : evt,
+						callback: cb
+					}
+				);
+			}
+		}
+	}
+})();
+</script><!-- Mailchimp for WordPress v4.9.15 - https://wordpress.org/plugins/mailchimp-for-wp/ --><form id="mc4wp-form-1" class="mc4wp-form mc4wp-form-981" method="post" data-id="981" data-name=""><div class="mc4wp-form-fields"><b>Nowinki z Ntronic</b> prosto na <b>Twojego maila !</b>
+<p>
+    <label>Twoje imię</label>
+    <input type="text" name="FNAME" required="">
+</p>
+<p>
+	<label>Adres email </label>
+	<input type="email" name="EMAIL" required="">	
+</p>
+
+<p>
+	<input type="submit" value="Zapisz się">
+</p></div><label style="display: none !important;">Leave this field empty if you're human: <input type="text" name="_mc4wp_honeypot" tabindex="-1" autocomplete="off"></label><input type="hidden" name="_mc4wp_timestamp" value="1730572854"><input type="hidden" name="_mc4wp_form_id" value="981"><input type="hidden" name="_mc4wp_form_element_id" value="mc4wp-form-1"><div class="mc4wp-response"></div></form><!-- / Mailchimp for WordPress Plugin --></aside>	
+                                </div>
+                                                                <div class="ht-footer ht-footer4">
+                                    <aside id="total_latest_posts-4" class="widget widget_total_latest_posts"><h5 class="widget-title">Najnowsze wpisy</h5>        <ul class="ht-latest-posts">
+                            <li class="ht-clearfix">
+                                            <div class="ht-lp-image">
+                            <a href="https://ntronic.pl/zasilanie-urzadzen-z-baterii/">
+                                <img src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/Urzazenia-zasilane-bateryjnie-150x150.webp" alt="">
+                            </a>
+                        </div>
+                        
+                    <div class="ht-lp-content">
+                        <h6 class="ht-lp-title">
+                        <a href="https://ntronic.pl/zasilanie-urzadzen-z-baterii/">
+                            Baterie Li-Ion w zasilaniu urządzeń                        </a>
+                        </h6>
+
+                                            </div>
+                </li>   
+                                <li class="ht-clearfix">
+                                            <div class="ht-lp-image">
+                            <a href="https://ntronic.pl/ledy-na-schodach/">
+                                <img src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/Inteligentny-system-sterownia-swiatlami-klatki-schodowej-150.png" alt="">
+                            </a>
+                        </div>
+                        
+                    <div class="ht-lp-content">
+                        <h6 class="ht-lp-title">
+                        <a href="https://ntronic.pl/ledy-na-schodach/">
+                            Inteligentny system sterownia światłami klatki schodowej                        </a>
+                        </h6>
+
+                                            </div>
+                </li>   
+                                <li class="ht-clearfix">
+                                            <div class="ht-lp-image">
+                            <a href="https://ntronic.pl/rejestrator-wilgotnosci-i-temperatury/">
+                                <img src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/Rejestrator-wilgotnosci-oraz-temperatury--150x150.webp" alt="">
+                            </a>
+                        </div>
+                        
+                    <div class="ht-lp-content">
+                        <h6 class="ht-lp-title">
+                        <a href="https://ntronic.pl/rejestrator-wilgotnosci-i-temperatury/">
+                            Rejestrator temperatury i wilgotności                        </a>
+                        </h6>
+
+                                            </div>
+                </li>   
+                        </ul>
+        </aside>	
+                                </div>
+                                                    </div>
+                </div>
+            </div>
+                    <div id="ht-bottom-footer">
+            <div class="ht-container">
+                <div class="ht-site-info ht-bottom-footer">
+                    <a href="https://hashthemes.com/wordpress-theme/total/" target="_blank">WordPress Theme - Total</a> by HashThemes                </div><!-- #site-info -->
+            </div>
+        </div>
+        </footer><!-- #colophon --></div><!-- #page --><script async="">(function(s,u,m,o,j,v){j=u.createElement(m);v=u.getElementsByTagName(m)[0];j.async=1;j.src=o;j.dataset.sumoSiteId='eeb91b00808898004747b1004586a100db722200d3b8700053bc920022c49000';j.dataset.sumoPlatform='wordpress';v.parentNode.insertBefore(j,v)})(window,document,'script','//load.sumome.com/');</script>        <script type="application/javascript">
+            const ajaxURL = "https://ntronic.pl/wp-admin/admin-ajax.php";
+
+            function sumo_add_woocommerce_coupon(code) {
+                jQuery.post(ajaxURL, {
+                    action: 'sumo_add_woocommerce_coupon',
+                    code: code,
+                    security: '9f0adcffc1',
+                });
+            }
+
+            function sumo_remove_woocommerce_coupon(code) {
+                jQuery.post(ajaxURL, {
+                    action: 'sumo_remove_woocommerce_coupon',
+                    code: code,
+                });
+            }
+
+            function sumo_get_woocommerce_cart_subtotal(callback) {
+                jQuery.ajax({
+                    method: 'POST',
+                    url: ajaxURL,
+                    dataType: 'html',
+                    data: {
+                        action: 'sumo_get_woocommerce_cart_subtotal',
+                    },
+                    success: function (subtotal) {
+                        return callback(null, subtotal);
+                    },
+                    error: function (err) {
+                        return callback(err, 0);
+                    }
+                });
+            }
+        </script>
+        		<script type="text/javascript">
+							jQuery("#post-4794 .entry-meta .date").css("display","none");
+					jQuery("#post-4794 .entry-date").css("display","none");
+					jQuery("#post-4794 .posted-on").css("display","none");
+							jQuery("#post-4800 .entry-meta .date").css("display","none");
+					jQuery("#post-4800 .entry-date").css("display","none");
+					jQuery("#post-4800 .posted-on").css("display","none");
+				</script>
+	<script>(function() {function maybePrefixUrlField () {
+  const value = this.value.trim()
+  if (value !== '' && value.indexOf('http') !== 0) {
+    this.value = 'http://' + value
+  }
+}
+
+const urlFields = document.querySelectorAll('.mc4wp-form input[type="url"]')
+for (let j = 0; j < urlFields.length; j++) {
+  urlFields[j].addEventListener('blur', maybePrefixUrlField)
+}
+})();</script><script id="mcjs">!function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/483df3c6116845448c9ebfdc7/b6de4418b16f76e5663a98ef9.js");</script>            <div id="ht-back-top" class=""><i class="fas fa-angle-up"></i></div>
+            <div id="pys_ajax_events"></div>        <script>
+            var node = document.getElementsByClassName('woocommerce-message')[0];
+            if(node && document.getElementById('pys_late_event')) {
+                var messageText = node.textContent.trim();
+                if(!messageText) {
+                    node.style.display = 'none';
+                }
+            }
+        </script>
+        			<script type="text/javascript">
+				const lazyloadRunObserver = () => {
+					const lazyloadBackgrounds = document.querySelectorAll( `.e-con.e-parent:not(.e-lazyloaded)` );
+					const lazyloadBackgroundObserver = new IntersectionObserver( ( entries ) => {
+						entries.forEach( ( entry ) => {
+							if ( entry.isIntersecting ) {
+								let lazyloadBackground = entry.target;
+								if( lazyloadBackground ) {
+									lazyloadBackground.classList.add( 'e-lazyloaded' );
+								}
+								lazyloadBackgroundObserver.unobserve( entry.target );
+							}
+						});
+					}, { rootMargin: '200px 0px 200px 0px' } );
+					lazyloadBackgrounds.forEach( ( lazyloadBackground ) => {
+						lazyloadBackgroundObserver.observe( lazyloadBackground );
+					} );
+				};
+				const events = [
+					'DOMContentLoaded',
+					'elementor/lazyload/observe',
+				];
+				events.forEach( ( event ) => {
+					document.addEventListener( event, lazyloadRunObserver );
+				} );
+			</script>
+			<noscript><img height="1" width="1" style="display: none;" src="https://www.facebook.com/tr?id=148563083252847&ev=PageView&noscript=1&cd%5Bpost_category%5D=Baza+Wiedzy+%2F+Blog&cd%5Bpage_title%5D=Zasada+dzia%C5%82ania%2C+projektowanie+oraz+budowanie+niezawodnych+sieci+1+WIRE&cd%5Bpost_type%5D=post&cd%5Bpost_id%5D=338&cd%5Bplugin%5D=PixelYourSite&cd%5Buser_role%5D=guest&cd%5Bevent_url%5D=ntronic.pl%2Fjak-projektowac-niezawodna-siec-1wire%2F" alt=""></noscript>
+	<script type="text/javascript">
+		(function () {
+			var c = document.body.className;
+			c = c.replace(/woocommerce-no-js/, 'woocommerce-js');
+			document.body.className = c;
+		})();
+	</script>
+	<link rel="stylesheet" id="wc-blocks-style-css" href="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/wc-blocks.css" type="text/css" media="all">
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/custom-scripts.js" id="sfm-custom-scripts-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/tabs-custom.js" id="wpsm_tabs_r_custom-js-front-js"></script>
+<script type="text/javascript" id="mailchimp-woocommerce-js-extra">
+/* <![CDATA[ */
+var mailchimp_public_data = {"site_url":"https:\/\/ntronic.pl","ajax_url":"https:\/\/ntronic.pl\/wp-admin\/admin-ajax.php","disable_carts":"","subscribers_only":"","language":"pl","allowed_to_set_cookies":"1"};
+/* ]]> */
+</script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/mailchimp-woocommerce-public.min.js" id="mailchimp-woocommerce-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/jquery.nav.js" id="jquery-nav-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/owl.carousel.js" id="owl-carousel-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/isotope.pkgd.js" id="isotope-pkgd-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/nivo-lightbox.js" id="nivo-lightbox-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/superfish.js" id="superfish-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/odometer.js" id="odometer-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/waypoint.js" id="waypoint-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/headroom.js" id="headroom-js"></script>
+<script type="text/javascript" id="total-custom-js-extra">
+/* <![CDATA[ */
+var total_localize = {"template_path":"https:\/\/ntronic.pl\/wp-content\/themes\/total"};
+/* ]]> */
+</script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/total-custom.js" id="total-custom-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/comment-reply.min.js" id="comment-reply-js" async="async" data-wp-strategy="async"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/sourcebuster.min.js" id="sourcebuster-js-js"></script>
+<script type="text/javascript" id="wc-order-attribution-js-extra">
+/* <![CDATA[ */
+var wc_order_attribution = {"params":{"lifetime":1.0e-5,"session":30,"base64":false,"ajaxurl":"https:\/\/ntronic.pl\/wp-admin\/admin-ajax.php","prefix":"wc_order_attribution_","allowTracking":true},"fields":{"source_type":"current.typ","referrer":"current_add.rf","utm_campaign":"current.cmp","utm_source":"current.src","utm_medium":"current.mdm","utm_content":"current.cnt","utm_id":"current.id","utm_term":"current.trm","utm_source_platform":"current.plt","utm_creative_format":"current.fmt","utm_marketing_tactic":"current.tct","session_entry":"current_add.ep","session_start_time":"current_add.fd","session_pages":"session.pgs","session_count":"udata.vst","user_agent":"udata.uag"}};
+/* ]]> */
+</script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/order-attribution.min.js" id="wc-order-attribution-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/e-202444.js" id="jetpack-stats-js" data-wp-strategy="defer"></script>
+<script type="text/javascript" id="jetpack-stats-js-after">
+/* <![CDATA[ */
+_stq = window._stq || [];
+_stq.push([ "view", JSON.parse("{\"v\":\"ext\",\"blog\":\"213357115\",\"post\":\"338\",\"tz\":\"1\",\"srv\":\"ntronic.pl\",\"j\":\"1:13.7.1\"}") ]);
+_stq.push([ "clickTrackerInit", "213357115", "338" ]);
+/* ]]> */
+</script>
+<script type="text/javascript" defer="defer" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/forms.js" id="mc4wp-forms-api-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/jquery.validate.min.js" id="wpforms-validation-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/mailcheck.min.js" id="wpforms-mailcheck-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/punycode.min.js" id="wpforms-punycode-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/utils.min.js" id="wpforms-generic-utils-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/wpforms.min.js" id="wpforms-js"></script>
+<script type="text/javascript" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/api.js" id="wpforms-recaptcha-js"></script>
+<script type="text/javascript" id="wpforms-recaptcha-js-after">
+/* <![CDATA[ */
+var wpformsDispatchEvent = function (el, ev, custom) {
+				var e = document.createEvent(custom ? "CustomEvent" : "HTMLEvents");
+				custom ? e.initCustomEvent(ev, true, true, false) : e.initEvent(ev, true, true);
+				el.dispatchEvent(e);
+			};
+		var wpformsRecaptchaCallback = function (el) {
+				var hdn = el.parentNode.querySelector(".wpforms-recaptcha-hidden");
+				var err = el.parentNode.querySelector("#g-recaptcha-hidden-error");
+				hdn.value = "1";
+				wpformsDispatchEvent(hdn, "change", false);
+				hdn.classList.remove("wpforms-error");
+				err && hdn.parentNode.removeChild(err);
+			};
+		var wpformsRecaptchaLoad = function () {
+					Array.prototype.forEach.call(document.querySelectorAll(".g-recaptcha"), function (el) {
+						try {
+							var recaptchaID = grecaptcha.render(el, {
+								callback: function () {
+									wpformsRecaptchaCallback(el);
+								}
+							});
+							el.setAttribute("data-recaptcha-id", recaptchaID);
+						} catch (error) {}
+					});
+					wpformsDispatchEvent(document, "wpformsRecaptchaLoaded", true);
+				};
+			
+/* ]]> */
+</script>
+<script type="text/javascript">
+/* <![CDATA[ */
+var wpforms_settings = {"val_required":"To pole jest wymagane.","val_email":"Wpisz prawid\u0142owy adres e-mail.","val_email_suggestion":"Czy chodzi o {suggestion}?","val_email_suggestion_title":"Kliknij, aby zaakceptowa\u0107 t\u0119 sugesti\u0119.","val_email_restricted":"Ten adres e-mail jest niedozwolony.","val_number":"Wpisz prawid\u0142ow\u0105 liczb\u0119.","val_number_positive":"Wpisz prawid\u0142ow\u0105 liczb\u0119 dodatni\u0105.","val_minimum_price":"Wpisana kwota jest mniejsza ni\u017c wymagane minimum.","val_confirm":"Warto\u015bci p\u00f3l s\u0105 niezgodne.","val_checklimit":"Przekroczono liczb\u0119 dozwolonych zaznacze\u0144: {#}.","val_limit_characters":"{count} z maksymalnej liczby {limit} znak\u00f3w.","val_limit_words":"{count} z maksymalnej liczby {limit} s\u0142\u00f3w.","val_recaptcha_fail_msg":"Weryfikacja Google reCAPTCHA nie powiod\u0142a si\u0119. Spr\u00f3buj ponownie p\u00f3\u017aniej.","val_turnstile_fail_msg":"Weryfikacja Cloudflare Turnstile nie powiod\u0142a si\u0119. Spr\u00f3buj ponownie p\u00f3\u017aniej.","val_inputmask_incomplete":"Uzupe\u0142nij pole w wymaganym formacie.","uuid_cookie":"","locale":"pl","country":"","country_list_label":"Country list","wpforms_plugin_url":"https:\/\/ntronic.pl\/wp-content\/plugins\/wpforms-lite\/","gdpr":"","ajaxurl":"https:\/\/ntronic.pl\/wp-admin\/admin-ajax.php","mailcheck_enabled":"1","mailcheck_domains":[],"mailcheck_toplevel_domains":["dev"],"is_ssl":"1","currency_code":"USD","currency_thousands":",","currency_decimals":"2","currency_decimal":".","currency_symbol":"$","currency_symbol_pos":"left","val_requiredpayment":"P\u0142atno\u015b\u0107 jest wymagana.","val_creditcard":"Wpisz prawid\u0142owy numer karty kredytowej.","error_updating_token":"B\u0142\u0105d aktualizowania tokenu. Je\u015bli problem nie ust\u0105pi, spr\u00f3buj ponownie lub skontaktuj si\u0119 z pomoc\u0105 techniczn\u0105.","network_error":"B\u0142\u0105d sieci lub serwer jest nieosi\u0105galny. Sprawd\u017a po\u0142\u0105czenie lub spr\u00f3buj ponownie p\u00f3\u017aniej.","token_cache_lifetime":"86400","hn_data":[]}
+/* ]]> */
+</script>
+
+		<!-- Cookie Notice plugin v2.4.18 by Hu-manity.co https://hu-manity.co/ -->
+		<div id="cookie-notice" role="dialog" class="cn-position-bottom cn-effect-fade cookie-notice-hidden cookie-revoke-visible" aria-label="Cookie Notice" style="background-color: rgba(50,50,58,1);"><div class="cookie-notice-container" style="color: #fff"><span id="cn-notice-text" class="cn-text-container">Ta
+ strona korzysta z ciasteczek aby świadczyć usługi na najwyższym 
+poziomie. Dalsze korzystanie ze strony oznacza, że zgadzasz się na ich 
+użycie.</span><span id="cn-notice-buttons" class="cn-buttons-container"><a href="#" id="cn-accept-cookie" data-cookie-set="accept" class="cn-set-cookie cn-button" aria-label="Zgoda" style="background-color: #00a99d">Zgoda</a></span><span id="cn-close-notice" data-cookie-set="accept" class="cn-close-icon" title="Nie wyrażam zgody"></span></div>
+			
+		</div>
+		<!-- / Cookie Notice plugin --><div class="widget_shopping_cart_live_region screen-reader-text" role="status"></div><div style="background-color: rgb(255, 255, 255); border: 1px solid rgb(204, 204, 204); box-shadow: rgba(0, 0, 0, 0.2) 2px 2px 3px; position: absolute; transition: visibility 0s linear 0.3s, opacity 0.3s linear; opacity: 0; visibility: hidden; z-index: 2000000000; left: 0px; top: -10000px;"><div style="width: 100%; height: 100%; position: fixed; top: 0px; left: 0px; z-index: 2000000000; background-color: rgb(255, 255, 255); opacity: 0.05;"></div><div style="border: 11px solid transparent; width: 0px; height: 0px; position: absolute; pointer-events: none; margin-top: -11px; z-index: 2000000000;" class="g-recaptcha-bubble-arrow"></div><div style="border: 10px solid transparent; width: 0px; height: 0px; position: absolute; pointer-events: none; margin-top: -10px; z-index: 2000000000;" class="g-recaptcha-bubble-arrow"></div><div style="z-index: 2000000000; position: relative;"><iframe title="Test reCAPTCHA wygaśnie za 2&nbsp;minuty" style="width: 100%; height: 100%;" name="c-x2ydi18jhosn" frameborder="0" scrolling="no" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation allow-modals allow-popups-to-escape-sandbox allow-storage-access-by-user-activation" src="Zasada%20dzia%C5%82ania,%20projektowanie%20oraz%20budowanie%20niezawodnych%20sieci%201%20WIRE%20-%20Ntronic_pliki/bframe.htm"></iframe></div></div></body></html>

@@ -12,10 +12,10 @@ HardwareSerial RS485Serial(PB7, PB6);
 #define SKETCH_NAME "M17_FeederManager"
 
 #define MY_NODE_ID 96
-//#define MY_PARENT_NODE_ID 37	
+//#define MY_PARENT_NODE_ID 37
 //#define MY_PARENT_NODE_IS_STATIC
 #define MY_TRANSPORT_SANITY_CHECK
-#define MY_TRANSPORT_SANITY_CHECK_INTERVAL 10800000 //3h
+#define MY_TRANSPORT_SANITY_CHECK_INTERVAL 10800000  //3h
 
 #define MY_24V_STATUS_SENSOR_ID 1
 #define MY_5_1V_STATUS_SENSOR_ID 2
@@ -23,7 +23,6 @@ HardwareSerial RS485Serial(PB7, PB6);
 #define MY_MOTION_DETECTION_STATUS_SENSOR_ID 4
 #define MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID 5
 #define MY_TIME_SENSOR_ID 6
-#define MY_TEMPERATURE_ID 7
 
 #define ARDUINO_ARCH_STM32F1
 #define MY_DISABLED_SERIAL             // manual configure Serial
@@ -39,7 +38,6 @@ HardwareSerial RS485Serial(PB7, PB6);
 #define SDA_PIN PB9
 
 #define MOTION_PIN PA0
-#define CLOCK_PIN PB4
 
 #define OUT_5V_1 PA1
 #define OUT_5V_2 PA2
@@ -48,14 +46,13 @@ HardwareSerial RS485Serial(PB7, PB6);
 
 #define SLEEP_START_UP 30000  // 10 sekund
 #define SLEEP_MAX_TIME 10000  // 10 sekund
-#define SLEEP_RS485_TIME 5    // 5 ms
+#define SLEEP_RS485_TIME 15    // 5 ms
 
 #define BEFORE_CLOCK_ENABLE_TIME_PART 0.6
 #define NEXT_CLOCK_ENABLE_TIME_PART 0.4
 /* #endregion */
 
 /* #region Imports */
-#include "DS3231.h"
 #include <MySensors.h>
 #include <24C32.h>
 #include <Wire.h>
@@ -86,7 +83,6 @@ MyMessage mMessage;
 StateChangeManager SCM;
 EE EEPROM24C32;
 Storage EEStorage(&EEPROM24C32);
-DS3231 rtcDS3231;  // Set up access to the DS3231
 STM32RTC &rtc = STM32RTC::getInstance();
 
 #if defined(RTC_SSR_SS)
@@ -227,7 +223,6 @@ void inicjalizePins() {
   digitalWrite(OUT_24V, LOW);
 
   pinMode(MY_RS485_DE_PIN, OUTPUT);
-  pinMode(CLOCK_PIN, INPUT_PULLUP);
   pinMode(MOTION_PIN, INPUT);
 }
 
@@ -261,7 +256,6 @@ void presentToControler() {
   present(MY_MOTION_DETECTION_STATUS_SENSOR_ID, S_BINARY, "Motion detection");
   present(MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID, S_BINARY, "Clock schedule");
   present(MY_TIME_SENSOR_ID, S_CUSTOM, "Internal clock");
-  present(MY_TEMPERATURE_ID, S_TEMP, "Temperature");
 }
 
 void sendAllMySensorsStatus() {
@@ -276,7 +270,6 @@ void sendAllMySensorsStatus() {
   sendClockScheduleEnabledTime();
   sendClockScheduleIntervalHour();
   sendClockValue();
-  sendTemperature();
 }
 
 void sendEnable24VOutputStatus() {
@@ -330,14 +323,9 @@ void sendClockScheduleIntervalHour() {
 void sendClockValue() {
   mMessage.setSensor(MY_TIME_SENSOR_ID);
   mMessage.setType(V_VAR1);
-  send(mMessage.set((uint32_t)myTZ.toLocal(rtcDS3231.getNow())));
+  send(mMessage.set((uint32_t)myTZ.toLocal(rtc.getEpoch())));
 }
 
-void sendTemperature() {
-  mMessage.setSensor(MY_TEMPERATURE_ID);
-  mMessage.setType(V_TEMP);
-  send(mMessage.set(rtcDS3231.getTemperature(), 2));
-}
 
 void receive(const MyMessage &message)  // MySensors
 {
@@ -406,7 +394,7 @@ void receive(const MyMessage &message)  // MySensors
 
 void receiveTime(uint32_t ts) {
   delaySleep(SLEEP_MAX_TIME);
-  rtcDS3231.setEpoch(myTZ.toUTC(ts), false);
+  rtc.setEpoch(myTZ.toUTC(ts), false);
 }
 /* #endregion */
 
@@ -446,7 +434,7 @@ void setClockScheduleEnabledTime(uint16_t time) {
 }
 
 void setClock(time_t time) {
-  rtcDS3231.setEpoch(myTZ.toUTC(time), false);
+  rtc.setEpoch(myTZ.toUTC(time));
   sendClockValue();
 }
 
@@ -470,7 +458,7 @@ void setMotionDetectedEnabledTime(uint16_t time) {
 // motion
 volatile uint32_t motionEnableTime = 0;
 void startMotionAutoAction() {
-  motionEnableTime = myTZ.toLocal(rtcDS3231.getNow()) + EEStorage.motionDetectedEnabledTime();
+  motionEnableTime = myTZ.toLocal(rtc.getEpoch()) + EEStorage.motionDetectedEnabledTime();
 
   if (!isAllMotionAutoActionEnabled()) {
     setEnable5V_2Output(true, false);
@@ -501,13 +489,12 @@ bool isAllMotionAutoActionEnabled() {
 volatile uint32_t clockEnableTime = 0;
 
 void startClockAutoAction() {
-  clockEnableTime = myTZ.toLocal(rtcDS3231.getNow()) + EEStorage.clockScheduleEnabledTime();
+  clockEnableTime = myTZ.toLocal(rtc.getEpoch()) + EEStorage.clockScheduleEnabledTime();
 
   setEnable5V_1Output(true, false);
   setEnable5V_2Output(true, false);
   setEnable24VOutput(true, false);
   sendClockValue();
-  sendTemperature();
 }
 
 bool isAllClockActionEnabled() {
@@ -542,14 +529,14 @@ void clearAllAutoActions() {
 }
 
 // clock interrupt
-void clockInterrupt() {
-  uint32_t nowUnixtime = myTZ.toLocal(rtcDS3231.getNow());
+void clockInterrupt(void*) {
+  uint32_t nowUnixtime = myTZ.toLocal(rtc.getEpoch());
 
   if (EEStorage.enableMotionDetection() && !isAllMotionAutoActionEnabled()) {
     clearMotionAutoAction();
   }
 
-   if (EEStorage.enableClockSchedule() && !isAllClockActionEnabled()) {
+  if (EEStorage.enableClockSchedule() && !isAllClockActionEnabled()) {
     clearClockAutoAction();
   }
 
@@ -557,7 +544,7 @@ void clockInterrupt() {
     bool clockAutoActionInProgress = clockEnableTime != 0 && clockEnableTime > nowUnixtime + 10;
     stopMotionAutoAction(clockAutoActionInProgress && isAnyClockActionEnabled());
   }
- 
+
 
   if (EEStorage.enableClockSchedule() && clockEnableTime != 0 && clockEnableTime < nowUnixtime) {
     bool motionAutoActionInProgress = motionEnableTime != 0 && motionEnableTime > nowUnixtime + 10;
@@ -574,10 +561,8 @@ void setNewRTCClockAwake() {
     return;
   }
 
-  time_t now = myTZ.toLocal(rtcDS3231.getNow());
+  time_t now = myTZ.toLocal(rtc.getEpoch());
   time_t sleepTime = getSleepTime(now);
-
-  rtc.setEpoch(now);
   rtc.setAlarmEpoch(sleepTime, rtc.MATCH_YYMMDDHHMMSS);
 }
 
@@ -680,7 +665,7 @@ void delaySleep(u_int32_t delay) {
 }
 
 bool isRS485Sleep() {
-  return sleepWaitTime - sleepSetTime == SLEEP_RS485_TIME ;
+  return sleepWaitTime - sleepSetTime == SLEEP_RS485_TIME;
 }
 
 void compensateSleepDelay() {
@@ -773,10 +758,7 @@ void setup() {
   rtc.begin();
 #endif /* RTC_BINARY_NONE */
 
-  rtcDS3231.enable32kHz(false);
-  rtcDS3231.enableOscillator(true, false, 0);
-
-  attachInterrupt(digitalPinToInterrupt(CLOCK_PIN), clockInterrupt, FALLING);
+  rtc.attachSecondsInterrupt(clockInterrupt);
   attachInterrupt(digitalPinToInterrupt(MOTION_PIN), buttonInterrupt, RISING);
 
   LowPower.begin();
@@ -784,7 +766,6 @@ void setup() {
   LowPower.attachInterruptWakeup(MOTION_PIN, buttonInterrupt, RISING, SLEEP_MODE);
   LowPower.enableWakeupFrom(&RS485Serial, serialWakeup);
   LowPower.enableWakeupFrom(&rtc, alarmMatch, &atime);
-  LowPower.attachInterruptWakeup(PB7, serialWakeup, CHANGE, SLEEP_MODE);
 }
 
 void loop() {
@@ -796,7 +777,6 @@ void loop() {
   }
 
   if (canSleep) {
-    rtcDS3231.enableOscillator(false, false, 0);
     RS485Serial.flush();
 
     if (!isRS485Sleep()) {
@@ -804,11 +784,10 @@ void loop() {
       setNewRTCClockAwake();
     }
 
-    LowPower.deepSleep();  // sleep
+    LowPower.sleep();  // sleep
 
     // weakup
     RS485Serial.flush();
-    rtcDS3231.enableOscillator(true, false, 0);
   } else {
     compensateSleepDelay();
   }
