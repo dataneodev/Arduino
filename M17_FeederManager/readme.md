@@ -19,6 +19,3 @@
 
 + 6 - S_CUSTOM - "Internal clock"
     + V_VAR1 - "Get/set time in unixtime"
-
-+ 7 - S_TEMP - "Temperature"
-    + V_TEMP - "Current temperature"

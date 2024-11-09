@@ -75,6 +75,17 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #pragma endregion BOARD_PIN_CONFIGURATION
 
 #pragma region MY_SENSORS_CONFIGURATION
+
+#define MY_NODE_ID 95  // id wezła dla my sensors
+#define MY_PARENT_NODE_ID 10
+
+#define MY_PARENT_NODE_IS_STATIC
+//#define MY_PASSIVE_NODE
+#define MY_TRANSPORT_WAIT_READY_MS 1
+
+#define MY_TRANSPORT_SANITY_CHECK
+#define MY_TRANSPORT_SANITY_CHECK_INTERVAL 10800000  //3h
+
 // RS485
 #define MY_DISABLED_SERIAL         // manual configure Serial1
 #define MY_RS485                   // Enable RS485 transport layer
@@ -82,7 +93,7 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #define MY_RS485_BAUD_RATE 9600    // Set RS485 baud rate to use
 #define MY_RS485_HWSERIAL Serial1  //
 #define MY_RS485_SOH_COUNT 6
-#define MY_TRANSPORT_WAIT_READY_MS 1
+
 
 #define MS_DOOR_STATUS_ID 1
 #define MS_OPEN_DOOR_COUNT_ID 20
@@ -92,7 +103,7 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #define MS_LIGHT_ID 24
 #define MS_TEMP_ID 25
 #define MS_MIN_RSSI_ID 26
-#define MY_NODE_ID 95  // id wezła dla my sensors
+
 #define MS_SEND_TIMEOUT 10 * 1000
 #define WAIT_TIME_FOR_MS_MESSAGE_BEFORE_SLEEP 40
 #pragma endregion MY_SENSORS_CONFIGURATION
@@ -1071,6 +1082,7 @@ void presentation()  // MySensors
 
   presentBleDevices();
 
+  SCM.isStateChanged(false, 1);
   isPresentedToController = true;
 }
 

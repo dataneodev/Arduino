@@ -11,9 +11,12 @@ HardwareSerial RS485Serial(PB7, PB6);
 #define SOFTWARE_VERION "1.0"
 #define SKETCH_NAME "M17_FeederManager"
 
-#define MY_NODE_ID 96
-//#define MY_PARENT_NODE_ID 37
-//#define MY_PARENT_NODE_IS_STATIC
+#define MY_NODE_ID 96  // id wezła dla my sensors
+#define MY_PARENT_NODE_ID 10
+#define MY_PARENT_NODE_IS_STATIC
+#define MY_PASSIVE_NODE
+#define MY_TRANSPORT_WAIT_READY_MS 1
+
 #define MY_TRANSPORT_SANITY_CHECK
 #define MY_TRANSPORT_SANITY_CHECK_INTERVAL 10800000  //3h
 
@@ -31,7 +34,6 @@ HardwareSerial RS485Serial(PB7, PB6);
 #define MY_RS485_BAUD_RATE 9600        // Set RS485 baud rate to use
 #define MY_RS485_HWSERIAL RS485Serial  //
 #define MY_RS485_SOH_COUNT 6
-#define MY_TRANSPORT_WAIT_READY_MS 1
 
 // 24C32
 #define SCL_PIN PB8
@@ -44,9 +46,9 @@ HardwareSerial RS485Serial(PB7, PB6);
 
 #define OUT_24V PA3
 
-#define SLEEP_START_UP 30000  // 10 sekund
+#define SLEEP_START_UP 28000  // 30 sekund
 #define SLEEP_MAX_TIME 10000  // 10 sekund
-#define SLEEP_RS485_TIME 15    // 5 ms
+#define SLEEP_RS485_TIME 10   // 15 ms
 
 #define BEFORE_CLOCK_ENABLE_TIME_PART 0.6
 #define NEXT_CLOCK_ENABLE_TIME_PART 0.4
@@ -94,6 +96,7 @@ static uint32_t atime = 1000;
 TimeChangeRule myDST = { "EDT", Last, Sun, Mar, 2, 120 };  // Daylight time = UTC - 4 hours
 TimeChangeRule mySTD = { "EST", Last, Sun, Nov, 2, 60 };   // Standard time = UTC - 5 hours
 Timezone myTZ(myDST, mySTD);
+volatile u_int32_t lastRequestTime;
 /* #endregion */
 
 /* #region  Power Optimization */
@@ -246,6 +249,8 @@ void presentation()  // MySensors
 {
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
   presentToControler();
+
+  SCM.isStateChanged(false, 0);
   isPresentedToController = true;
 }
 
@@ -392,9 +397,11 @@ void receive(const MyMessage &message)  // MySensors
   }
 }
 
+
 void receiveTime(uint32_t ts) {
   delaySleep(SLEEP_MAX_TIME);
   rtc.setEpoch(myTZ.toUTC(ts), false);
+  lastRequestTime = ts;
 }
 /* #endregion */
 
@@ -529,8 +536,18 @@ void clearAllAutoActions() {
 }
 
 // clock interrupt
-void clockInterrupt(void*) {
+
+void checkTimeRequest(uint32_t now) {
+  if (lastRequestTime + 1209600 < now) {  //14days
+    lastRequestTime -= 14400;             //4h
+    requestTime();
+  }
+}
+
+void clockInterrupt(void *) {
   uint32_t nowUnixtime = myTZ.toLocal(rtc.getEpoch());
+
+  checkTimeRequest(nowUnixtime);
 
   if (EEStorage.enableMotionDetection() && !isAllMotionAutoActionEnabled()) {
     clearMotionAutoAction();
@@ -649,8 +666,11 @@ bool isHourHandledBySchedule(uint8_t hour) {
 volatile u_int32_t sleepWaitTime;
 volatile u_int32_t sleepSetTime;
 volatile bool canSleep;
+volatile bool serialAwake;
 
 void delaySleep(u_int32_t delay) {
+  serialAwake = false;
+
   u_int32_t now = millis();
 
   u_int32_t newSleep = now + delay;
@@ -662,10 +682,6 @@ void delaySleep(u_int32_t delay) {
   canSleep = false;
   sleepSetTime = now;
   sleepWaitTime = newSleep;
-}
-
-bool isRS485Sleep() {
-  return sleepWaitTime - sleepSetTime == SLEEP_RS485_TIME;
 }
 
 void compensateSleepDelay() {
@@ -698,8 +714,15 @@ void compensateSleepDelay() {
   }
 }
 
+
 void serialWakeup() {
   delaySleep(SLEEP_RS485_TIME);
+  serialAwake = true;
+}
+
+void gpioAwakeInterrupt() {
+
+  buttonInterrupt();
 }
 
 void buttonInterrupt() {
@@ -716,7 +739,7 @@ void buttonInterrupt() {
   startMotionAutoAction();
 }
 
-void alarmMatch(void *data) {
+void alarmAwake(void *data) {
   if (!EEStorage.enableClockSchedule()) {
     return;
   }
@@ -763,9 +786,9 @@ void setup() {
 
   LowPower.begin();
 
-  LowPower.attachInterruptWakeup(MOTION_PIN, buttonInterrupt, RISING, SLEEP_MODE);
+  LowPower.attachInterruptWakeup(MOTION_PIN, gpioAwakeInterrupt, RISING, SLEEP_MODE);
   LowPower.enableWakeupFrom(&RS485Serial, serialWakeup);
-  LowPower.enableWakeupFrom(&rtc, alarmMatch, &atime);
+  LowPower.enableWakeupFrom(&rtc, alarmAwake, &atime);
 }
 
 void loop() {
@@ -777,9 +800,8 @@ void loop() {
   }
 
   if (canSleep) {
-    RS485Serial.flush();
-
-    if (!isRS485Sleep()) {
+    if (!serialAwake) {
+      RS485Serial.flush();
       clearAllAutoActions();
       setNewRTCClockAwake();
     }
@@ -787,7 +809,9 @@ void loop() {
     LowPower.sleep();  // sleep
 
     // weakup
-    RS485Serial.flush();
+    if (!serialAwake) {
+      RS485Serial.flush();
+    }
   } else {
     compensateSleepDelay();
   }

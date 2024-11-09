@@ -138,8 +138,6 @@ inButtonDef in4Button = {
 #define SKETCH_NAME "RGB_LED_DRIVER"
 #endif
 
-#define MY_NODE_ID 60  // id węzła my sensors - każdy sterownik musi miec inny numer
-
 #if defined NODE_1_RGBW || defined NODE_1_RGB
 #define RGBW_ID 1
 #endif
@@ -160,6 +158,17 @@ inButtonDef in4Button = {
 #define DIMMER_ID_4 4
 #endif
 
+
+#define MY_NODE_ID 60  // id wezła dla my sensors
+#define MY_PARENT_NODE_ID 10
+
+#define MY_PARENT_NODE_IS_STATIC
+//#define MY_PASSIVE_NODE
+#define MY_TRANSPORT_WAIT_READY_MS 1
+
+#define MY_TRANSPORT_SANITY_CHECK
+#define MY_TRANSPORT_SANITY_CHECK_INTERVAL 10800000  //3h
+
 // RS485
 #define ARDUINO_ARCH_STM32F1
 #define MY_DISABLED_SERIAL         // manual configure Serial1
@@ -168,7 +177,6 @@ inButtonDef in4Button = {
 #define MY_RS485_BAUD_RATE 9600    // Set RS485 baud rate to use
 #define MY_RS485_HWSERIAL Serial2  //
 #define MY_RS485_SOH_COUNT 6
-#define MY_TRANSPORT_WAIT_READY_MS 1
 
 // 24C32
 #define SCL_PIN PB10
@@ -638,6 +646,8 @@ void presentation()  // MySensors
 {
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
   presentToControler();
+  
+  SCM.isStateChanged(false, 0);
   isPresentedToController = true;
 }
 

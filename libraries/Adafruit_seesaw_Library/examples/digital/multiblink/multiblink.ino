@@ -11,11 +11,11 @@ Adafruit_seesaw ss;
 uint32_t mask = ((uint32_t)0b111 << 11);
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   
   if(!ss.begin()){
     Serial.println("ERROR!");
-    while(1);
+    while(1) delay(1);
   }
   else Serial.println("seesaw started");
 

@@ -12,7 +12,7 @@ uint32_t button_mask = (1 << BUTTON_RIGHT) | (1 << BUTTON_DOWN) |
 
 #if defined(ESP8266)
   #define IRQ_PIN   2
-#elif defined(ESP32)
+#elif defined(ESP32) && !defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2)
   #define IRQ_PIN   14
 #elif defined(ARDUINO_NRF52832_FEATHER)
   #define IRQ_PIN   27
@@ -35,7 +35,7 @@ void setup() {
   
   if(!ss.begin(0x49)){
     Serial.println("ERROR! seesaw not found");
-    while(1);
+    while(1) delay(1);
   } else {
     Serial.println("seesaw started");
     Serial.print("version: ");
