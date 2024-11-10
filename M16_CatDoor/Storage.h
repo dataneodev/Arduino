@@ -78,16 +78,29 @@ public:
   }
 
   void setMinRSSI(uint8_t minRssi) {
-    if(minRssi > 100){
+    if (minRssi > 100) {
       minRssi = 100;
     }
 
-    if(minRssi < 5){
+    if (minRssi < 5) {
       minRssi = 5;
     }
 
     _minRSSI = minRssi;
     EEPROM24C32->writeByte(118, minRssi, false, false);
+  }
+
+  void setDoorLockTime(uint32_t lockTime) {
+    if (lockTime > 3600) {
+      lockTime = 3600;
+    }
+
+    if (lockTime < 0) {
+      lockTime = 0;
+    }
+
+    _doorLockTime = lockTime;
+    EEPROM24C32->writeUInt32(122, lockTime, false, false);
   }
 
   uint8_t getBleDevicesCount() {
@@ -186,7 +199,11 @@ public:
   }
 
   uint8_t getMinRSSI() {
-    return _minRSSI ;
+    return _minRSSI;
+  }
+
+  uint32_t getDoorLockTime() {
+    return _doorLockTime;
   }
 
 private:
@@ -201,6 +218,7 @@ private:
   bool _useBleAuth = false;
   bool _useLight = true;
   uint8_t _minRSSI = 60;
+  uint32_t _doorLockTime = 0;
 
   static const uint8_t _deviceCount = 10;
 
@@ -230,8 +248,8 @@ private:
       EEPROM24C32->writeByte(114, FALSE_VALUE, false, false);  // open always door
       EEPROM24C32->writeByte(115, FALSE_VALUE, false, false);  // close always door
       EEPROM24C32->writeByte(116, FALSE_VALUE, false, false);  // auth
-      EEPROM24C32->writeByte(117, TRUE_VALUE, false, false);  // light
-      EEPROM24C32->writeByte(118, 60, false, false);  // min RSSI
+      EEPROM24C32->writeByte(117, TRUE_VALUE, false, false);   // light
+      EEPROM24C32->writeByte(118, 60, false, false);           // min RSSI
 
       writeDefaultBle();  //ble
     }
@@ -247,6 +265,7 @@ private:
     _useBleAuth = EEPROM24C32->readByte(116) == TRUE_VALUE;
     _useLight = EEPROM24C32->readByte(117) == TRUE_VALUE;
     _minRSSI = EEPROM24C32->readByte(118);
+    _doorLockTime = EEPROM24C32->readUInt32(122);
 
     readBleAllAddress();
 

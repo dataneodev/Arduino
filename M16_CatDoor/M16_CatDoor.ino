@@ -3,7 +3,7 @@
 
 #pragma region INSTALATION
 
-#include "esp_random.h"  //brakuje w plikach mysensors dla esp32, sprawdzicz y mozna usunąć w nowych wersjach
+#include "esp_random.h"  //brakuje w plikach mysensors dla esp32, sprawdzic i usunąć w nowych wersjach
 /*
 Dodać link w ustawieniach additional boards manager urls: https://espressif.github.io/arduino-esp32/package_esp32_dev_index.json
 Płytka: ESP32C6 Dev Module
@@ -26,7 +26,7 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #define OPEN_CLOSE_SOUND           // sygnał dzwiekowy przy otwarciu/zamknieciu drzwi
 #define OUT_2_ENABLED              // czy są 2 diodu - OUT1 -zielona, OUT2 - czerwona
 #define USE_M1_M2_ON_DOOR_CLOSING  // czy wykrycie ruchy przez m1 i m2 także przerywa zamykanie drzwi
-//#define USE_M3_ON_DOOR_CLOSING     // czy wykrycie ruchy przez czujnik na sterowniku przerywa zamykanie drzwi
+#define USE_M3_ON_DOOR_CLOSING     // czy wykrycie ruchy przez czujnik na sterowniku przerywa zamykanie drzwi
 
 #define MOTION_1_DELAY 5 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a kolejnym wykryciem uruchamiajacym otwarcie drzwi dla sensoru 1,
 #define MOTION_1_DELAY_WAIT 4 * 1000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 1,
@@ -46,8 +46,7 @@ static __inline__ void __psRestore(const uint32_t *__s)
 
 #define CPU_SPEED 160
 
-#define CHECK_NUMBER 0x59  //zmienic aby zresetować ustawienia zapisane w pamięci
-//#define DEBUG_GK           // for tests
+#define CHECK_NUMBER 0x43  //zmienic aby zresetować ustawienia zapisane w pamięci
 #define FADE 2
 #define FADE_OFF 100000
 #pragma endregion CONFIGURATION
@@ -75,12 +74,10 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #pragma endregion BOARD_PIN_CONFIGURATION
 
 #pragma region MY_SENSORS_CONFIGURATION
-
 #define MY_NODE_ID 95  // id wezła dla my sensors
 #define MY_PARENT_NODE_ID 10
-
 #define MY_PARENT_NODE_IS_STATIC
-//#define MY_PASSIVE_NODE
+#define MY_PASSIVE_NODE
 #define MY_TRANSPORT_WAIT_READY_MS 1
 
 #define MY_TRANSPORT_SANITY_CHECK
@@ -94,7 +91,6 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #define MY_RS485_HWSERIAL Serial1  //
 #define MY_RS485_SOH_COUNT 6
 
-
 #define MS_DOOR_STATUS_ID 1
 #define MS_OPEN_DOOR_COUNT_ID 20
 #define MS_OPEN_DOOR_ID 21
@@ -103,9 +99,10 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #define MS_LIGHT_ID 24
 #define MS_TEMP_ID 25
 #define MS_MIN_RSSI_ID 26
+#define MS_OPEN_LOCK_ID 27
 
 #define MS_SEND_TIMEOUT 10 * 1000
-#define WAIT_TIME_FOR_MS_MESSAGE_BEFORE_SLEEP 40
+#define WAIT_TIME_FOR_MS_MESSAGE_BEFORE_SLEEP 10
 #pragma endregion MY_SENSORS_CONFIGURATION
 
 #pragma region TYPES
@@ -181,6 +178,8 @@ enum MotionDetectState {
   MOTIONS_DETECTED = 2,
 };
 
+
+// klasa wykrywa ruch na podstawie przejscia 0/1
 class MotionDetect {
 private:
   unsigned long _startAt;
@@ -276,6 +275,74 @@ public:
 
 private:
 };
+
+// klasa wykrywa ruch na podstawie ciągłego stanu
+class MotionDetectContinue {
+private:
+  unsigned long _lastLow;
+  unsigned long _lastMotionAt;
+
+  byte _pin;
+  unsigned long _motionDelay;
+
+public:
+  MotionDetectContinue(byte pin, unsigned long motionDelay) {
+    _pin = pin;
+    _motionDelay = motionDelay;
+  }
+
+  bool getPinState() {
+    return digitalRead(_pin);
+  }
+
+  void start() {
+    bool lastState = getPinState();
+    unsigned long current = millis();
+
+    _lastLow = current;
+    _lastMotionAt = lastState ? current : 0;
+  }
+
+  void weakUp() {
+    bool lastState = getPinState();
+    unsigned long current = millis();
+
+    _lastLow = current;
+    _lastMotionAt = lastState ? current : 0;
+  }
+
+  MotionDetectState ping() {
+    unsigned long current = millis();
+    bool state = getPinState();
+
+    if (state) {
+      _lastMotionAt = current;
+    }
+
+    if (_lastLow > current) {  // owerflow
+      _lastLow = current;
+    }
+
+    if (!state) {
+      _lastLow = current;
+      return NO_MOTION;
+    }
+
+    if (_lastLow + _motionDelay < current) {
+      return MOTIONS_DETECTED;
+    }
+
+    return ONE_MOTION_DETECTED;
+  }
+
+  bool isElapsedFromLastMotionDetection(unsigned long elapsed) {
+    unsigned long current = millis();
+
+    return _lastMotionAt + elapsed < current;
+  }
+
+private:
+};
 #pragma endregion TYPES
 
 #pragma region GLOBAL_VARIABLE
@@ -315,9 +382,15 @@ StateTime MessageReceiveTime;
 StateTime MessageSentTime;
 bool messageSent = true;
 
-MotionDetect M1(MOTION_SENSOR_1_PIN, MOTION_1_DELAY, MOTION_1_DELAY_WAIT);
-MotionDetect M2(MOTION_SENSOR_2_PIN, MOTION_2_DELAY, MOTION_2_DELAY_WAIT);
-MotionDetect M3(MOTION_SENSOR_3_PIN, 5 * 1000, 1);
+//trigger detection
+//MotionDetect M1(MOTION_SENSOR_1_PIN, MOTION_1_DELAY, MOTION_1_DELAY_WAIT);
+//MotionDetect M2(MOTION_SENSOR_2_PIN, MOTION_2_DELAY, MOTION_2_DELAY_WAIT);
+//MotionDetect M3(MOTION_SENSOR_3_PIN, 5 * 1000, 1);
+
+//continue detection
+MotionDetectContinue M1(MOTION_SENSOR_1_PIN, MOTION_1_DELAY);
+MotionDetectContinue M2(MOTION_SENSOR_2_PIN, MOTION_2_DELAY);
+MotionDetectContinue M3(MOTION_SENSOR_3_PIN, 5 * 1000);
 
 Fadinglight Out1(OUPUT_1_PIN, false, 2);
 Blinkenlight Out2(OUPUT_2_PIN);
@@ -326,6 +399,28 @@ Blinkenlight Out3(OUPUT_3_PIN);
 temperature_sensor_handle_t temp_sensor = NULL;
 temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(-40, 50);
 #pragma endregion GLOBAL_VARIABLE
+
+#pragma region TIME
+time_t _lastDoorClose = 0;
+
+time_t getNow() {
+  time_t now;
+  time(&now);
+  return now;
+}
+
+bool canOpenDoor() {
+  if (_lastDoorClose == 0) {
+    return true;
+  }
+
+  return _lastDoorClose + EEStorage.getDoorLockTime() < getNow();
+}
+
+void doorCloseMark() {
+  _lastDoorClose = getNow();
+}
+#pragma endregion TIME
 
 #pragma region STATES
 void allLedOff() {
@@ -642,6 +737,8 @@ void s_DOOR_CLOSED() {
     M3.start();
 
     EEStorage.setDoorOpen(false);
+    doorCloseMark();
+
     sentDoorClose();
   }
 }
@@ -787,6 +884,10 @@ bool S_ONE_MOTION_DETECTIONN_S_MOTION_DETECTED() {
   }
 
   if (EEStorage.isDoorAlwaysClose()) {
+    return false;
+  }
+
+  if (!canOpenDoor()) {
     return false;
   }
 
@@ -938,10 +1039,10 @@ bool T_S_DOOR_OPEN_S_SLEEP() {
     return false;
   }
 
-   if (!messageSent && !MessageSentTime.isElapsed(MS_SEND_TIMEOUT)) {
+  if (!messageSent && !MessageSentTime.isElapsed(MS_SEND_TIMEOUT)) {
     return false;
   }
-  
+
   if (!MessageReceiveTime.isElapsed(TIME_SLEEP_AFTER_LAST_DETECTION)) {
     return false;
   }
@@ -1072,6 +1173,7 @@ void presentation()  // MySensors
 {
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
 
+  present(MS_DOOR_STATUS_ID, S_BINARY, "Status otwarcia dzwi");
   present(MS_OPEN_DOOR_COUNT_ID, S_INFO, "Liczba cykli otwarcia");
   present(MS_OPEN_DOOR_ID, S_BINARY, "Drzwi zawsze otwarte");
   present(MS_CLOSE_DOOR_ID, S_BINARY, "Drzwi zawsze zamknięte");
@@ -1079,6 +1181,7 @@ void presentation()  // MySensors
   present(MS_LIGHT_ID, S_BINARY, "Swiatło");
   present(MS_TEMP_ID, S_TEMP, "Temperatura");
   present(MS_MIN_RSSI_ID, S_INFO, "Min RSSI");
+  present(MS_OPEN_LOCK_ID, S_INFO, "Czas blokady");
 
   presentBleDevices();
 
@@ -1290,11 +1393,29 @@ void sentMinRssi() {
   Serial.println(EEStorage.getMinRSSI());
 #endif
 
-  uint32_t minRSSI = EEStorage.getMinRSSI();
+  uint8_t minRSSI = EEStorage.getMinRSSI();
 
   mMessage.setType(V_TEXT);
   mMessage.setSensor(MS_MIN_RSSI_ID);
   send(mMessage.set(minRSSI));
+
+  messageSent = true;
+}
+
+void setDoorLockTime() {
+  MessageSentTime.stateStart();
+  messageSent = false;
+
+#if defined(DEBUG_GK)
+  Serial.print("setDoorLockTime");
+  Serial.println(EEStorage.getDoorLockTime());
+#endif
+
+  uint32_t doorLockTime = EEStorage.getDoorLockTime();
+
+  mMessage.setType(V_TEXT);
+  mMessage.setSensor(MS_OPEN_LOCK_ID);
+  send(mMessage.set(doorLockTime));
 
   messageSent = true;
 }
@@ -1308,6 +1429,7 @@ void sendAllMySensorsStatus() {
   sentLightStatus();
   sentTempStatus();
   sentMinRssi();
+  setDoorLockTime();
 }
 
 #pragma endregion MY_SENSORS
@@ -1438,7 +1560,7 @@ void receive(const MyMessage &message) {
     sentLightStatus();
   }
 
-  if (1 == message.sensor && message.getType() == V_VAR1) {
+  if (MS_DOOR_STATUS_ID == message.sensor && message.getType() == V_VAR1) {
     const char *mess = message.getString();
 
     uint8_t data[6];
@@ -1452,7 +1574,7 @@ void receive(const MyMessage &message) {
     sentMyAllClientOpenDoorDefaultStatus();
   }
 
-  if (message.sensor > 1 && message.sensor < 12 && message.getType() == V_VAR1) {
+  if (message.sensor > MS_DOOR_STATUS_ID && message.sensor < 12 && message.getType() == V_VAR1) {
     if (message.getBool()) {
       EEStorage.deleteBleDevice(message.sensor);
     }
@@ -1464,6 +1586,11 @@ void receive(const MyMessage &message) {
   if (MS_MIN_RSSI_ID == message.sensor && message.getType() == V_TEXT) {
     EEStorage.setMinRSSI(message.getByte());
     sentMinRssi();
+  }
+
+  if (MS_OPEN_LOCK_ID == message.sensor && message.getType() == V_TEXT) {
+    EEStorage.setDoorLockTime(message.getULong());
+    setDoorLockTime();
   }
 }
 #pragma endregion MAIN
