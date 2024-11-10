@@ -332,6 +332,10 @@ public:
       return MOTIONS_DETECTED;
     }
 
+    if (_lastLow + 400 > current) {
+      return NO_MOTION;
+    }
+
     return ONE_MOTION_DETECTED;
   }
 
