@@ -13,7 +13,7 @@ const uint8_t threshold = 50;
 const uint16_t ADCTouch::samples = 32;
 
 #define SENSOR_PIN A3
-#define OUT_PIN PB1
+#define OUT_PIN PB4
 #define RECALIBRATE 3600000  //1h
 //#define DEBUG
 
