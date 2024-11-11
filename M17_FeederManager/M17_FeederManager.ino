@@ -96,6 +96,7 @@ static uint32_t atime = 1000;
 TimeChangeRule myDST = { "EDT", Last, Sun, Mar, 2, 120 };  // Daylight time = UTC - 4 hours
 TimeChangeRule mySTD = { "EST", Last, Sun, Nov, 2, 60 };   // Standard time = UTC - 5 hours
 Timezone myTZ(myDST, mySTD);
+
 volatile u_int32_t lastRequestTime;
 /* #endregion */
 
@@ -539,7 +540,7 @@ void clearAllAutoActions() {
 
 void checkTimeRequest(uint32_t now) {
   if (lastRequestTime + 1209600 < now) {  //14days
-    lastRequestTime -= 14400;             //4h
+    lastRequestTime = now - (1209600 + 14400); //4h
     requestTime();
   }
 }

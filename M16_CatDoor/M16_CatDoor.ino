@@ -319,7 +319,7 @@ public:
       _lastMotionAt = current;
     }
 
-    if (_lastLow > current) {  // owerflow
+    if (_lastLow > current) {  // overflow
       _lastLow = current;
     }
 
@@ -413,12 +413,19 @@ time_t getNow() {
   return now;
 }
 
-bool canOpenDoor() {
+bool canOpenDoorFromLastClose() {
   if (_lastDoorClose == 0) {
     return true;
   }
 
-  return _lastDoorClose + EEStorage.getDoorLockTime() < getNow();
+  time_t now = getNow();
+
+  if(now < _lastDoorClose){
+    _lastDoorClose = 0;
+    return true;
+  }
+
+  return _lastDoorClose + EEStorage.getDoorLockTime() < now;
 }
 
 void doorCloseMark() {
@@ -891,7 +898,7 @@ bool S_ONE_MOTION_DETECTIONN_S_MOTION_DETECTED() {
     return false;
   }
 
-  if (!canOpenDoor()) {
+  if (!canOpenDoorFromLastClose()) {
     return false;
   }
 

@@ -20,7 +20,56 @@
 #if defined(ESP32)
 
 #include <Arduino.h>
+
+#if defined(ESP_IDF_VERSION)
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 0, 0)
+#define HAS_ESP_IDF_4
+#endif
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+#define HAS_ESP_IDF_5
+#endif
+#endif
+
+
+
+#ifdef HAS_ESP_IDF_5
+
+void espShow(uint8_t pin, uint8_t *pixels, uint32_t numBytes, boolean is800KHz) {
+  rmt_data_t led_data[numBytes * 8];
+
+  if (!rmtInit(pin, RMT_TX_MODE, RMT_MEM_NUM_BLOCKS_1, 10000000)) {
+    log_e("Failed to init RMT TX mode on pin %d", pin);
+    return;
+  }
+
+  int i=0;
+  for (int b=0; b < numBytes; b++) {
+    for (int bit=0; bit<8; bit++){
+      if ( pixels[b] & (1<<(7-bit)) ) {
+        led_data[i].level0 = 1;
+        led_data[i].duration0 = 8;
+        led_data[i].level1 = 0;
+        led_data[i].duration1 = 4;
+      } else {
+        led_data[i].level0 = 1;
+        led_data[i].duration0 = 4;
+        led_data[i].level1 = 0;
+        led_data[i].duration1 = 8;
+      }
+      i++;
+    }
+  }
+
+  //pinMode(pin, OUTPUT);  // don't do this, will cause the rmt to disable!
+  rmtWrite(pin, led_data, numBytes * 8, RMT_WAIT_FOR_EVER);
+}
+
+
+
+#else
+
 #include "driver/rmt.h"
+
 
 // This code is adapted from the ESP-IDF v3.4 RMT "led_strip" example, altered
 // to work with the Arduino version of the ESP-IDF (3.2)
@@ -89,6 +138,7 @@ void espShow(uint8_t pin, uint8_t *pixels, uint32_t numBytes, boolean is800KHz) 
         if (!rmt_reserved_channels[i]) {
             rmt_reserved_channels[i] = true;
             channel = i;
+            break;
         }
     }
     if (channel == ADAFRUIT_RMT_CHANNEL_MAX) {
@@ -96,6 +146,10 @@ void espShow(uint8_t pin, uint8_t *pixels, uint32_t numBytes, boolean is800KHz) 
         return;
     }
 
+#if defined(HAS_ESP_IDF_4)
+    rmt_config_t config = RMT_DEFAULT_CONFIG_TX(pin, channel);
+    config.clk_div = 2;
+#else
     // Match default TX config from ESP-IDF version 3.4
     rmt_config_t config = {
         .rmt_mode = RMT_MODE_TX,
@@ -113,12 +167,16 @@ void espShow(uint8_t pin, uint8_t *pixels, uint32_t numBytes, boolean is800KHz) 
             .idle_output_en = true,
         }
     };
+#endif
     rmt_config(&config);
     rmt_driver_install(config.channel, 0, 0);
 
     // Convert NS timings to ticks
     uint32_t counter_clk_hz = 0;
 
+#if defined(HAS_ESP_IDF_4)
+    rmt_get_counter_clock(channel, &counter_clk_hz);
+#else
     // this emulates the rmt_get_counter_clock() function from ESP-IDF 3.4
     if (RMT_LL_HW_BASE->conf_ch[config.channel].conf1.ref_always_on == RMT_BASECLK_REF) {
         uint32_t div_cnt = RMT_LL_HW_BASE->conf_ch[config.channel].conf0.div_cnt;
@@ -129,6 +187,7 @@ void espShow(uint8_t pin, uint8_t *pixels, uint32_t numBytes, boolean is800KHz) 
         uint32_t div = div_cnt == 0 ? 256 : div_cnt;
         counter_clk_hz = APB_CLK_FREQ / (div);
     }
+#endif
 
     // NS to tick converter
     float ratio = (float)counter_clk_hz / 1e9;
@@ -159,4 +218,7 @@ void espShow(uint8_t pin, uint8_t *pixels, uint32_t numBytes, boolean is800KHz) 
     gpio_set_direction(pin, GPIO_MODE_OUTPUT);
 }
 
-#endif
+#endif // ifndef IDF5
+ 
+
+#endif // ifdef(ESP32)

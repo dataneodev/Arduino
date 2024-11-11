@@ -94,20 +94,20 @@ protected:
 */
 class Adafruit_ImageReader {
 public:
-  Adafruit_ImageReader(FatFileSystem &fs);
+  Adafruit_ImageReader(FatVolume &fs);
   ~Adafruit_ImageReader(void);
-  ImageReturnCode drawBMP(char *filename, Adafruit_SPITFT &tft, int16_t x,
+  ImageReturnCode drawBMP(const char *filename, Adafruit_SPITFT &tft, int16_t x,
                           int16_t y, boolean transact = true);
-  ImageReturnCode loadBMP(char *filename, Adafruit_Image &img);
-  ImageReturnCode bmpDimensions(char *filename, int32_t *w, int32_t *h);
+  ImageReturnCode loadBMP(const char *filename, Adafruit_Image &img);
+  ImageReturnCode bmpDimensions(const char *filename, int32_t *w, int32_t *h);
   void printStatus(ImageReturnCode stat, Stream &stream = Serial);
 
 protected:
-  FatFileSystem *filesys; ///< FAT FileSystem Object
-  File file;              ///< Current Open file
-  ImageReturnCode coreBMP(char *filename, Adafruit_SPITFT *tft, uint16_t *dest,
-                          int16_t x, int16_t y, Adafruit_Image *img,
-                          boolean transact);
+  FatVolume *filesys; ///< FAT FileSystem Object
+  File32 file;        ///< Current Open file
+  ImageReturnCode coreBMP(const char *filename, Adafruit_SPITFT *tft,
+                          uint16_t *dest, int16_t x, int16_t y,
+                          Adafruit_Image *img, boolean transact);
   uint16_t readLE16(void);
   uint32_t readLE32(void);
 };
