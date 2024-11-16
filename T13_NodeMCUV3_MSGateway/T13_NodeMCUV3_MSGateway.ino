@@ -62,7 +62,7 @@ AltSoftSerial _dev;
 // Enable RS485 transport layer
 
 //#define MY_DEBUG
-#define MY_NODE_ID 37
+#define MY_NODE_ID 10
 // Define this to enables DE-pin management on defined pin
 #define MY_RS485
 #define MY_RS485_DE_PIN D6 // DE

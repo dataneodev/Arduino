@@ -90,6 +90,8 @@ unsigned char _recCalcCS;
 SerialPort _dev = SerialPort(MY_RS485_HWSERIAL);
 #elif defined(MY_RS485_HWSERIAL)
 HardwareSerial& _dev = MY_RS485_HWSERIAL;
+#elif defined(MY_RS485_ESP)
+SoftwareSerial& _dev = MY_RS485_ESP;
 #else
 AltSoftSerial _dev;
 #endif

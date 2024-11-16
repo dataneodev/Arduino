@@ -12,13 +12,11 @@ HardwareSerial RS485Serial(PB7, PB6);
 #define SKETCH_NAME "M17_FeederManager"
 
 #define MY_NODE_ID 96  // id wezła dla my sensors
-#define MY_PARENT_NODE_ID 10
+#define MY_PASSIVE_NODE
+#define MY_PARENT_NODE_ID 0
 #define MY_PARENT_NODE_IS_STATIC
 #define MY_PASSIVE_NODE
 #define MY_TRANSPORT_WAIT_READY_MS 1
-
-#define MY_TRANSPORT_SANITY_CHECK
-#define MY_TRANSPORT_SANITY_CHECK_INTERVAL 10800000  //3h
 
 #define MY_24V_STATUS_SENSOR_ID 1
 #define MY_5_1V_STATUS_SENSOR_ID 2
@@ -46,9 +44,9 @@ HardwareSerial RS485Serial(PB7, PB6);
 
 #define OUT_24V PA3
 
-#define SLEEP_START_UP 28000  // 30 sekund
+#define SLEEP_START_UP 10000  // 20 sekund
 #define SLEEP_MAX_TIME 10000  // 10 sekund
-#define SLEEP_RS485_TIME 10   // 15 ms
+#define SLEEP_RS485_TIME 20  // 20 ms
 
 #define BEFORE_CLOCK_ENABLE_TIME_PART 0.6
 #define NEXT_CLOCK_ENABLE_TIME_PART 0.4
@@ -96,7 +94,6 @@ static uint32_t atime = 1000;
 TimeChangeRule myDST = { "EDT", Last, Sun, Mar, 2, 120 };  // Daylight time = UTC - 4 hours
 TimeChangeRule mySTD = { "EST", Last, Sun, Nov, 2, 60 };   // Standard time = UTC - 5 hours
 Timezone myTZ(myDST, mySTD);
-
 volatile u_int32_t lastRequestTime;
 /* #endregion */
 
@@ -392,12 +389,11 @@ void receive(const MyMessage &message)  // MySensors
   }
 
   if (message.sensor == MY_TIME_SENSOR_ID && message.type == V_VAR1) {
-
     setClock((time_t)message.getULong());
     delaySleep(SLEEP_MAX_TIME);
+    return;
   }
 }
-
 
 void receiveTime(uint32_t ts) {
   delaySleep(SLEEP_MAX_TIME);
@@ -539,8 +535,21 @@ void clearAllAutoActions() {
 // clock interrupt
 
 void checkTimeRequest(uint32_t now) {
+  if (lastRequestTime == 0) {
+    lastRequestTime = now;
+    return;
+  }
+
+  if (lastRequestTime > now) {
+    lastRequestTime = now;
+    return;
+  }
+
   if (lastRequestTime + 1209600 < now) {  //14days
-    lastRequestTime = now - (1209600 + 14400); //4h
+    lastRequestTime -= 14400;             //4h
+
+    SCM.isStateChanged(!isPresentedToController, 0);
+
     requestTime();
   }
 }
@@ -581,7 +590,7 @@ void setNewRTCClockAwake() {
 
   time_t now = myTZ.toLocal(rtc.getEpoch());
   time_t sleepTime = getSleepTime(now);
-  rtc.setAlarmEpoch(sleepTime, rtc.MATCH_YYMMDDHHMMSS);
+  rtc.setAlarmEpoch(myTZ.toUTC(sleepTime), rtc.MATCH_YYMMDDHHMMSS);
 }
 
 time_t getSleepTime(time_t now) {
@@ -664,25 +673,21 @@ bool isHourHandledBySchedule(uint8_t hour) {
 /* #endregion */
 
 /* #region sleep */
-volatile u_int32_t sleepWaitTime;
-volatile u_int32_t sleepSetTime;
+volatile int32_t sleepWaitTime;
+volatile u_int32_t lastNow;
+
 volatile bool canSleep;
 volatile bool serialAwake;
 
-void delaySleep(u_int32_t delay) {
+void delaySleep(int32_t delay) {
   serialAwake = false;
+  canSleep = false;
 
-  u_int32_t now = millis();
-
-  u_int32_t newSleep = now + delay;
-
-  if (newSleep < sleepWaitTime && now > sleepSetTime) {
+  if (sleepWaitTime > delay) {
     return;
   }
 
-  canSleep = false;
-  sleepSetTime = now;
-  sleepWaitTime = newSleep;
+  sleepWaitTime = delay;
 }
 
 void compensateSleepDelay() {
@@ -704,17 +709,26 @@ void compensateSleepDelay() {
 
   u_int32_t now = millis();
 
-  if (sleepSetTime > now) {
-    delaySleep(SLEEP_MAX_TIME);
+  if (lastNow == 0) {
+    lastNow = now;
     return;
   }
 
-  if (sleepWaitTime < now) {
+  if (lastNow > now) {
+    lastNow = now;
+    return;
+  }
+
+  sleepWaitTime -= (now - lastNow);
+
+  lastNow = now;
+
+  if (sleepWaitTime <= 0) {
     canSleep = true;
+    sleepWaitTime = 0;
     return;
   }
 }
-
 
 void serialWakeup() {
   delaySleep(SLEEP_RS485_TIME);
@@ -760,7 +774,7 @@ void before() {
   setAllPinsAnalog();
   disableClocks();
 
-  Serial.begin(9600);
+  RS485Serial.begin(9600);
 
   inicjalizePins();
   inicjalizeI2C();
@@ -768,19 +782,10 @@ void before() {
   updatePinsState();
 }
 
-void setup() {
-#if defined(RTC_BINARY_NONE)
-  // Select RTC clock source: LSI_CLOCK, LSE_CLOCK or HSE_CLOCK.
-  // By default the LSI is selected as source.
-  // rtc.setClockSource(STM32RTC::LSE_CLOCK);
-  // Select the STM32RTC::MODE_BCD or STM32RTC::MODE_MIX
-  // By default the STM32RTC::MODE_BCD is selected.
-  // rtc.setBinaryMode(STM32RTC::MODE_BCD);
 
-  rtc.begin(true); /* reset the RTC else the binary mode is not changed */
-#else
+void setup() {
+  rtc.setClockSource(STM32RTC::LSE_CLOCK);
   rtc.begin();
-#endif /* RTC_BINARY_NONE */
 
   rtc.attachSecondsInterrupt(clockInterrupt);
   attachInterrupt(digitalPinToInterrupt(MOTION_PIN), buttonInterrupt, RISING);
@@ -788,9 +793,12 @@ void setup() {
   LowPower.begin();
 
   LowPower.attachInterruptWakeup(MOTION_PIN, gpioAwakeInterrupt, RISING, SLEEP_MODE);
-  LowPower.enableWakeupFrom(&RS485Serial, serialWakeup);
+  LowPower.attachInterruptWakeup(PB7, serialWakeup, RISING, SLEEP_MODE);
+  //LowPower.enableWakeupFrom(&RS485Serial, serialWakeup);
   LowPower.enableWakeupFrom(&rtc, alarmAwake, &atime);
+  delaySleep(SLEEP_START_UP);
 }
+
 
 void loop() {
   if (SCM.isStateChanged(isPresentedToController, 0)) {
@@ -801,18 +809,15 @@ void loop() {
   }
 
   if (canSleep) {
-    if (!serialAwake) {
-      RS485Serial.flush();
+    if (!serialAwake) {      
       clearAllAutoActions();
       setNewRTCClockAwake();
     }
 
-    LowPower.sleep();  // sleep
+    RS485Serial.flush();
+    LowPower.deepSleep();  // sleep
+    RS485Serial.flush();
 
-    // weakup
-    if (!serialAwake) {
-      RS485Serial.flush();
-    }
   } else {
     compensateSleepDelay();
   }

@@ -364,15 +364,21 @@ MY_DEFAULT_RX_LED_PIN in your sketch instead to enable LEDs
 #include "hal/transport/NRF5_ESB/driver/Radio.cpp"
 #include "hal/transport/NRF5_ESB/driver/Radio_ESB.cpp"
 #include "hal/transport/NRF5_ESB/MyTransportNRF5_ESB.cpp"
+
 #elif defined(MY_RS485)
 #if !defined(MY_RS485_HWSERIAL)
 #if defined(__linux__)
 #error You must specify MY_RS485_HWSERIAL for RS485 transport
 #endif
+#if defined(MY_RS485_ESP)
+#include <SoftwareSerial.h>
+#else
 #include "drivers/AltSoftSerial/AltSoftSerial.cpp"
+#endif
 #endif
 #include "hal/transport/RS485/MyTransportRS485.cpp"
 #elif defined(MY_RADIO_RFM69)
+
 #if defined(MY_RFM69_NEW_DRIVER)
 #include "hal/transport/RFM69/driver/new/RFM69_new.cpp"
 #else
