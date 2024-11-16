@@ -15,7 +15,6 @@ HardwareSerial RS485Serial(PB7, PB6);
 #define MY_PASSIVE_NODE
 #define MY_PARENT_NODE_ID 0
 #define MY_PARENT_NODE_IS_STATIC
-#define MY_PASSIVE_NODE
 #define MY_TRANSPORT_WAIT_READY_MS 1
 
 #define MY_24V_STATUS_SENSOR_ID 1
@@ -533,7 +532,6 @@ void clearAllAutoActions() {
 }
 
 // clock interrupt
-
 void checkTimeRequest(uint32_t now) {
   if (lastRequestTime == 0) {
     lastRequestTime = now;
