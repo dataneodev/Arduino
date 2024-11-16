@@ -44,7 +44,7 @@ HardwareSerial RS485Serial(PB7, PB6);
 
 #define OUT_24V PA3
 
-#define SLEEP_START_UP 10000  // 20 sekund
+#define SLEEP_START_UP 20000  // 20 sekund
 #define SLEEP_MAX_TIME 10000  // 10 sekund
 #define SLEEP_RS485_TIME 20  // 20 ms
 
