@@ -15,9 +15,9 @@ const uint16_t ADCTouch::samples = 32;
 #define SENSOR_PIN A3
 #define OUT_PIN PB4
 #define RECALIBRATE 3600000  //1h
-//#define DEBUG
+#define DEBUG
 
-int16_t reference;
+uint16_t reference;
 uint32_t lastTouch;
 
 void setReference() {
@@ -47,11 +47,13 @@ void checkReference(uint32_t now, bool isTouch) {
     if (compare < now) {
       lastTouch = now;
       setReference();      //recalibrate
+      return;
     }
   } else {
     if (now > RECALIBRATE) {
       lastTouch = now;
       setReference();
+      return;
     }
   }
 }
@@ -61,19 +63,19 @@ bool getTouchResult() {
   bool isTouch = value - reference > threshold;
 
 #ifdef DEBUG
-  Serial.print("Touch value: ");
+  Serial.print("T: ");
   Serial.print(value);
   Serial.write('\n');
 
-  Serial.print("Touch reference value: ");
+  Serial.print("R: ");
   Serial.print(reference);
   Serial.write('\n');
 
-  Serial.print("Touch threshold: ");
+  Serial.print("TS: ");
   Serial.print(threshold);
   Serial.write('\n');
 
-  Serial.print("Touch bool: ");
+  Serial.print("B: ");
   Serial.print(isTouch);  // Send (boolean) pressed or not pressed
   Serial.write('\n');
 

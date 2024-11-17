@@ -160,14 +160,10 @@ inButtonDef in4Button = {
 
 
 #define MY_NODE_ID 60  // id wezła dla my sensors
-#define MY_PARENT_NODE_ID 10
-
+#define MY_PASSIVE_NODE
+#define MY_PARENT_NODE_ID 0
 #define MY_PARENT_NODE_IS_STATIC
-//#define MY_PASSIVE_NODE
 #define MY_TRANSPORT_WAIT_READY_MS 1
-
-#define MY_TRANSPORT_SANITY_CHECK
-#define MY_TRANSPORT_SANITY_CHECK_INTERVAL 10800000  //3h
 
 // RS485
 #define ARDUINO_ARCH_STM32F1
