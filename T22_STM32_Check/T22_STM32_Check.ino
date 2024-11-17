@@ -4,7 +4,7 @@
 #define SKETCH_NAME "M17_FeederManager"
 
 // RS485
-HardwareSerial KKKKKK(PB7, PB6);
+//HardwareSerial KKKKKK(PB7, PB6);
 
 #define MY_NODE_ID 80  // id węzła my sensors - każdy sterownik musi miec inny numer
 
@@ -24,8 +24,8 @@ HardwareSerial KKKKKK(PB7, PB6);
 #define MY_RS485_SOH_COUNT 6
 #define MY_TRANSPORT_WAIT_READY_MS 1
 
-//#include <STM32LowPower.h>
-#include <MySensors.h>
+#include <STM32LowPower.h>
+//#include <MySensors.h>
 
 /* #region  Power Optimization */
 
@@ -91,8 +91,8 @@ HardwareSerial KKKKKK(PB7, PB6);
 // }
 /* #region main functions */
 
-#include <Wire.h>
-#include <SPI.h>
+//#include <Wire.h>
+//#include <SPI.h>
 void before() {
 //LL_GPIO_AF_EnableRemap_I2C1();
 //LL_GPIO_AF_EnableRemap_USART1();
@@ -101,7 +101,7 @@ void before() {
 
 //KKKKKK.setRx(PB7);
 //KKKKKK.setTx(PB6);
-KKKKKK.begin(9600);
+//KKKKKK.begin(9600);
 
 
 // Serial2.setRx(PA3);
@@ -112,8 +112,8 @@ KKKKKK.begin(9600);
 
 void presentation()  // MySensors
 {
-  sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
- present(1, S_BINARY, "24V Relay");
+ // sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
+ //present(1, S_BINARY, "24V Relay");
 
 }
 
@@ -154,7 +154,6 @@ void setup() {
   // __HAL_RCC_GPIOE_CLK_DISABLE();
  
 pinMode(PC13, OUTPUT);
-pinMode(PB7, OUTPUT);
 
 digitalWrite(PC13, LOW);
 
@@ -162,13 +161,18 @@ digitalWrite(PC13, LOW);
     delay(2000);
     digitalWrite(PC13, HIGH);
     delay(2000);
-    //LowPower.deepSleep();
-    digitalWrite(PC13, HIGH);
-   // LowPower.begin();
+
+LowPower.begin();
 
 }
 
 void loop() {
+
+digitalWrite(PC13, LOW);
+    delay(2000);
+    LowPower.sleep(2);
+    digitalWrite(PC13, HIGH);
+  delay(2000);
   // put your main code here, to run repeatedly:
     
 

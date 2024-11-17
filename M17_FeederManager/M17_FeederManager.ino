@@ -1,3 +1,29 @@
+/*  instalacja 
+
+Podmienić pliki MySensors hal/architecture/STM32F1 z lib(nie działa odczyć i zapis ustawień Ms do EEPROMu)
+Płytka to klon CH32F103 
+Board: https://github.com/stm32duino
+Generic STM32F1 Series -> Generic F103C6Tx
+
+Generic F103C8Tx - ma niepoprawne mapowanie pinów itp
+
+Działa z Generic F103C6Tx - ale C6Tx ma 2x mniejszą pamięć
+
+Zmienić w pliku:
+c:\Users\Smith\AppData\Local\Arduino15\packages\STMicroelectronics\hardware\stm32\2.8.1\variants\STM32F1xx\F103C4T_F103C6(T-U)\boards_entry.txt
+
+GenF1.menu.pnum.GENERIC_F103C6TX.upload.maximum_size=65536
+GenF1.menu.pnum.GENERIC_F103C6TX.upload.maximum_data_size=20480
+
+C:\Users\Smith\AppData\Local\Arduino15\packages\STMicroelectronics\hardware\stm32\2.8.1\boards.txt
+
+GenF1.menu.pnum.GENERIC_F103C6TX.upload.maximum_size=65536
+GenF1.menu.pnum.GENERIC_F103C6TX.upload.maximum_data_size=20480
+
+następnie restat kompa
+  */
+
+
 /* #region  user configuration */
 
 #define EEPROM_RESET 0x68  // zmienić wartość aby zresetować ustawienia
@@ -45,7 +71,7 @@ HardwareSerial RS485Serial(PB7, PB6);
 
 #define SLEEP_START_UP 20000  // 20 sekund
 #define SLEEP_MAX_TIME 10000  // 10 sekund
-#define SLEEP_RS485_TIME 20  // 20 ms
+#define SLEEP_RS485_TIME 20   // 20 ms
 
 #define BEFORE_CLOCK_ENABLE_TIME_PART 0.6
 #define NEXT_CLOCK_ENABLE_TIME_PART 0.4
@@ -161,7 +187,7 @@ void setAllPinsAnalog(void) {
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOE_CLK_ENABLE();
+ // __HAL_RCC_GPIOE_CLK_ENABLE();
 
   // DAC:
   /**DAC1 GPIO Configuration
@@ -178,7 +204,7 @@ void setAllPinsAnalog(void) {
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+ // HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 }
 
 void disableClocks() {
@@ -186,7 +212,7 @@ void disableClocks() {
   __HAL_RCC_GPIOB_CLK_DISABLE();
   __HAL_RCC_GPIOC_CLK_DISABLE();
   __HAL_RCC_GPIOD_CLK_DISABLE();
-  __HAL_RCC_GPIOE_CLK_DISABLE();
+//  __HAL_RCC_GPIOE_CLK_DISABLE();
 
   __HAL_RCC_AFIO_CLK_DISABLE();
   __HAL_RCC_TIM1_CLK_DISABLE();
@@ -459,7 +485,7 @@ void setMotionDetectedEnabledTime(uint16_t time) {
 
 /* #region auto action */
 // motion
-volatile uint32_t motionEnableTime = 0;
+uint32_t motionEnableTime = 0;
 void startMotionAutoAction() {
   motionEnableTime = myTZ.toLocal(rtc.getEpoch()) + EEStorage.motionDetectedEnabledTime();
 
@@ -489,7 +515,7 @@ bool isAllMotionAutoActionEnabled() {
 }
 
 // clock
-volatile uint32_t clockEnableTime = 0;
+uint32_t clockEnableTime = 0;
 
 void startClockAutoAction() {
   clockEnableTime = myTZ.toLocal(rtc.getEpoch()) + EEStorage.clockScheduleEnabledTime();
@@ -674,8 +700,8 @@ bool isHourHandledBySchedule(uint8_t hour) {
 volatile int32_t sleepWaitTime;
 volatile u_int32_t lastNow;
 
-volatile bool canSleep;
-volatile bool serialAwake;
+volatile bool canSleep = false;
+volatile bool serialAwake = false;
 
 void delaySleep(int32_t delay) {
   serialAwake = false;
@@ -792,7 +818,7 @@ void setup() {
 
   LowPower.attachInterruptWakeup(MOTION_PIN, gpioAwakeInterrupt, RISING, SLEEP_MODE);
   LowPower.attachInterruptWakeup(PB7, serialWakeup, RISING, SLEEP_MODE);
-  //LowPower.enableWakeupFrom(&RS485Serial, serialWakeup);
+  LowPower.enableWakeupFrom(&RS485Serial, serialWakeup);
   LowPower.enableWakeupFrom(&rtc, alarmAwake, &atime);
   delaySleep(SLEEP_START_UP);
 }
@@ -807,7 +833,7 @@ void loop() {
   }
 
   if (canSleep) {
-    if (!serialAwake) {      
+    if (!serialAwake) {
       clearAllAutoActions();
       setNewRTCClockAwake();
     }
