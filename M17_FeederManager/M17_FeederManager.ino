@@ -3,25 +3,9 @@
 Podmienić pliki MySensors hal/architecture/STM32F1 z lib(nie działa odczyć i zapis ustawień Ms do EEPROMu)
 Płytka to klon CH32F103 
 Board: https://github.com/stm32duino
-Generic STM32F1 Series -> Generic F103C6Tx
+Generic STM32F1 Series -> Generic F103C8Tx
 
-Generic F103C8Tx - ma niepoprawne mapowanie pinów itp
-
-Działa z Generic F103C6Tx - ale C6Tx ma 2x mniejszą pamięć
-
-Zmienić w pliku:
-c:\Users\Smith\AppData\Local\Arduino15\packages\STMicroelectronics\hardware\stm32\2.8.1\variants\STM32F1xx\F103C4T_F103C6(T-U)\boards_entry.txt
-
-GenF1.menu.pnum.GENERIC_F103C6TX.upload.maximum_size=65536
-GenF1.menu.pnum.GENERIC_F103C6TX.upload.maximum_data_size=20480
-
-C:\Users\Smith\AppData\Local\Arduino15\packages\STMicroelectronics\hardware\stm32\2.8.1\boards.txt
-
-GenF1.menu.pnum.GENERIC_F103C6TX.upload.maximum_size=65536
-GenF1.menu.pnum.GENERIC_F103C6TX.upload.maximum_data_size=20480
-
-następnie restat kompa
-  */
+*/
 
 
 /* #region  user configuration */
@@ -187,7 +171,7 @@ void setAllPinsAnalog(void) {
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
- // __HAL_RCC_GPIOE_CLK_ENABLE();
+  __HAL_RCC_GPIOE_CLK_ENABLE();
 
   // DAC:
   /**DAC1 GPIO Configuration
@@ -204,7 +188,7 @@ void setAllPinsAnalog(void) {
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
- // HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 }
 
 void disableClocks() {
@@ -212,7 +196,7 @@ void disableClocks() {
   __HAL_RCC_GPIOB_CLK_DISABLE();
   __HAL_RCC_GPIOC_CLK_DISABLE();
   __HAL_RCC_GPIOD_CLK_DISABLE();
-//  __HAL_RCC_GPIOE_CLK_DISABLE();
+  __HAL_RCC_GPIOE_CLK_DISABLE();
 
   __HAL_RCC_AFIO_CLK_DISABLE();
   __HAL_RCC_TIM1_CLK_DISABLE();

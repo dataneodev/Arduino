@@ -9,7 +9,7 @@ public:
     : EEPROM24C32(eprom) {}
 
   void Inicjalize() {
-    EEPROM24C32->begin(0x57, false);
+    EEPROM24C32->begin(0x50, false);
 
     _isInicjalized = EEPROM24C32->checkPresence();
 
