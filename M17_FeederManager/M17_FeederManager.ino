@@ -93,6 +93,7 @@ StateChangeManager SCM;
 EE EEPROM24C32;
 Storage EEStorage(&EEPROM24C32);
 STM32RTC &rtc = STM32RTC::getInstance();
+HardwareTimer *MyTim = new HardwareTimer(TIM1);
 
 #if defined(RTC_SSR_SS)
 static uint32_t atime = 678;
@@ -199,7 +200,7 @@ void disableClocks() {
   __HAL_RCC_GPIOE_CLK_DISABLE();
 
   __HAL_RCC_AFIO_CLK_DISABLE();
-  __HAL_RCC_TIM1_CLK_DISABLE();
+  //__HAL_RCC_TIM1_CLK_DISABLE();
   __HAL_RCC_SPI1_CLK_DISABLE();
   __HAL_RCC_USART1_CLK_DISABLE();
   __HAL_RCC_DMA1_CLK_DISABLE();
@@ -433,7 +434,7 @@ void setEnable5V_2Output(bool enabled, bool save) {
 
   digitalWrite(OUT_5V_2, enabled ? HIGH : LOW);
 
-  sendEnable5V2Output();
+  SCM.isStateChanged(true, 5);
 }
 
 void setEnableClockSchedule(bool enabled) {
@@ -469,7 +470,7 @@ void setMotionDetectedEnabledTime(uint16_t time) {
 
 /* #region auto action */
 // motion
-uint32_t motionEnableTime = 0;
+volatile uint32_t motionEnableTime = 0;
 void startMotionAutoAction() {
   motionEnableTime = myTZ.toLocal(rtc.getEpoch()) + EEStorage.motionDetectedEnabledTime();
 
@@ -499,7 +500,7 @@ bool isAllMotionAutoActionEnabled() {
 }
 
 // clock
-uint32_t clockEnableTime = 0;
+volatile uint32_t clockEnableTime = 0;
 
 void startClockAutoAction() {
   clockEnableTime = myTZ.toLocal(rtc.getEpoch()) + EEStorage.clockScheduleEnabledTime();
@@ -562,7 +563,7 @@ void checkTimeRequest(uint32_t now) {
   }
 }
 
-void clockInterrupt(void *) {
+void clockInterrupt(void) {
   uint32_t nowUnixtime = myTZ.toLocal(rtc.getEpoch());
 
   checkTimeRequest(nowUnixtime);
@@ -577,9 +578,8 @@ void clockInterrupt(void *) {
 
   if (EEStorage.enableMotionDetection() && motionEnableTime != 0 && motionEnableTime < nowUnixtime) {
     bool clockAutoActionInProgress = clockEnableTime != 0 && clockEnableTime > nowUnixtime + 10;
-    stopMotionAutoAction(clockAutoActionInProgress && isAnyClockActionEnabled());
+     stopMotionAutoAction(clockAutoActionInProgress && isAnyClockActionEnabled());
   }
-
 
   if (EEStorage.enableClockSchedule() && clockEnableTime != 0 && clockEnableTime < nowUnixtime) {
     bool motionAutoActionInProgress = motionEnableTime != 0 && motionEnableTime > nowUnixtime + 10;
@@ -793,9 +793,8 @@ void before() {
 
 void setup() {
   rtc.setClockSource(STM32RTC::LSE_CLOCK);
-  rtc.begin();
+  rtc.begin(STM32RTC::HOUR_24);
 
-  rtc.attachSecondsInterrupt(clockInterrupt);
   attachInterrupt(digitalPinToInterrupt(MOTION_PIN), buttonInterrupt, RISING);
 
   LowPower.begin();
@@ -804,6 +803,10 @@ void setup() {
   LowPower.attachInterruptWakeup(PB7, serialWakeup, RISING, SLEEP_MODE);
   LowPower.enableWakeupFrom(&RS485Serial, serialWakeup);
   LowPower.enableWakeupFrom(&rtc, alarmAwake, &atime);
+
+  MyTim->setOverflow(1, HERTZ_FORMAT);
+  MyTim->attachInterrupt(clockInterrupt);
+  MyTim->resume();
   delaySleep(SLEEP_START_UP);
 }
 
@@ -816,16 +819,23 @@ void loop() {
     delaySleep(SLEEP_MAX_TIME);
   }
 
+  if (SCM.isStateChanged(false, 5)) {
+    sendEnable5V2Output();
+  }
+
   if (canSleep) {
     if (!serialAwake) {
       clearAllAutoActions();
       setNewRTCClockAwake();
     }
 
-    RS485Serial.flush();
-    LowPower.deepSleep();  // sleep
+    MyTim->pause();
     RS485Serial.flush();
 
+    LowPower.deepSleep();  // sleep
+
+    RS485Serial.flush();
+    MyTim->resume();
   } else {
     compensateSleepDelay();
   }
