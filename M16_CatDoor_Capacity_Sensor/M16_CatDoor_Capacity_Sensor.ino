@@ -7,10 +7,10 @@
 
 // Touch threshold for turning on or off the LEDs
 // Lower is more sensitive
-const uint8_t threshold = 50;
+const uint8_t threshold = 100;
 
-// Sample each touch pin 32 times
-const uint16_t ADCTouch::samples = 32;
+// Sample each touch pin 512 times
+const uint16_t ADCTouch::samples = 512;
 
 #define SENSOR_PIN A3
 #define OUT_PIN PB4
@@ -46,7 +46,7 @@ void checkReference(uint32_t now, bool isTouch) {
 
     if (compare < now) {
       lastTouch = now;
-      setReference();      //recalibrate
+      setReference();  //recalibrate
       return;
     }
   } else {
@@ -60,7 +60,7 @@ void checkReference(uint32_t now, bool isTouch) {
 
 bool getTouchResult() {
   int16_t value = Touch.read(SENSOR_PIN);
-  bool isTouch = value - reference > threshold;
+  bool isTouch = value > reference ? false :  (reference - value) > threshold;
 
 #ifdef DEBUG
   Serial.print("T: ");
@@ -86,13 +86,13 @@ bool getTouchResult() {
 }
 
 void setup() {
-#ifdef DEBUG
-  Serial.begin();
-#endif
-
   uint8_t cal = EEPROM.read(0);
   if (cal < 0x80)
     OSCCAL = cal;
+
+#ifdef DEBUG
+  Serial.begin();
+#endif
 
   pinMode(OUT_PIN, OUTPUT);
   digitalWrite(OUT_PIN, LOW);
