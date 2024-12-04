@@ -1,110 +1,47 @@
-// --------------------------------------
-// i2c_scanner
-//
-// Version 1
-//    This program (or code that looks like it)
-//    can be found in many places.
-//    For example on the Arduino.cc forum.
-//    The original author is not know.
-// Version 2, Jun 2012, Using Arduino 1.0.1
-//     Adapted to be as simple as possible by Arduino.cc user Krodal
-// Version 3, Feb 26  2013
-//    V3 by louarnold
-// Version 4, March 3, 2013, Using Arduino 1.0.3
-//    by Arduino.cc user Krodal.
-//    Changes by louarnold removed.
-//    Scanning addresses changed from 0...127 to 1...119,
-//    according to the i2c scanner by Nick Gammon
-//    http://www.gammon.com.au/forum/?id=10896
-// Version 5, March 28, 2013
-//    As version 4, but address scans now to 127.
-//    A sensor seems to use address 120.
-//
-// This sketch tests the standard 7-bit addresses
-// Devices with higher bit address might not be seen properly.
-//
-
-
-
-/* Example pinmap for Bluepill I2Cs (by Testato)
-
- I2C-1 standard pins: PB7(sda) PB6(scl)
- Use it by "Wire" without pin declaration
-  Wire.begin();
-
- I2C-1 alternative pins: PB9(sda) PB8(scl)
- Remap the first I2C before call begin()
-  Wire.setSDA(PB9);
-  Wire.setSCL(PB8);
-  Wire.begin();
-
- I2C-2: PB11(sda) PB10(scl)
- Remap the second I2C before call begin()
-  Wire.setSDA(PB11);
-  Wire.setSCL(PB10);
-  Wire.begin();
-
- If you want to use the two I2Cs simultaneously, create a new instance for the second I2C
-  TwoWire Wire2(PB11,PB10);
-  Wire2.begin();
-
+/*
+  Timebase callback
+  This example shows how to configure HardwareTimer to execute a callback at regular interval.
+  Callback toggles pin.
+  Once configured, there is only CPU load for callbacks executions.
 */
 
+#if !defined(STM32_CORE_VERSION) || (STM32_CORE_VERSION  < 0x01090000)
+#error "Due to API change, this sketch is compatible with STM32_CORE_VERSION  >= 0x01090000"
+#endif
 
-#include <Wire.h>
+#if defined(LED_BUILTIN)
+#define pin  LED_BUILTIN
+#else
+#define pin  PC13
+#endif
 
-//TwoWire Wire(PB9, PB8);
-
-void setup() {
-
-  Serial.begin(9600);
-  Wire.setSDA(PB9);
-  Wire.setSCL(PB8);
-  Wire.begin();
-
-  Serial.println("\nI2C Scanner");
+void Update_IT_callback(void)
+{ // Toggle pin. 10hz toogle --> 5Hz PWM
+  digitalWrite(pin, !digitalRead(pin));
 }
 
 
-void loop() {
-  byte error, address;
-  int nDevices;
+void setup()
+{
+#if defined(TIM1)
+  TIM_TypeDef *Instance = TIM1;
+#else
+  TIM_TypeDef *Instance = TIM2;
+#endif
 
-  Serial.println("Scanning...");
+  // Instantiate HardwareTimer object. Thanks to 'new' instanciation, HardwareTimer is not destructed when setup() function is finished.
+  HardwareTimer *MyTim = new HardwareTimer(Instance);
 
-  nDevices = 0;
-  for(address = 1; address < 127; address++) {
-    // The i2c_scanner uses the return value of
-    // the Write.endTransmisstion to see if
-    // a device did acknowledge to the address.
+  // configure pin in output mode
+  pinMode(pin, OUTPUT);
 
-    Wire.beginTransmission(address);
-    error = Wire.endTransmission();
+  MyTim->setOverflow(1, HERTZ_FORMAT); // 10 Hz
+  MyTim->attachInterrupt(Update_IT_callback);
+  MyTim->resume();
+}
 
-    if (error == 0) {
-      pinMode(PC13, OUTPUT);
-      digitalWrite(PC13, LOW);
-      delay(1000);
-      digitalWrite(PC13, HIGH);
-      
-      Serial.print("I2C device found at address 0x");
-      if (address < 16)
-        Serial.print("0");
-      Serial.println(address, HEX);
 
-      nDevices++;
-    }
-    else if (error == 4) {
-      Serial.print("Unknown error at address 0x");
-      if (address < 16)
-        Serial.print("0");
-      Serial.println(address, HEX);
-    }
-  }
-  if (nDevices == 0)
-    Serial.println("No I2C devices found");
-  else
-    Serial.println("done");
-
-  delay(5000);           // wait 5 seconds for next scan
+void loop()
+{
+  /* Nothing to do all is done by hardware. Even no interrupt required. */
 }
