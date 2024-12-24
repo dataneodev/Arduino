@@ -46,11 +46,11 @@
 // E.g. for an ATtiny @ 128 kHz: the datasheet states that both the high and low
 // SPI clock pulse must be > 2 CPU cycles, so take 3 cycles i.e. divide target
 // f_cpu by 6:
-//     #define SPI_CLOCK            (128000/6)
+     #define SPI_CLOCK            (128000/6)
 //
 // A clock slow enough for an ATtiny85 @ 1 MHz, is a reasonable default:
 
-#define SPI_CLOCK (1000000 / 6)
+//#define SPI_CLOCK (1000000 / 6)
 
 
 // Select hardware or software SPI, depending on SPI clock.
