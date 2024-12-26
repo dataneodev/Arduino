@@ -25,8 +25,10 @@ Dodatek do VS Code #region folding for VS Code
 */
 
 /* #region  user configuration */
+#define MY_NODE_ID 61  // id wezła dla my sensors
+#define VERSION_5X
 
-#define EEPROM_RESET 0x68  // zmienić wartość aby zresetować ustawienia
+#define EEPROM_RESET 0x68  // zmienić wartość aby zresetować ustawienia - przy każdej zmianie typu kontrolera
 
 //#define NODE_1_RGBW
 //#define NODE_1_RGB
@@ -57,18 +59,33 @@ Dodatek do VS Code #region folding for VS Code
 #define NODE_4_STARTUP_LIGHT_LEVEL 25  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
 #endif
 
+#if !defined NODE_1_RGBW && defined VERSION_5X
+#define NODE_5_SINGLE
+#define NODE_5_MIN_LIGHT_LEVEL 5       // minimalna jasnosc
+#define NODE_5_MAX_LIGHT_LEVEL 255     // maksymalna jasnosc
+#define NODE_5_STARTUP_LIGHT_LEVEL 25  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
+#endif
+
 enum Nodes {
+
 #if defined NODE_1_RGBW || defined NODE_1_RGB || defined NODE_1_SINGLE
   Node1,
 #endif
+
 #if defined NODE_2_SINGLE
   Node2,
 #endif
+
 #if defined NODE_3_SINGLE
   Node3,
 #endif
+
 #if defined NODE_4_SINGLE
   Node4,
+#endif
+
+#if defined NODE_5_SINGLE
+  Node5,
 #endif
 };
 
@@ -119,23 +136,33 @@ inButtonDef in4Button = {
   true
 };
 
+#if defined(VERSION_5X)
+//przycisk 5
+inButtonDef in5Button = {
+  Node5,
+  Switching,
+  false,
+  true
+};
+
+#endif
 
 /* #endregion  user configuration */
 
 /* #region  const configuration */
 // MY SENSORS
-#define SOFTWARE_VERION "1.0"
+#define SOFTWARE_VERION "1.1"
 
-#define SKETCH_NAME "LED_DRIVER"
+#define SKETCH_NAME "Led driver"
 
 #if defined(NODE_1_RGBW)
 #undef SKETCH_NAME
-#define SKETCH_NAME "RGBW_LED_DRIVER"
+#define SKETCH_NAME "RGBW Led Driver"
 #endif
 
 #if defined(NODE_1_RGB)
 #undef SKETCH_NAME
-#define SKETCH_NAME "RGB_LED_DRIVER"
+#define SKETCH_NAME "RGB Led Driver"
 #endif
 
 #if defined NODE_1_RGBW || defined NODE_1_RGB
@@ -158,20 +185,24 @@ inButtonDef in4Button = {
 #define DIMMER_ID_4 4
 #endif
 
+#if defined NODE_5_SINGLE
+#define DIMMER_ID_5 5
+#endif
 
-#define MY_NODE_ID 60  // id wezła dla my sensors
 #define MY_PASSIVE_NODE
 #define MY_PARENT_NODE_ID 0
 #define MY_PARENT_NODE_IS_STATIC
 #define MY_TRANSPORT_WAIT_READY_MS 1
 
 // RS485
+HardwareSerial RS485Serial(PA3, PA2);
+
 #define ARDUINO_ARCH_STM32F1
-#define MY_DISABLED_SERIAL         // manual configure Serial1
-#define MY_RS485                   // Enable RS485 transport layer
-#define MY_RS485_DE_PIN PA1        // Define this to enables DE-pin management on defined pin
-#define MY_RS485_BAUD_RATE 9600    // Set RS485 baud rate to use
-#define MY_RS485_HWSERIAL Serial2  //
+#define MY_DISABLED_SERIAL             // manual configure Serial1
+#define MY_RS485                       // Enable RS485 transport layer
+#define MY_RS485_DE_PIN PA1            // Define this to enables DE-pin management on defined pin
+#define MY_RS485_BAUD_RATE 9600        // Set RS485 baud rate to use
+#define MY_RS485_HWSERIAL RS485Serial  //
 #define MY_RS485_SOH_COUNT 6
 
 // 24C32
@@ -182,19 +213,36 @@ inButtonDef in4Button = {
 #define RELAY_PIN PB7
 
 // pwm
-#define PWM_1 PA8
-#define PWM_2 PA9
-#define PWM_3 PA10
-#define PWM_4 PB6
-
+#if defined(VERSION_5X)
+#define PWM_1 PB6
+#define PWM_2 PA10
+#define PWM_3 PA9
+#define PWM_4 PB15
+#define PWM_5 PA8
+#else
+#define PWM_1 PB6
+#define PWM_2 PA10
+#define PWM_3 PA9
+#define PWM_4 PA8
+#endif
 // INPUT
-#define IN_1 PB1
-#define IN_2 PB0
-#define IN_3 PA5
-#define IN_4 PA4
 
-#define DELAY_MAX_TIME 15000  //15sekund
-#define DELAY_RS485_TIME 50
+
+#if defined(VERSION_5X)
+#define IN_1 PA5
+#define IN_2 PA6
+#define IN_3 PA7
+#define IN_4 PB0
+#define IN_5 PB1
+#else
+#define IN_1 PA4
+#define IN_2 PA5
+#define IN_3 PB0
+#define IN_4 PB1
+#endif
+
+#define DELAY_MAX_TIME 2000  //2sekund
+#define DELAY_RS485_TIME 20
 
 /* #endregion */
 
@@ -254,10 +302,11 @@ ButtonDebounce in2(IN_2, 50);
 ButtonDebounce in3(IN_3, 50);
 ButtonDebounce in4(IN_4, 50);
 
-// HardwareTimer *pwm1 = new HardwareTimer();
-// HardwareTimer *pwm2 = new HardwareTimer();
-// HardwareTimer *pwm3 = new HardwareTimer();
-// HardwareTimer *pwm4 = new HardwareTimer();
+#if defined(VERSION_5X)
+ButtonDebounce in5(IN_5, 50);
+
+#endif
+
 
 MyMessage mMessage;
 StateChangeManager SCM;
@@ -292,12 +341,16 @@ uint8_t node3LightLevel = 40;  // 0 -100
 bool node4Enabled = false;
 uint8_t node4LightLevel = 40;  // 0 -100
 #endif
+
+#if defined NODE_5_SINGLE
+bool node5Enabled = false;
+uint8_t node5LightLevel = 40;  // 0 -100
+#endif
 /* #endregion */
 
 /* #region  Power Optimization */
-
 /**
-  * @brief  System Clock Configuration Reduced with big peripheral reduction
+* @brief  System Clock Configuration Reduced with big peripheral reduction
   *         The system Clock is configured as follow :
   *            System Clock source            = PLL (HSE)
   *            SYSCLK(Hz)                     = 72000000 --> 48000000
@@ -313,16 +366,15 @@ uint8_t node4LightLevel = 40;  // 0 -100
   * @param  None
   * @retval None
   */
-extern "C" void SystemClock_Config(void)
-{
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
- 
+extern "C" void SystemClock_Config(void) {
+  RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = { 0 };
+
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV2;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
@@ -330,29 +382,26 @@ extern "C" void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL12;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
     Error_Handler();
   }
- 
+
   /** Initializes the CPU, AHB and APB buses clocks
   */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
+                                | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV4;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
- 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
-  {
+
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USB;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC | RCC_PERIPHCLK_USB;
   PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
   PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
-  {
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {
     Error_Handler();
   }
 }
@@ -392,7 +441,7 @@ void disableClocks() {
   __HAL_RCC_GPIOE_CLK_DISABLE();
 
   __HAL_RCC_AFIO_CLK_DISABLE();
-  __HAL_RCC_TIM1_CLK_DISABLE();
+  // __HAL_RCC_TIM1_CLK_DISABLE();
   __HAL_RCC_SPI1_CLK_DISABLE();
   __HAL_RCC_USART1_CLK_DISABLE();
   __HAL_RCC_DMA1_CLK_DISABLE();
@@ -434,12 +483,21 @@ void inicjalizePins() {
   pinMode(PWM_4, OUTPUT);
   analogWrite(PWM_4, 0);
 
+#if defined(VERSION_5X)
+  pinMode(PWM_5, OUTPUT);
+  analogWrite(PWM_5, 0);
+#endif
+
   pinMode(MY_RS485_DE_PIN, OUTPUT);
 
   pinMode(IN_1, INPUT);
   pinMode(IN_2, INPUT);
   pinMode(IN_3, INPUT);
   pinMode(IN_4, INPUT);
+
+#if defined(VERSION_5X)
+  pinMode(IN_5, INPUT);
+#endif
 }
 
 void inicjalizeI2C() {
@@ -489,6 +547,11 @@ void readSettingFromEPPROM() {
   node4Enabled = EEPROM24C32.readByte(400) == TRUE_BYTE;
   node4LightLevel = EEPROM24C32.readByte(401);
 #endif
+
+#if defined NODE_5_SINGLE
+  node5Enabled = EEPROM24C32.readByte(450) == TRUE_BYTE;
+  node5LightLevel = EEPROM24C32.readByte(451);
+#endif
 }
 
 void saveDefaultSettingToEPPROM() {
@@ -524,6 +587,11 @@ void saveDefaultSettingToEPPROM() {
 #if defined NODE_4_SINGLE
   saveNode4EnableToEPPROM(node4Enabled);
   setNode4LightLevelToEPPROM(node4LightLevel);
+#endif
+
+#if defined NODE_5_SINGLE
+  saveNode5EnableToEPPROM(node5Enabled);
+  setNode5LightLevelToEPPROM(node5LightLevel);
 #endif
 }
 
@@ -634,6 +702,26 @@ void setNode4LightLevelToEPPROM(uint8_t lightLevel) {
 }
 #endif
 
+#if defined NODE_5_SINGLE
+void saveNode5EnableToEPPROM(bool enabled) {
+  if (node5Enabled == enabled) {
+    return;
+  }
+
+  node5Enabled = enabled;
+  EEPROM24C32.writeByte(450, enabled ? TRUE_BYTE : 0x09, false, false);
+}
+
+void setNode5LightLevelToEPPROM(uint8_t lightLevel) {
+  if (node5LightLevel == lightLevel) {
+    return;
+  }
+
+  node5LightLevel = lightLevel;
+  EEPROM24C32.writeByte(451, lightLevel, false, false);
+}
+#endif
+
 /* #endregion */
 
 /* #region  mysensors */
@@ -642,7 +730,7 @@ void presentation()  // MySensors
 {
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
   presentToControler();
-  
+
   SCM.isStateChanged(false, 0);
   isPresentedToController = true;
 }
@@ -670,6 +758,10 @@ void presentToControler() {
 
 #if defined NODE_4_SINGLE
   present(DIMMER_ID_4, S_DIMMER, "LED dimmer 4");
+#endif
+
+#if defined NODE_5_SINGLE
+  present(DIMMER_ID_5, S_DIMMER, "LED dimmer 5");
 #endif
 }
 
@@ -729,6 +821,20 @@ void sendNode4LightLevel() {
 }
 #endif
 
+#if defined NODE_5_SINGLE
+void sendNode5EnabledStatus() {
+  mMessage.setSensor(DIMMER_ID_5);
+  mMessage.setType(V_STATUS);
+  send(mMessage.set(node5Enabled));
+}
+
+void sendNode5LightLevel() {
+  mMessage.setSensor(DIMMER_ID_5);
+  mMessage.setType(V_PERCENTAGE);
+  send(mMessage.set(node5LightLevel));
+}
+#endif
+
 #if defined(NODE_1_RGBW)
 void sendNode1RGBWColor() {
   mMessage.setSensor(RGBW_ID);
@@ -772,6 +878,10 @@ void sendAllMySensorsStatus() {
 #if defined NODE_4_SINGLE
   sendNode4MySensorsAllStatus();
 #endif
+
+#if defined NODE_5_SINGLE
+  sendNode5MySensorsAllStatus();
+#endif
 }
 
 #if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
@@ -807,6 +917,13 @@ void sendNode3MySensorsAllStatus() {
 void sendNode4MySensorsAllStatus() {
   sendNode4EnabledStatus();
   sendNode4LightLevel();
+}
+#endif
+
+#if defined NODE_5_SINGLE
+void sendNode5MySensorsAllStatus() {
+  sendNode5EnabledStatus();
+  sendNode5LightLevel();
 }
 #endif
 
@@ -933,6 +1050,25 @@ void receive(const MyMessage &message)  // MySensors
     }
 
     setNode4LightLevel(val, false);
+    delaySleep(DELAY_MAX_TIME);
+    return;
+  }
+#endif
+
+#if defined NODE_5_SINGLE
+  if (message.sensor == DIMMER_ID_5 && message.type == V_STATUS) {
+    setNode5Enabled(message.getBool(), false);
+    delaySleep(DELAY_MAX_TIME);
+    return;
+  }
+
+  if (message.sensor == DIMMER_ID_5 && message.type == V_PERCENTAGE) {
+    int val = atoi(message.data);
+    if (val < 0 || val > 100) {
+      return;
+    }
+
+    setNode5LightLevel(val, false);
     delaySleep(DELAY_MAX_TIME);
     return;
   }
@@ -1172,6 +1308,57 @@ void setNode4LightLevel(uint8_t lightLevel, bool onlyDataSave) {
   }
 }
 #endif
+
+#if defined NODE_5_SINGLE
+void setNode5Enabled(bool enabled, bool onlyDataSave) {
+  saveNode5EnableToEPPROM(enabled);
+
+  if (enabled && node5LightLevel == 0) {
+    setNode5LightLevelToEPPROM(NODE_5_STARTUP_LIGHT_LEVEL);
+  }
+
+  if (onlyDataSave) {
+    return;
+  }
+
+  updateNode5PWM();
+  updateRelayStatus();
+
+  if (enabled) {
+    sendNode5MySensorsAllStatus();
+  } else {
+    sendNode5EnabledStatus();
+  }
+}
+
+void setNode5LightLevel(uint8_t lightLevel, bool onlyDataSave) {
+  setNode5LightLevelToEPPROM(lightLevel);
+
+  bool sendAllVars = false;
+  if (lightLevel == 0 && node5Enabled) {
+    saveNode5EnableToEPPROM(false);
+    sendAllVars = true;
+  }
+
+  if (lightLevel > 0 && !node5Enabled) {
+    saveNode5EnableToEPPROM(true);
+    sendAllVars = true;
+  }
+
+  if (onlyDataSave) {
+    return;
+  }
+
+  updateNode5PWM();
+  updateRelayStatus();
+
+  if (sendAllVars) {
+    sendNode5MySensorsAllStatus();
+  } else {
+    sendNode5LightLevel();
+  }
+}
+#endif
 /* #endregion */
 
 /* #region calculation */
@@ -1179,37 +1366,7 @@ unsigned int duty_1 = 0;
 unsigned int duty_2 = 0;
 unsigned int duty_3 = 0;
 unsigned int duty_4 = 0;
-
-void inicjalizePWM() {
-  // TIM_TypeDef *Instance1 = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(PWM_1), PinMap_PWM);
-  // uint32_t channel1 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(PWM_1), PinMap_PWM));
-  // pwm1->setup(Instance1);
-  // pwm1->setMode(channel1, TIMER_OUTPUT_COMPARE_PWM1, PWM_1);
-  // pwm1->setPrescaleFactor(8);
-  // pwm1->pause();
-
-  // TIM_TypeDef *Instance2 = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(PWM_2), PinMap_PWM);
-  // uint32_t channel2 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(PWM_2), PinMap_PWM));
-  // pwm2->setup(Instance2);
-  // pwm2->setMode(channel2, TIMER_OUTPUT_COMPARE_PWM1, PWM_2);
-  // pwm2->setPrescaleFactor(8);
-  // pwm2->setPWM()
-  // pwm2->pause();
-
-  // TIM_TypeDef *Instance3 = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(PWM_3), PinMap_PWM);
-  // uint32_t channel3 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(PWM_3), PinMap_PWM));
-  // pwm3->setup(Instance3);
-  // pwm3->setMode(channel3, TIMER_OUTPUT_COMPARE_PWM1, PWM_3);
-  // pwm3->setPrescaleFactor(8);
-  // pwm3->pause();
-
-  // TIM_TypeDef *Instance4 = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(PWM_4), PinMap_PWM);
-  // uint32_t channel4 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(PWM_4), PinMap_PWM));
-  // pwm4->setup(Instance4);
-  // pwm4->setMode(channel4, TIMER_OUTPUT_COMPARE_PWM1, PWM_4);
-  // pwm4->setPrescaleFactor(8);
-  // pwm4->pause();
-}
+unsigned int duty_5 = 0;
 
 void updateAllNodePWM() {
 #if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
@@ -1228,12 +1385,17 @@ void updateAllNodePWM() {
   updateNode4PWM();
 #endif
 
+#if defined NODE_5_SINGLE
+  updateNode5PWM();
+#endif
+
   updateRelayStatus();
 }
 
-bool relayStatus = false;
+volatile bool relayStatus = false;
+
 void updateRelayStatus() {
-  relayStatus = duty_1 > 0 || duty_2 > 0 || duty_3 > 0 || duty_4 > 0;
+  relayStatus = duty_1 > 0 || duty_2 > 0 || duty_3 > 0 || duty_4 > 0 || duty_5 > 0;
   setRelayStatus(relayStatus);
 }
 
@@ -1286,6 +1448,13 @@ void updateNode3PWM() {
 void updateNode4PWM() {
   duty_4 = node4Enabled ? map(node4LightLevel, 0, 100, NODE_4_MIN_LIGHT_LEVEL, NODE_4_MAX_LIGHT_LEVEL) : 0;
   analogWrite(PWM_4, duty_4);
+}
+#endif
+
+#if defined NODE_5_SINGLE
+void updateNode5PWM() {
+  duty_5 = node5Enabled ? map(node5LightLevel, 0, 100, NODE_5_MIN_LIGHT_LEVEL, NODE_5_MAX_LIGHT_LEVEL) : 0;
+  analogWrite(PWM_5, duty_5);
 }
 #endif
 
@@ -1362,6 +1531,23 @@ void onIn4Change(const int state) {
   }
 }
 
+#if defined(VERSION_5X)
+void onIn5Change(const int state) {
+  if (in5Button.mode == Off) {
+    return;
+  }
+
+  if (in5Button.mode == OnOff) {
+    setNodeState(in5Button.node, getInvertedState(in5Button, state == HIGH), false);
+  }
+
+  if (in5Button.mode == Switching && getInvertedState(in5Button, state == HIGH)) {
+    bool nodeState = getNodeState(in5Button.node);
+    setNodeState(in5Button.node, !nodeState, false);
+  }
+}
+#endif
+
 bool getNodeState(Nodes node) {
 #if defined NODE_1_SINGLE || defined NODE_1_RGBW || defined NODE_1_RGB
   if (node == Node1) {
@@ -1387,6 +1573,12 @@ bool getNodeState(Nodes node) {
   }
 #endif
 
+#if defined NODE_5_SINGLE
+  if (node == Node5) {
+    return node5Enabled;
+  }
+#endif
+
   return false;
 }
 
@@ -1406,6 +1598,12 @@ bool getButtonState(uint8_t buttonLp) {
   if (buttonLp == 4) {
     return in4.state() == HIGH;
   }
+
+#if defined(VERSION_5X)
+  if (buttonLp == 5) {
+    return in5.state() == HIGH;
+  }
+#endif
 
   return false;
 }
@@ -1435,6 +1633,12 @@ void setNodeState(Nodes node, bool state, bool onlyDataSave) {
   }
 #endif
 
+#if defined NODE_5_SINGLE
+  if (node == Node5) {
+    setNode5Enabled(state, onlyDataSave);
+  }
+#endif
+
   delaySleep(DELAY_MAX_TIME);
 }
 
@@ -1443,6 +1647,11 @@ void updateNodesFromButtons() {
   updateNodesFromButton(in2Button, 2);
   updateNodesFromButton(in3Button, 3);
   updateNodesFromButton(in4Button, 4);
+
+#if defined(VERSION_5X)
+
+  updateNodesFromButton(in5Button, 5);
+#endif
 }
 
 void updateNodesFromButton(inButtonDef button, uint8_t buttonLp) {
@@ -1466,64 +1675,91 @@ void inicjalizeButtons() {
   in2.setCallback(onIn2Change);
   in3.setCallback(onIn3Change);
   in4.setCallback(onIn4Change);
+
+#if defined(VERSION_5X)
+  in5.setCallback(onIn5Change);
+
+#endif
 }
 
 /* #endregion */
 
 /* #region sleep */
-volatile u_int32_t sleepWaitTime;
-volatile u_int32_t sleepSetTime;
-volatile bool canSleep;
+volatile int32_t sleepWaitTime;
+volatile u_int32_t lastNow;
 
-void delaySleep(u_int32_t delay) {
-  u_int32_t now = millis();
+volatile bool canSleep = false;
+volatile bool serialAwake = false;
 
+void delaySleep(int32_t delay) {
+  serialAwake = false;
   canSleep = false;
-  sleepSetTime = now;
-  sleepWaitTime = now + delay;
+
+  if (sleepWaitTime > delay) {
+    return;
+  }
+
+  sleepWaitTime = delay;
 }
 
 void compensateSleepDelay() {
+  if (relayStatus) {
+    return;
+  }
+
   if (canSleep) {
     return;
   }
 
   u_int32_t now = millis();
 
-  if (sleepSetTime > now) {
-    delaySleep(DELAY_MAX_TIME);
+  if (lastNow == 0) {
+    lastNow = now;
     return;
   }
 
-  if (sleepWaitTime < now) {
+  if (lastNow > now) {
+    lastNow = now;
+    return;
+  }
+
+  sleepWaitTime -= (now - lastNow);
+
+  lastNow = now;
+
+  if (sleepWaitTime <= 0) {
     canSleep = true;
+    sleepWaitTime = 0;
     return;
   }
 }
 
+void serialWakeup() {
+  delaySleep(DELAY_RS485_TIME);
+  serialAwake = true;
+}
 
 void buttonInterrupt() {
   delaySleep(DELAY_MAX_TIME);
 }
 
-void serialWakeup() {
-  delaySleep(DELAY_RS485_TIME);
-}
 /* #endregion */
 
 /* #region main functions */
 void before() {
-  // setAllPinsAnalog();
-  // disableClocks();
-
   delaySleep(DELAY_MAX_TIME);
 
-  Serial2.begin(9600);
+  setAllPinsAnalog();
+  disableClocks();
+
+  RS485Serial.begin(9600);
+
   inicjalizePins();
   inicjalizeI2C();
   inicjalizeButtons();
   readSettingFromEPPROM();
   updateNodesFromButtons();
+  delaySleep(DELAY_MAX_TIME);
 }
 
 void setup() {
@@ -1531,12 +1767,16 @@ void setup() {
 
   LowPower.begin();
 
+  LowPower.attachInterruptWakeup(PA3, serialWakeup, RISING, SLEEP_MODE);
+
   LowPower.attachInterruptWakeup(IN_1, buttonInterrupt, CHANGE, SLEEP_MODE);
   LowPower.attachInterruptWakeup(IN_2, buttonInterrupt, CHANGE, SLEEP_MODE);
   LowPower.attachInterruptWakeup(IN_3, buttonInterrupt, CHANGE, SLEEP_MODE);
   LowPower.attachInterruptWakeup(IN_4, buttonInterrupt, CHANGE, SLEEP_MODE);
 
-  LowPower.enableWakeupFrom(&Serial2, serialWakeup);
+#if defined VERSION_5X
+  LowPower.attachInterruptWakeup(IN_5, buttonInterrupt, CHANGE, SLEEP_MODE);
+#endif
 }
 
 void loop() {
@@ -1546,20 +1786,24 @@ void loop() {
     delaySleep(DELAY_MAX_TIME);
   }
 
-  if (!relayStatus) {
-    if (canSleep) {
-      Serial2.flush();
-      LowPower.sleep();
-      Serial2.flush();
-    } else {
-      compensateSleepDelay();
-    }
+  if (canSleep) {
+    updateAllNodePWM();
+
+    RS485Serial.flush();
+    LowPower.deepSleep();  // sleep
+    RS485Serial.flush();
+  } else {
+    compensateSleepDelay();
   }
 
   in1.update();
   in2.update();
   in3.update();
   in4.update();
+
+#if defined(VERSION_5X)
+  in5.update();
+#endif
 }
 
 /* #endregion */

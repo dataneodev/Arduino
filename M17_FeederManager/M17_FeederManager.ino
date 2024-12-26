@@ -42,6 +42,7 @@ HardwareSerial RS485Serial(PB7, PB6);
 #define MY_RS485_HWSERIAL RS485Serial  //
 #define MY_RS485_SOH_COUNT 6
 
+
 // 24C32
 #define SCL_PIN PB8
 #define SDA_PIN PB9
