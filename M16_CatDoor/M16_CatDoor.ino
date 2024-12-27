@@ -5,6 +5,7 @@
 
 #include "esp_random.h"  //brakuje w plikach mysensors dla esp32, sprawdzic i usunąć w nowych wersjach
 /*
+Uwaga wybudzanie z sleep działa z wersja 3.1.0
 Dodać link w ustawieniach additional boards manager urls: https://espressif.github.io/arduino-esp32/package_esp32_dev_index.json
 Płytka: ESP32C6 Dev Module
 
@@ -99,7 +100,7 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #define MS_OPEN_LOCK_ID 27
 
 #define MS_SEND_TIMEOUT 10 * 1000
-#define WAIT_TIME_FOR_MS_MESSAGE_BEFORE_SLEEP 10
+#define WAIT_TIME_FOR_MS_MESSAGE_BEFORE_SLEEP 40
 #pragma endregion MY_SENSORS_CONFIGURATION
 
 #pragma region TYPES
@@ -1179,6 +1180,8 @@ void defineTransition() {
 bool isPresentedToController = false;
 void presentation()  // MySensors
 {
+  MessageReceiveTime.stateStart();
+
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
 
   present(MS_DOOR_STATUS_ID, S_BINARY, "Status otwarcia dzwi");
