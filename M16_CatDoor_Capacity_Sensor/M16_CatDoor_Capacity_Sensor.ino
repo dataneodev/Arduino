@@ -10,10 +10,10 @@
 // Lower is more sensitive
 //60 at 1.2MHz
 //25 at 128kHz
-const uint8_t threshold = 25;
+const uint8_t threshold = 100;
 
-// Sample each touch pin 512 times
-const uint16_t ADCTouch::samples = 512;
+// Sample each touch pin 128 times
+const uint16_t ADCTouch::samples = 128;
 
 #define SENSOR_PIN A2
 #define OUT_PIN PB0

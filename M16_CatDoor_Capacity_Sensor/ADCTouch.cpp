@@ -29,7 +29,7 @@ int16_t ADCTouch::read(const analog_pin_t adc_channel)
     DDRB |= (1 << digitalPin);          // Discharge touchpad
 
     ADCSRA |= (1 << ADEN);              // Enable ADC & discharge S/H cap
-    _delay_us(5);                       // Sample and hold RC time
+    _delay_us(1);                       // Sample and hold RC time
     ADCSRA = 0;                         // ADC off
     PORTB |= (1 << digitalPin);         // Charge touchpad
 
@@ -38,7 +38,7 @@ int16_t ADCTouch::read(const analog_pin_t adc_channel)
 
     // Enable ADC with /16 prescaler, equalize S/H cap charge
     ADCSRA = (1 << ADPS2) | (0 << ADPS1) | (0 << ADPS0) | (1 << ADEN);
-    _delay_us(5);                       // Sample and hold RC time
+    _delay_us(1);                       // Sample and hold RC time
 
     ADCSRA |= (1 << ADSC);              // Start ADC conversion
     while (bit_is_set(ADCSRA, ADSC));   // Wait for conversion to complete
