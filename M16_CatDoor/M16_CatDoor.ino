@@ -1184,7 +1184,7 @@ void presentation()  // MySensors
 
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
 
-  present(MS_DOOR_STATUS_ID, S_BINARY, "Status otwarcia dzwi");
+  present(MS_DOOR_STATUS_ID, S_DOOR, "Status otwarcia dzwi");
   present(MS_OPEN_DOOR_COUNT_ID, S_INFO, "Liczba cykli otwarcia");
   present(MS_OPEN_DOOR_ID, S_BINARY, "Drzwi zawsze otwarte");
   present(MS_CLOSE_DOOR_ID, S_BINARY, "Drzwi zawsze zamknięte");
@@ -1370,7 +1370,7 @@ void sentMyClientOpenDoorStatusMy(int clientId, bool status) {
   Serial.println(status ? "1" : "0");
 #endif
 
-  mMessage.setType(V_STATUS);
+  mMessage.setType(V_TRIPPED);
   mMessage.setSensor(clientId);
   send(mMessage.set(status ? "1" : "0"));
 
