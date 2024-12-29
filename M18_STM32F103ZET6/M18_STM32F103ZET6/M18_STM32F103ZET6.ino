@@ -257,6 +257,7 @@ na
 #define MY_NODE_ID 51  // id wezła dla my sensors
 #define MY_PARENT_NODE_ID 0
 #define MY_PARENT_NODE_IS_STATIC
+#define MY_DEFAULT_TX_LED_PIN PB5
 
 // 24C32
 #define SCL_24C32_PIN PB8
