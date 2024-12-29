@@ -7,14 +7,12 @@
 #include <MySensors.h>
 #include <Bounce2.h>
 #include <QList.h>
-#include <EE24C32.h>
+#include <24C32.h>
 #include <Wire.h>
 
 enum STATE_METHOD
 {
-  SAVE_TO_EEPROM,
   SAVE_TO_24C32,
-  LOAD_FROM_CONTROLLERS,
   START_IN_HIGH,
   START_IN_LOW,
 };
@@ -31,13 +29,6 @@ enum RELAY_STATE
   RELAY_ON_LOW,
 };
 
-enum CONTROLLER_TYPE
-{
-  DOMOTICZ,
-  HOMEASSISTANT,
-  OTHER, // NOT TESTED
-};
-
 class Logger
 {
 public:
@@ -50,9 +41,12 @@ public:
 class EE24C32Loader
 {
 public:
+EE24C32Loader(EE* eprom)
+    : EEPROM24C32(eprom) {}
+
   static bool IsInicjalized()
   {
-    if (EE24C32I.begin(&Wire) != 0)
+    if (!EEPROM24C32->checkPresence())
     {
       Logger::logMsg("EE24C32 initialization failed");
       return false;
@@ -60,22 +54,18 @@ public:
     return true;
   }
 
-  static void SetAdress(uint8_t EE24C32Address)
-  {
-    EE24C32I = EE24C32(EE24C32Address);
-  }
 
   static bool save24C32State(uint8_t _relay_pin_no, bool _relay_state)
   {
     if (_relay_pin_no > 0)
     {
-      EE24C32I.write(_relay_pin_no, _relay_state ? 97 : 101);
+      EEPROM24C32->write(_relay_pin_no, _relay_state ? 97 : 101);
     }
   }
 
   static bool loadStateFrom24C32(uint8_t _relay_pin_no)
   {
-    if (EE24C32I.read(_relay_pin_no) == 97)
+    if (EEPROM24C32->read(_relay_pin_no) == 97)
     {
       return true;
     }
@@ -85,10 +75,11 @@ public:
     }
   }
 
-  static EE24C32 EE24C32I;
+  private:
+  EE* EEPROM24C32;
+
 };
 
-EE24C32 EE24C32Loader::EE24C32I = EE24C32(0x50);
 
 //Simple relay class
 class RelaySimple

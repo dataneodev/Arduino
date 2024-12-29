@@ -2,10 +2,14 @@
 /* 
  DESCRIPTION
  ====================
- Pressing a physical button switches a LED on or off.
- Simple example of the Button class from the Bounce library.
- The Button class matches an electrical state to a physical action 
- with <Button>.setPressedState(LOW or HIGH).
+ This is an example of the Bounce2::Button class. 
+ When the user presses a physical button, it toggles a LED on or off.
+ The Button class matches an electrical state to a physical action. 
+ Use .setPressedState(LOW or HIGH) to set the detection state for when the button is pressed.
+
+
+ INSCRUCTIONS
+ ====================
 
  Set BUTTON_PIN to the pin attached to the button.
  Set LED_PIN to the pin attached to a LED.
@@ -25,8 +29,8 @@
 // https://github.com/thomasfredericks/Bounce2
 #include <Bounce2.h>
 
-// INSTANTIATE A Button OBJECT
-Button button = Button();
+// INSTANTIATE A Button OBJECT FROM THE Bounce2 NAMESPACE
+Bounce2::Button button = Bounce2::Button();
 
 
 
@@ -62,6 +66,7 @@ void loop() {
 
   // <Button>.pressed() RETURNS true IF THE STATE CHANGED
   // AND THE CURRENT STATE MATCHES <Button>.setPressedState(<HIGH or LOW>);
+  // WHICH IS LOW IN THIS EXAMPLE AS SET WITH button.setPressedState(LOW); IN setup()
   if ( button.pressed() ) {
     
     // TOGGLE THE LED STATE : 

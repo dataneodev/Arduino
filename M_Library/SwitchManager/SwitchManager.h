@@ -41,10 +41,10 @@ class SwitchSimple {
       return readValue;
     }
     void initPin() {
-      pinMode(_switch_pin_no, INPUT_PULLUP);
+      pinMode(_switch_pin_no, INPUT_PULLDOWN);
       _debouncer = Bounce();
       _debouncer.attach(_switch_pin_no);
-      _debouncer.interval(5);
+      _debouncer.interval(100);
       checkSwitch(true);
     }
     void presentToControler() {
