@@ -245,6 +245,29 @@ na
 #define P_X_7 PE4
 #define P_X_8 PE2
 
+//XI
+#define P_XI_1 PA8
+#define P_XI_2 PC8
+#define P_XI_3 PC6
+#define P_XI_4 PG7
+#define P_XI_5 PG6
+#define P_XI_6 PG8
+#define P_XI_7 PC7
+#define P_XI_8 PC9
+
+//XII
+#define P_XII_1 PB7
+#define P_XII_2 PB5
+#define P_XII_3 PB3
+#define P_XII_4 PG14
+#define P_XII_5 PG13
+#define P_XII_6 PG15
+#define P_XII_7 PB4
+#define P_XII_8 PB6
+
+#define P_C_I A9 //Connector I
+#define P_C_II A10 //Connector II
+
 #define ARDUINO_ARCH_STM32F1
 
 // MY SENSORS
@@ -257,7 +280,6 @@ na
 #define MY_NODE_ID 51  // id wezła dla my sensors
 #define MY_PARENT_NODE_ID 0
 #define MY_PARENT_NODE_IS_STATIC
-#define MY_DEFAULT_TX_LED_PIN PB5
 
 // 24C32
 #define SCL_24C32_PIN PB8
@@ -280,7 +302,7 @@ EE EEPROM24C32;
 
 #include "C:\Programowanie\7.Projekty\5.Arduino\M_Library\SwitchManager\SwitchManager.h"
 
-SwitchManager mySwitchManager = SwitchManager();
+SwitchManager mySwitchManager = SwitchManager(MY_NODE_ID);
 
 
 void inicjalizeI2C() {
@@ -421,7 +443,7 @@ void before() {
   mySwitchManager.addSwitch(P_VI_6, NORMAL_CLOSE, "P_VI_6");  // M4_MS_SwitchSensorManager
   mySwitchManager.addSwitch(P_VI_7, NORMAL_CLOSE, "P_VI_7");  // M4_MS_SwitchSensorManager
   mySwitchManager.addSwitch(P_VI_8, NORMAL_CLOSE, "P_VI_8");  // M4_MS_SwitchSensorManager
-  
+
   // VII
   mySwitchManager.addSwitch(P_VII_1, NORMAL_CLOSE, "P_VII_1");  // M4_MS_SwitchSensorManager
   mySwitchManager.addSwitch(P_VII_2, NORMAL_CLOSE, "P_VII_2");  // M4_MS_SwitchSensorManager
@@ -462,16 +484,35 @@ void before() {
   mySwitchManager.addSwitch(P_X_7, NORMAL_CLOSE, "P_X_7");  // M4_MS_SwitchSensorManager
   mySwitchManager.addSwitch(P_X_8, NORMAL_CLOSE, "P_X_8");  // M4_MS_SwitchSensorManager
 
+  // XI
+  mySwitchManager.addSwitch(P_XI_1, NORMAL_CLOSE, "P_XI_1");  // M4_MS_SwitchSensorManager
+  mySwitchManager.addSwitch(P_XI_2, NORMAL_CLOSE, "P_XI_2");  // M4_MS_SwitchSensorManager
+  mySwitchManager.addSwitch(P_XI_3, NORMAL_CLOSE, "P_XI_3");  // M4_MS_SwitchSensorManager
+  mySwitchManager.addSwitch(P_XI_4, NORMAL_CLOSE, "P_XI_4");  // M4_MS_SwitchSensorManager
+  mySwitchManager.addSwitch(P_XI_5, NORMAL_CLOSE, "P_XI_5");  // M4_MS_SwitchSensorManager
+  mySwitchManager.addSwitch(P_XI_6, NORMAL_CLOSE, "P_XI_6");  // M4_MS_SwitchSensorManager
+  mySwitchManager.addSwitch(P_XI_7, NORMAL_CLOSE, "P_XI_7");  // M4_MS_SwitchSensorManager
+  mySwitchManager.addSwitch(P_XI_8, NORMAL_CLOSE, "P_XI_8");  // M4_MS_SwitchSensorManager
+
+  // XII
+  mySwitchManager.addSwitch(P_XII_1, NORMAL_CLOSE, "P_XII_1");  // M4_MS_SwitchSensorManager
+  mySwitchManager.addSwitch(P_XII_2, NORMAL_CLOSE, "P_XII_2");  // M4_MS_SwitchSensorManager
+  mySwitchManager.addSwitch(P_XII_3, NORMAL_CLOSE, "P_XII_3");  // M4_MS_SwitchSensorManager
+  mySwitchManager.addSwitch(P_XII_4, NORMAL_CLOSE, "P_XII_4");  // M4_MS_SwitchSensorManager
+  mySwitchManager.addSwitch(P_XII_5, NORMAL_CLOSE, "P_XII_5");  // M4_MS_SwitchSensorManager
+  mySwitchManager.addSwitch(P_XII_6, NORMAL_CLOSE, "P_XII_6");  // M4_MS_SwitchSensorManager
+  mySwitchManager.addSwitch(P_XII_7, NORMAL_CLOSE, "P_XII_7");  // M4_MS_SwitchSensorManager
+  mySwitchManager.addSwitch(P_XII_8, NORMAL_CLOSE, "P_XII_8");  // M4_MS_SwitchSensorManager
+
 
 }
 
 void setup() {
   // put your setup code here, to run once:
-  inicjalizeI2C() ;
+  inicjalizeI2C();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   mySwitchManager.switchCheckState();  //M4_MS_SwitchSensorManager
-
 }
