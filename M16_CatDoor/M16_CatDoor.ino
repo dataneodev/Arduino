@@ -99,6 +99,9 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #define MS_MIN_RSSI_ID 26
 #define MS_OPEN_LOCK_ID 27
 
+#define MS_DOOR_ADD_ID 40
+#define MS_DOOR_REMOVE_ID 41
+
 #define MS_SEND_TIMEOUT 10 * 1000
 #define WAIT_TIME_FOR_MS_MESSAGE_BEFORE_SLEEP 40
 #pragma endregion MY_SENSORS_CONFIGURATION
@@ -1194,6 +1197,9 @@ void presentation()  // MySensors
   present(MS_MIN_RSSI_ID, S_INFO, "Min RSSI");
   present(MS_OPEN_LOCK_ID, S_INFO, "Czas blokady");
 
+  present(MS_DOOR_ADD_ID, S_INFO, "Dodanie BLE Address");
+  present(MS_DOOR_REMOVE_ID, S_INFO, "Usunięcie BLE Address");
+
   presentBleDevices();
 
   SCM.isStateChanged(false, 1);
@@ -1571,7 +1577,7 @@ void receive(const MyMessage &message) {
     sentLightStatus();
   }
 
-  if (MS_DOOR_STATUS_ID == message.sensor && message.getType() == V_VAR1) {
+  if (MS_DOOR_ADD_ID == message.sensor && message.getType() == V_TEXT) {
     const char *mess = message.getString();
 
     uint8_t data[6];
@@ -1585,10 +1591,15 @@ void receive(const MyMessage &message) {
     sentMyAllClientOpenDoorDefaultStatus();
   }
 
-  if (message.sensor > MS_DOOR_STATUS_ID && message.sensor < 12 && message.getType() == V_VAR1) {
-    if (message.getBool()) {
-      EEStorage.deleteBleDevice(message.sensor);
-    }
+  if (MS_DOOR_REMOVE_ID == message.sensor && message.getType() == V_TEXT) {
+    const char *mess = message.getString();
+
+    uint8_t data[6];
+    sscanf(mess, "%x:%x:%x:%x:%x:%x", &data[0], &data[1], &data[2], &data[3], &data[4], &data[5]);
+
+    BLEAddress bleAddress(data);
+
+    EEStorage.deleteBleDevice(&bleAddress);
 
     presentBleDevices();
     sentMyAllClientOpenDoorDefaultStatus();

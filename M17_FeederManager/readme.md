@@ -10,12 +10,18 @@
 
 + 4 - S_BINARY - "Motion detection"
     + V_STATUS - On/Off
-	+ V_VAR1 -  "Enable time in sec <20, 1200>"
+	
++ 5 - S_INFO - "Pomp working time"
+	+ V_TEXT -  "Time in sec <20, 1200>"
 
-+ 5 - S_BINARY - "Clock schedule"
++ 6 - S_BINARY - "Clock schedule"
     + V_STATUS - "On/Off"
-    + V_VAR1 -  "Enable time in sec <20, 1200>"
-	+ V_VAR2 -  "Interval start from 00:00 in hours <1, 24>"
+	
++ 7 - S_INFO - "Working time on schedule"	
+    + V_TEXT -  "Time in sec <20, 1200>"
 
-+ 6 - S_CUSTOM - "Internal clock"
-    + V_VAR1 - "Get/set time in unixtime"
++ 8 - S_INFO - "Clock schedule hours"	
+	+ V_TEXT -  "Time from 00:00 in hours <1, 24>"
+
++ 9 - S_INFO - "Internal clock"
+    + V_TEXT - "Get/set time in unixtime"

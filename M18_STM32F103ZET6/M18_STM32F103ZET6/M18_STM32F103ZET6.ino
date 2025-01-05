@@ -302,7 +302,7 @@ EE EEPROM24C32;
 
 #include "C:\Programowanie\7.Projekty\5.Arduino\M_Library\SwitchManager\SwitchManager.h"
 
-SwitchManager mySwitchManager = SwitchManager(MY_NODE_ID);
+SwitchManager mySwitchManager = SwitchManager();
 
 
 void inicjalizeI2C() {

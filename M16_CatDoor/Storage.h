@@ -149,7 +149,12 @@ public:
     writeBleEnabled(availableId, true);
   }
 
-  void deleteBleDevice(uint8_t id) {
+  void deleteBleDevice(BLEAddress* address) {
+    uint8_t id = getBleDeviceId(address) ; 
+    if(id == 0){
+      return;
+    }
+
     for (int i = 0; i < _deviceCount; i++) {
       if (_devices[i].getId() != id) {
         continue;

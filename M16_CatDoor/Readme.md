@@ -1,11 +1,9 @@
 ####Sensors
 + 1 - S_BINARY - "Status otwarcia drzwi"
-	+ V_STATUS - Stan otwarcia drzwi
-	+ V_VAR1 - dodanie nowego urządzenia BLE, treść wiadomosci to adres np.: CB:F7:92:0F:3B:2E
+	+ V_STATUS - Stan otwarcia drzwi	
 
 + 2 - 11- S_BINARY - "Status otwarcia drzwi dla odpowiedniego lokalizatora, max 10 lokalizatorów"
-	+ V_STATUS - Stan otwarcia drzwi
-	+ V_VAR_1 - usuniecie urządzenia BLE, treść wiadomosci: 1
+	+ V_STATUS - Stan otwarcia drzwi	
 
 + 20 - S_INFO - "Liczba cykli otwarcia"
 	+ V_TEXT - (get)
@@ -30,3 +28,9 @@
 	
 + 27 - S_INFO - "Minimalny czas blokady otwarcia po ostatnim zamknięciu drzwi (w sek), 0 bez blokady"
     + V_TEXT - "Poziom get/set <0, 3600>"
+	
++ 40 - S_INFO - "Dodanie nowego BLE"
+	+ V_TEXT - dodanie nowego urządzenia BLE, treść wiadomosci to adres np.: CB:F7:92:0F:3B:2E
+	
++ 41 - S_INFO - "Usunięcie urzadzenia BLE"
+	+ V_TEXT - usuniecie urządzenia BLE, treść wiadomosci to adres urządzenia do usunięcia np.: CB:F7:92:0F:3B:2E

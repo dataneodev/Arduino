@@ -31,8 +31,11 @@ HardwareSerial RS485Serial(PB7, PB6);
 #define MY_5_1V_STATUS_SENSOR_ID 2
 #define MY_5_2V_STATUS_SENSOR_ID 3
 #define MY_MOTION_DETECTION_STATUS_SENSOR_ID 4
-#define MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID 5
-#define MY_TIME_SENSOR_ID 6
+#define MY_MOTION_DETECTION_ENABLED_TIME_SENSOR_ID 5
+#define MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID 6
+#define MY_CLOCK_SCHEDULE_ENABLED_TIME_SENSOR_ID 7
+#define MY_CLOCK_SCHEDULE_HOUR_PERIOD_SENSOR_ID 8
+#define MY_TIME_SENSOR_ID 9
 
 #define ARDUINO_ARCH_STM32F1
 #define MY_DISABLED_SERIAL             // manual configure Serial
@@ -268,8 +271,11 @@ void presentToControler() {
   present(MY_5_1V_STATUS_SENSOR_ID, S_BINARY, "5V 1 Relay");
   present(MY_5_2V_STATUS_SENSOR_ID, S_BINARY, "5V 2 Relay");
   present(MY_MOTION_DETECTION_STATUS_SENSOR_ID, S_BINARY, "Motion detection");
+  present(MY_MOTION_DETECTION_ENABLED_TIME_SENSOR_ID, S_INFO, "Pomp working time");
   present(MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID, S_BINARY, "Clock schedule");
-  present(MY_TIME_SENSOR_ID, S_CUSTOM, "Internal clock");
+  present(MY_CLOCK_SCHEDULE_ENABLED_TIME_SENSOR_ID, S_INFO, "Working time on schedule");
+  present(MY_CLOCK_SCHEDULE_HOUR_PERIOD_SENSOR_ID, S_INFO, "Clock schedule hours");
+  present(MY_TIME_SENSOR_ID, S_INFO, "Internal clock");
 }
 
 void sendAllMySensorsStatus() {
@@ -311,8 +317,8 @@ void sendEnableMotionDetection() {
 }
 
 void sendMotionDetectedEnabledTime() {
-  mMessage.setSensor(MY_MOTION_DETECTION_STATUS_SENSOR_ID);
-  mMessage.setType(V_VAR1);
+  mMessage.setSensor(MY_MOTION_DETECTION_ENABLED_TIME_SENSOR_ID);
+  mMessage.setType(V_TEXT);
   send(mMessage.set(EEStorage.motionDetectedEnabledTime()));
 }
 
@@ -323,20 +329,20 @@ void sendEnableClockSchedule() {
 }
 
 void sendClockScheduleEnabledTime() {
-  mMessage.setSensor(MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID);
-  mMessage.setType(V_VAR1);
+  mMessage.setSensor(MY_CLOCK_SCHEDULE_ENABLED_TIME_SENSOR_ID);
+  mMessage.setType(V_TEXT);
   send(mMessage.set(EEStorage.clockScheduleEnabledTime()));
 }
 
 void sendClockScheduleIntervalHour() {
-  mMessage.setSensor(MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID);
-  mMessage.setType(V_VAR2);
+  mMessage.setSensor(MY_CLOCK_SCHEDULE_HOUR_PERIOD_SENSOR_ID);
+  mMessage.setType(V_TEXT);
   send(mMessage.set(EEStorage.clockScheduleIntervalHour()));
 }
 
 void sendClockValue() {
   mMessage.setSensor(MY_TIME_SENSOR_ID);
-  mMessage.setType(V_VAR1);
+  mMessage.setType(V_TEXT);
   send(mMessage.set((uint32_t)myTZ.toLocal(rtc.getEpoch())));
 }
 
@@ -373,7 +379,7 @@ void receive(const MyMessage &message)  // MySensors
     return;
   }
 
-  if (message.sensor == MY_MOTION_DETECTION_STATUS_SENSOR_ID && message.type == V_VAR1) {
+  if (message.sensor == MY_MOTION_DETECTION_ENABLED_TIME_SENSOR_ID && message.type == V_TEXT) {
     setMotionDetectedEnabledTime(message.getUInt());
     delaySleep(SLEEP_MAX_TIME);
     return;
@@ -385,21 +391,21 @@ void receive(const MyMessage &message)  // MySensors
     return;
   }
 
-  if (message.sensor == MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID && message.type == V_VAR1) {
+  if (message.sensor == MY_CLOCK_SCHEDULE_ENABLED_TIME_SENSOR_ID && message.type == V_TEXT) {
 
     setClockScheduleEnabledTime(message.getUInt());
     delaySleep(SLEEP_MAX_TIME);
     return;
   }
 
-  if (message.sensor == MY_CLOCK_SCHEDULE_STATUS_SENSOR_ID && message.type == V_VAR2) {
+  if (message.sensor == MY_CLOCK_SCHEDULE_HOUR_PERIOD_SENSOR_ID && message.type == V_TEXT) {
 
     setClockScheduleIntervalHour(message.getByte());
     delaySleep(SLEEP_MAX_TIME);
     return;
   }
 
-  if (message.sensor == MY_TIME_SENSOR_ID && message.type == V_VAR1) {
+  if (message.sensor == MY_TIME_SENSOR_ID && message.type == V_TEXT) {
     setClock((time_t)message.getULong());
     delaySleep(SLEEP_MAX_TIME);
     return;
@@ -555,11 +561,8 @@ void checkTimeRequest(uint32_t now) {
     return;
   }
 
-  if (lastRequestTime + 1209600 < now) {  //14days
-    lastRequestTime -= 14400;             //4h
-
-    SCM.isStateChanged(!isPresentedToController, 0);
-
+  if (lastRequestTime + 86400 < now) {  //1days
+    lastRequestTime -= 3600;             //1h
     requestTime();
   }
 }
