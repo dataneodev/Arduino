@@ -1,0 +1,17 @@
+2025/01/06 21:41:51.424 [I]=> thread create success, thread handle=0x000005dc, id=3140, name=Download
+2025/01/06 21:41:51.424 [I]=> thread information, name=Download, tid=3140(0x00000c44)
+2025/01/06 21:41:51.424 [I]=> CloseSerial: mSerialFile=0xffffffff
+2025/01/06 21:41:51.424 [I]=> Prepare Open Serial: Com=\\.\COM8 BaudRate=115200
+2025/01/06 21:41:51.424 [I]=> OpenSerial: Com=\\.\COM8 BaudRate=115200, Success=1, mSerialFile=0x000005e8
+2025/01/06 21:41:51.439 [I]=> protocol version = 3, send_recv buffer size = 128
+2025/01/06 21:41:51.492 [I]=> protocol version = 3, send_recv buffer size = 128
+2025/01/06 21:41:52.025 [I]=> Cancel Read Data
+2025/01/06 21:41:52.025 [I]=> CloseSerial: mSerialFile=0x000005e8
+2025/01/06 21:41:52.025 [I]=> thread exit, name=Download, tid=3140(0x00000c44)
+2025/01/06 21:42:04.449 [I]=> Cancel Read Data
+2025/01/06 21:42:04.449 [I]=> Stop Realtime data show.
+2025/01/06 21:42:04.449 [I]=> Cancel Read Data
+2025/01/06 21:42:04.465 [I]=> Stop Realtime data show.
+2025/01/06 21:42:04.465 [I]=> Cancel Read Data
+2025/01/06 21:42:04.465 [I]=> CloseSerial: mSerialFile=0xffffffff
+2025/01/06 21:42:04.465 [I]=> CloseSerial: mSerialFile=0xffffffff

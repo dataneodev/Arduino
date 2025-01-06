@@ -1,0 +1,40 @@
+2024/01/20 14:27:02.388 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/01/20 14:27:02.388 [I]=> Prepare Open Serial: Com=\\.\COM2 BaudRate=115200
+2024/01/20 14:27:02.389 [I]=> OpenSerial: Com=\\.\COM2 BaudRate=115200, Success=1, mSerialFile=0x000006b0
+2024/01/20 14:27:02.395 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/01/20 14:27:02.570 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/01/20 14:27:02.671 [I]=> ReadVersion Return: v1.1.1_32768.0
+2024/01/20 14:27:02.775 [I]=> ReadSerialNumber Return: 12345678
+2024/01/20 14:27:02.880 [I]=> RadarOperatorConfig_ReadDetectSetting, result: Success
+2024/01/20 14:27:02.988 [I]=> RadarOperatorConfig_ReadTriggerThreshold, result: Success
+2024/01/20 14:27:03.096 [I]=> RadarOperatorConfig_ReadHoldThreshold, result: Success
+2024/01/20 14:27:05.381 [I]=> Cancel Read Data
+2024/01/20 14:27:05.381 [I]=> CloseSerial: mSerialFile=0x000006b0
+2024/01/20 14:27:06.148 [I]=> thread create success, thread handle=0x0000069c, id=1696, name=Download
+2024/01/20 14:27:06.148 [I]=> thread information, name=Download, tid=1696(0x000006a0)
+2024/01/20 14:27:06.149 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/01/20 14:27:06.149 [I]=> Prepare Open Serial: Com=\\.\COM2 BaudRate=115200
+2024/01/20 14:27:06.150 [I]=> OpenSerial: Com=\\.\COM2 BaudRate=115200, Success=1, mSerialFile=0x000006dc
+2024/01/20 14:27:06.162 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/01/20 14:27:06.230 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/01/20 14:27:06.743 [I]=> Cancel Read Data
+2024/01/20 14:27:06.743 [I]=> CloseSerial: mSerialFile=0x000006dc
+2024/01/20 14:27:06.743 [I]=> thread exit, name=Download, tid=1696(0x000006a0)
+2024/01/20 14:27:21.381 [I]=> thread create success, thread handle=0x0000069c, id=12576, name=Download
+2024/01/20 14:27:21.381 [I]=> thread information, name=Download, tid=12576(0x00003120)
+2024/01/20 14:27:21.382 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/01/20 14:27:21.382 [I]=> Prepare Open Serial: Com=\\.\COM2 BaudRate=115200
+2024/01/20 14:27:21.382 [I]=> OpenSerial: Com=\\.\COM2 BaudRate=115200, Success=1, mSerialFile=0x00000da0
+2024/01/20 14:27:21.389 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/01/20 14:27:21.464 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/01/20 14:27:23.476 [I]=> CloseSerial: mSerialFile=0x00000da0
+2024/01/20 14:27:23.476 [I]=> Prepare Open Serial: Com=\\.\COM2 BaudRate=115200
+2024/01/20 14:27:23.477 [I]=> OpenSerial: Com=\\.\COM2 BaudRate=115200, Success=1, mSerialFile=0x000007b0
+2024/01/20 14:27:35.426 [I]=> Cancel Read Data
+2024/01/20 14:27:35.426 [I]=> CloseSerial: mSerialFile=0x000007b0
+2024/01/20 14:27:35.430 [I]=> thread exit, name=Download, tid=12576(0x00003120)
+2024/01/20 14:27:54.545 [I]=> Cancel Read Data
+2024/01/20 14:27:54.551 [I]=> Stop Realtime data show.
+2024/01/20 14:27:54.552 [I]=> Cancel Read Data
+2024/01/20 14:27:54.552 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/01/20 14:27:54.552 [I]=> CloseSerial: mSerialFile=0xffffffff

@@ -33,10 +33,10 @@ Dodatek do VS Code #region folding for VS Code
 */
 
 /* #region  user configuration */
-#define MY_NODE_ID 60  // id wezła dla my sensors
+#define MY_NODE_ID 61  // id wezła dla my sensors
 
 //przy zmianie typu sterownika obowiązkowo zmienic cyfre kontrolną dla zresetowania ustawień!
-#define EEPROM_RESET 0x65  // zmienić wartość aby zresetować ustawienia - przy każdej zmianie typu kontrolera
+#define EEPROM_RESET 0x33  // zmienić wartość aby zresetować ustawienia - przy każdej zmianie typu kontrolera
 
 #define VERSION_5X
 
@@ -185,7 +185,7 @@ inButtonDef in5Button = {
 #endif
 
 #if defined NODE_1_RGBWW
-#define BALANCE_ID 1
+#define BALANCE_ID 2
 #endif
 
 #if defined NODE_1_SINGLE || defined NODE_1_RGBWW || defined NODE_1_RGBW || defined NODE_1_RGB
@@ -816,8 +816,11 @@ void presentToControler() {
 #if defined NODE_1_RGBWW
 void sendNode1WhiteChannelsBalance() {
   mMessage.setSensor(BALANCE_ID);
-  mMessage.setType(V_PERCENTAGE);
+  mMessage.setType(V_PERCENTAGE );
   send(mMessage.set(node1WhiteChannelsBalance));
+
+  mMessage.setType(V_STATUS );
+  send(mMessage.set(node1WhiteChannelsBalance == 0 ? false : true));
 }
 #endif
 

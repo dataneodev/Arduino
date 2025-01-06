@@ -5,7 +5,8 @@
 
 #include "esp_random.h"  //brakuje w plikach mysensors dla esp32, sprawdzic i usunąć w nowych wersjach
 /*
-Uwaga wybudzanie z sleep działa z wersja 3.1.0
+Działa z wersja 3.0.1
+Uwaga aby nie zainstalować Arduino ESP32 Boards - trzeba po odinstalowaniu przeinstalować esp32
 Dodać link w ustawieniach additional boards manager urls: https://espressif.github.io/arduino-esp32/package_esp32_dev_index.json
 Płytka: ESP32C6 Dev Module
 
@@ -400,9 +401,6 @@ MotionDetectContinue M3(MOTION_SENSOR_3_PIN, 5 * 1000);
 Fadinglight Out1(OUPUT_1_PIN, false, 2);
 Blinkenlight Out2(OUPUT_2_PIN);
 Blinkenlight Out3(OUPUT_3_PIN);
-
-temperature_sensor_handle_t temp_sensor = NULL;
-temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(-40, 50);
 #pragma endregion GLOBAL_VARIABLE
 
 #pragma region TIME
@@ -1300,21 +1298,23 @@ void sentTempStatus() {
   MessageSentTime.stateStart();
   messageSent = false;
 
+  temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(10, 50);
+  temperature_sensor_handle_t temp_sensor = NULL;
+  temperature_sensor_install(&temp_sensor_config, &temp_sensor);
   temperature_sensor_enable(temp_sensor);
-
-  float tsens_value;
-  temperature_sensor_get_celsius(temp_sensor, &tsens_value);
-
+  float tvalue;
+  temperature_sensor_get_celsius(temp_sensor, &tvalue);
   temperature_sensor_disable(temp_sensor);
+  temperature_sensor_uninstall(temp_sensor);
 
 #if defined(DEBUG_GK)
   Serial.print("sentTempStatus");
-  Serial.println(tsens_value);
+  Serial.println(tvalue);
 #endif
 
   mMessage.setType(V_TEMP);
   mMessage.setSensor(MS_TEMP_ID);
-  send(mMessage.set(tsens_value, 1));
+  send(mMessage.set(tvalue, 1));
 
   messageSent = true;
 }
@@ -1493,8 +1493,6 @@ void setup() {
 
   EEStorage.Inicjalize();
 
-  temperature_sensor_install(&temp_sensor_config, &temp_sensor);
-
   setLightOff();
 
   if (EEStorage.isAnyDeviceDefined()) {
@@ -1502,7 +1500,6 @@ void setup() {
   }
 
   deInitBle();
-
   defineTransition();
   setDefaultState();
 
@@ -1647,7 +1644,7 @@ void deInitBle() {
   esp_wifi_stop();
   esp_bluedroid_disable();
   esp_bluedroid_deinit();
-  esp_bt_controller_disable();
+ esp_bt_controller_disable();
   esp_bt_controller_deinit();
   esp_bt_controller_mem_release(ESP_BT_MODE_BLE);
 }

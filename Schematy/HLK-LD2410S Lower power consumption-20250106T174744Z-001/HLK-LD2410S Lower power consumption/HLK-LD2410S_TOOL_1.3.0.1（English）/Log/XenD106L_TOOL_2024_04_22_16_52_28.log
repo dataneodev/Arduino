@@ -1,0 +1,29 @@
+2024/04/22 16:52:30.106 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/04/22 16:52:30.106 [I]=> Prepare Open Serial: Com=\\.\COM18 BaudRate=115200
+2024/04/22 16:52:30.108 [I]=> OpenSerial: Com=\\.\COM18 BaudRate=115200, Success=1, mSerialFile=0x00000938
+2024/04/22 16:52:30.114 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:52:30.287 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:52:30.390 [I]=> ReadVersion Return: v0.0.3_32768.0
+2024/04/22 16:52:30.493 [I]=> ReadSerialNumber Return: 12345678
+2024/04/22 16:52:30.597 [I]=> RadarOperatorConfig_ReadDetectSetting, result: Success
+2024/04/22 16:52:30.706 [I]=> RadarOperatorConfig_ReadTriggerThreshold, result: Success
+2024/04/22 16:52:30.813 [I]=> RadarOperatorConfig_ReadHoldThreshold, result: Success
+2024/04/22 16:52:31.795 [I]=> Start Realtime data show.
+2024/04/22 16:52:31.795 [I]=> thread create success, thread handle=0x00000a30, id=26212, name=ReadData
+2024/04/22 16:52:31.795 [I]=> thread information, name=ReadData, tid=26212(0x00006664)
+2024/04/22 16:52:31.801 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:52:31.968 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:52:39.254 [I]=> Cancel Read Data
+2024/04/22 16:52:39.254 [I]=> prepare exit thread..., name=ReadData, tid=26212(0x00006664)
+2024/04/22 16:52:39.275 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:52:39.439 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:52:39.749 [I]=> thread exit, name=ReadData, tid=26212(0x00006664)
+2024/04/22 16:52:39.751 [I]=> thread exit over, name=ReadData, tid=26212(0x00006664)
+2024/04/22 16:52:39.756 [I]=> Stop Realtime data show.
+2024/04/22 16:52:39.756 [I]=> Cancel Read Data
+2024/04/22 16:52:39.761 [I]=> Stop Realtime data show.
+2024/04/22 16:52:39.762 [I]=> Cancel Read Data
+2024/04/22 16:52:39.762 [I]=> CloseSerial: mSerialFile=0x00000938
+2024/04/22 16:52:39.762 [I]=> Cancel Read Data
+2024/04/22 16:52:39.762 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/04/22 16:52:39.762 [I]=> CloseSerial: mSerialFile=0xffffffff

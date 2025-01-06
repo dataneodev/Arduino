@@ -1,0 +1,32 @@
+2024/04/02 09:05:48.484 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/04/02 09:05:48.484 [I]=> Prepare Open Serial: Com=\\.\COM4 BaudRate=115200
+2024/04/02 09:05:48.487 [I]=> OpenSerial: Com=\\.\COM4 BaudRate=115200, Success=1, mSerialFile=0x00000940
+2024/04/02 09:05:48.495 [W]=> CRadarProtocolDevice::OpenCmdMode: CMDID(0x00FF) failed with:A002
+2024/04/02 09:05:48.660 [I]=> protocol version = 2, send_recv buffer size = 32
+2024/04/02 09:05:48.668 [I]=> ReadVersion Return: v1.5.9_0.0
+2024/04/02 09:05:48.676 [I]=> ReadSerialNumber Return: FFFFFFFF
+2024/04/02 09:05:48.687 [W]=> CRadarProtocolDevice::GetParameter: CMDID(0x0071) failed with:A004
+2024/04/02 09:05:48.687 [I]=> RadarOperatorConfig_ReadDetectSetting, result: Failed.
+2024/04/02 09:05:49.846 [I]=> Start Realtime data show.
+2024/04/02 09:05:49.846 [I]=> thread create success, thread handle=0x00000a38, id=20188, name=ReadData
+2024/04/02 09:05:49.846 [I]=> thread information, name=ReadData, tid=20188(0x00004edc)
+2024/04/02 09:05:49.854 [I]=> protocol version = 2, send_recv buffer size = 32
+2024/04/02 09:05:50.020 [I]=> protocol version = 2, send_recv buffer size = 32
+2024/04/02 09:05:52.027 [W]=> CRadarProtocolDevice::SetParameter: CMDID(0x007A) failed with:A001
+2024/04/02 09:05:58.300 [I]=> Cancel Read Data
+2024/04/02 09:05:58.300 [I]=> prepare exit thread..., name=ReadData, tid=20188(0x00004edc)
+2024/04/02 09:05:58.339 [I]=> protocol version = 2, send_recv buffer size = 32
+2024/04/02 09:05:58.508 [I]=> protocol version = 2, send_recv buffer size = 32
+2024/04/02 09:06:00.514 [W]=> CRadarProtocolDevice::SetParameter: CMDID(0x007A) failed with:A001
+2024/04/02 09:06:00.635 [I]=> thread exit, name=ReadData, tid=20188(0x00004edc)
+2024/04/02 09:06:00.635 [I]=> thread exit over, name=ReadData, tid=20188(0x00004edc)
+2024/04/02 09:06:00.650 [I]=> Stop Realtime data show.
+2024/04/02 09:06:00.650 [I]=> Cancel Read Data
+2024/04/02 09:06:00.650 [I]=> CloseSerial: mSerialFile=0x00000940
+2024/04/02 09:55:53.437 [I]=> Cancel Read Data
+2024/04/02 09:55:53.443 [I]=> Stop Realtime data show.
+2024/04/02 09:55:53.443 [I]=> Cancel Read Data
+2024/04/02 09:55:53.449 [I]=> Stop Realtime data show.
+2024/04/02 09:55:53.451 [I]=> Cancel Read Data
+2024/04/02 09:55:53.451 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/04/02 09:55:53.451 [I]=> CloseSerial: mSerialFile=0xffffffff

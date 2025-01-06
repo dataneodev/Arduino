@@ -1,0 +1,41 @@
+2025/01/06 21:42:09.754 [I]=> CloseSerial: mSerialFile=0xffffffff
+2025/01/06 21:42:09.754 [I]=> Prepare Open Serial: Com=\\.\COM8 BaudRate=115200
+2025/01/06 21:42:09.754 [I]=> OpenSerial: Com=\\.\COM8 BaudRate=115200, Success=1, mSerialFile=0x000005c8
+2025/01/06 21:42:09.760 [I]=> protocol version = 3, send_recv buffer size = 128
+2025/01/06 21:42:09.923 [I]=> protocol version = 3, send_recv buffer size = 128
+2025/01/06 21:42:10.039 [I]=> ReadVersion Return: v1.1.1_32768.0
+2025/01/06 21:42:10.139 [I]=> ReadSerialNumber Return: 12345678
+2025/01/06 21:42:10.240 [I]=> RadarOperatorConfig_ReadDetectSetting, result: Success
+2025/01/06 21:42:10.355 [I]=> RadarOperatorConfig_ReadTriggerThreshold, result: Success
+2025/01/06 21:42:10.462 [I]=> RadarOperatorConfig_ReadHoldThreshold, result: Success
+2025/01/06 21:42:13.469 [W]=> CRadarProtocolDevice::OpenCmdMode: CMDID(0x00FF) failed with:A002
+2025/01/06 21:42:13.617 [I]=> protocol version = 3, send_recv buffer size = 128
+2025/01/06 21:42:13.632 [I]=> RadarOperatorConfig_ReadDetectSetting, result: Success
+2025/01/06 21:42:13.738 [I]=> RadarOperatorConfig_ReadTriggerThreshold, result: Success
+2025/01/06 21:42:13.848 [I]=> RadarOperatorConfig_ReadHoldThreshold, result: Success
+2025/01/06 21:42:36.077 [I]=> protocol version = 3, send_recv buffer size = 128
+2025/01/06 21:42:36.231 [I]=> protocol version = 3, send_recv buffer size = 128
+2025/01/06 21:42:36.378 [I]=> RadarOperatorConfig_WriteDetectSetting, result: Success
+2025/01/06 21:42:36.501 [I]=> RadarOperatorConfig_WriteTriggerThreshold, result: Success
+2025/01/06 21:42:36.632 [I]=> RadarOperatorConfig_WriteHoldThreshold, result: Success
+2025/01/06 21:42:40.926 [I]=> Start Realtime data show.
+2025/01/06 21:42:40.926 [I]=> thread create success, thread handle=0x00000620, id=10204, name=ReadData
+2025/01/06 21:42:40.926 [I]=> thread information, name=ReadData, tid=10204(0x000027dc)
+2025/01/06 21:42:40.926 [I]=> protocol version = 3, send_recv buffer size = 128
+2025/01/06 21:42:41.088 [I]=> protocol version = 3, send_recv buffer size = 128
+2025/01/06 21:44:27.223 [I]=> Cancel Read Data
+2025/01/06 21:44:27.223 [I]=> prepare exit thread..., name=ReadData, tid=10204(0x000027dc)
+2025/01/06 21:44:27.239 [I]=> protocol version = 3, send_recv buffer size = 128
+2025/01/06 21:44:27.408 [I]=> protocol version = 3, send_recv buffer size = 128
+2025/01/06 21:44:27.725 [I]=> thread exit, name=ReadData, tid=10204(0x000027dc)
+2025/01/06 21:44:27.725 [I]=> thread exit over, name=ReadData, tid=10204(0x000027dc)
+2025/01/06 21:44:27.740 [I]=> Stop Realtime data show.
+2025/01/06 21:44:28.318 [I]=> Cancel Read Data
+2025/01/06 21:44:28.334 [I]=> Stop Realtime data show.
+2025/01/06 21:44:28.334 [I]=> Cancel Read Data
+2025/01/06 21:44:28.349 [I]=> Stop Realtime data show.
+2025/01/06 21:44:28.349 [I]=> Cancel Read Data
+2025/01/06 21:44:28.349 [I]=> CloseSerial: mSerialFile=0x000005c8
+2025/01/06 21:44:28.349 [I]=> Cancel Read Data
+2025/01/06 21:44:28.349 [I]=> CloseSerial: mSerialFile=0xffffffff
+2025/01/06 21:44:28.349 [I]=> CloseSerial: mSerialFile=0xffffffff

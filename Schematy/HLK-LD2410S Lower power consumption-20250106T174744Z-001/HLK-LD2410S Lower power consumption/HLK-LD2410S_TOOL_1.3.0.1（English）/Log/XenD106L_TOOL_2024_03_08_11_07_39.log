@@ -1,0 +1,49 @@
+2024/03/08 11:07:42.741 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/03/08 11:07:42.741 [I]=> Prepare Open Serial: Com=\\.\COM18 BaudRate=115200
+2024/03/08 11:07:42.743 [I]=> OpenSerial: Com=\\.\COM18 BaudRate=115200, Success=1, mSerialFile=0x00000aac
+2024/03/08 11:07:42.750 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/03/08 11:07:42.915 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/03/08 11:07:42.930 [I]=> ReadVersion Return: v1.1.1_32768.0
+2024/03/08 11:07:43.034 [I]=> ReadSerialNumber Return: 12345678
+2024/03/08 11:07:43.138 [I]=> RadarOperatorConfig_ReadDetectSetting, result: Success
+2024/03/08 11:07:43.246 [I]=> RadarOperatorConfig_ReadTriggerThreshold, result: Success
+2024/03/08 11:07:43.354 [I]=> RadarOperatorConfig_ReadHoldThreshold, result: Success
+2024/03/08 11:07:51.755 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/03/08 11:07:51.923 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/03/08 11:07:52.055 [I]=> RadarOperatorConfig_WriteDetectSetting, result: Success
+2024/03/08 11:07:52.187 [I]=> RadarOperatorConfig_WriteTriggerThreshold, result: Success
+2024/03/08 11:07:52.320 [I]=> RadarOperatorConfig_WriteHoldThreshold, result: Success
+2024/03/08 11:07:58.331 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/03/08 11:07:58.501 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/03/08 11:07:58.634 [I]=> RadarOperatorConfig_WriteDetectSetting, result: Success
+2024/03/08 11:07:58.766 [I]=> RadarOperatorConfig_WriteTriggerThreshold, result: Success
+2024/03/08 11:07:58.898 [I]=> RadarOperatorConfig_WriteHoldThreshold, result: Success
+2024/03/08 11:08:00.847 [I]=> Start Realtime data show.
+2024/03/08 11:08:00.847 [I]=> thread create success, thread handle=0x00000ac8, id=22716, name=ReadData
+2024/03/08 11:08:00.847 [I]=> thread information, name=ReadData, tid=22716(0x000058bc)
+2024/03/08 11:08:00.853 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/03/08 11:08:01.027 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/03/08 11:08:26.025 [I]=> GetOverlappedResult(wait mode) Failed, dwBytesRead=0, last error = 5
+2024/03/08 11:08:26.027 [I]=> ReadData Failed, Serial Port(COM18) NOT found, CloseSerial: mSerialFile=0x00000aac
+2024/03/08 11:09:39.364 [I]=> Cancel Read Data
+2024/03/08 11:09:39.364 [I]=> prepare exit thread..., name=ReadData, tid=22716(0x000058bc)
+2024/03/08 11:09:39.474 [I]=> thread exit, name=ReadData, tid=22716(0x000058bc)
+2024/03/08 11:09:39.474 [I]=> thread exit over, name=ReadData, tid=22716(0x000058bc)
+2024/03/08 11:09:39.484 [I]=> Stop Realtime data show.
+2024/03/08 11:09:49.852 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/03/08 11:09:49.852 [I]=> Prepare Open Serial: Com=\\.\COM18 BaudRate=115200
+2024/03/08 11:09:49.854 [I]=> OpenSerial: Com=\\.\COM18 BaudRate=115200, Success=1, mSerialFile=0x00000ab4
+2024/03/08 11:09:49.865 [W]=> CRadarProtocolDevice::OpenCmdMode: CMDID(0x00FF) failed with:A002
+2024/03/08 11:09:50.017 [W]=> CRadarProtocolDevice::OpenCmdMode: CMDID(0x00FF) failed with:A002
+2024/03/08 11:09:50.020 [W]=> CRadarProtocolDevice::OpenCmdMode: CMDID(0x00FF) failed with:A002
+2024/03/08 11:09:50.163 [W]=> CRadarProtocolDevice::OpenCmdMode: CMDID(0x00FF) failed with:A002
+2024/03/08 11:09:50.166 [W]=> CRadarProtocolDevice::OpenCmdMode: CMDID(0x00FF) failed with:A002
+2024/03/08 11:09:50.166 [I]=> Cancel Read Data
+2024/03/08 11:09:50.166 [I]=> CloseSerial: mSerialFile=0x00000ab4
+2024/03/08 11:09:51.971 [I]=> Cancel Read Data
+2024/03/08 11:09:51.979 [I]=> Stop Realtime data show.
+2024/03/08 11:09:51.979 [I]=> Cancel Read Data
+2024/03/08 11:09:51.987 [I]=> Stop Realtime data show.
+2024/03/08 11:09:51.990 [I]=> Cancel Read Data
+2024/03/08 11:09:51.990 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/03/08 11:09:51.990 [I]=> CloseSerial: mSerialFile=0xffffffff

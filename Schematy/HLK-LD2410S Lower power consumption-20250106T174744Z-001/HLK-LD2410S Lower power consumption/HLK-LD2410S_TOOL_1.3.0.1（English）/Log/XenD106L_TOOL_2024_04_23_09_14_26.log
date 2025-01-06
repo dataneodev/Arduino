@@ -1,0 +1,55 @@
+2024/04/23 09:14:28.633 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/04/23 09:14:28.633 [I]=> Prepare Open Serial: Com=\\.\COM18 BaudRate=115200
+2024/04/23 09:14:28.636 [I]=> OpenSerial: Com=\\.\COM18 BaudRate=115200, Success=1, mSerialFile=0x0000093c
+2024/04/23 09:14:28.643 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/23 09:14:28.811 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/23 09:14:28.827 [I]=> ReadVersion Return: v1.1.1_32768.0
+2024/04/23 09:14:28.930 [I]=> ReadSerialNumber Return: 12345678
+2024/04/23 09:14:29.036 [I]=> RadarOperatorConfig_ReadDetectSetting, result: Success
+2024/04/23 09:14:29.144 [I]=> RadarOperatorConfig_ReadTriggerThreshold, result: Success
+2024/04/23 09:14:29.252 [I]=> RadarOperatorConfig_ReadHoldThreshold, result: Success
+2024/04/23 09:14:30.684 [I]=> Start Realtime data show.
+2024/04/23 09:14:30.684 [I]=> thread create success, thread handle=0x00000a30, id=11196, name=ReadData
+2024/04/23 09:14:30.684 [I]=> thread information, name=ReadData, tid=11196(0x00002bbc)
+2024/04/23 09:14:30.690 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/23 09:14:30.854 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/23 09:14:33.282 [I]=> Cancel Read Data
+2024/04/23 09:14:33.282 [I]=> prepare exit thread..., name=ReadData, tid=11196(0x00002bbc)
+2024/04/23 09:14:33.293 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/23 09:14:33.475 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/23 09:14:33.789 [I]=> thread exit, name=ReadData, tid=11196(0x00002bbc)
+2024/04/23 09:14:33.790 [I]=> thread exit over, name=ReadData, tid=11196(0x00002bbc)
+2024/04/23 09:14:33.805 [I]=> Stop Realtime data show.
+2024/04/23 09:14:49.068 [I]=> Start Realtime data show.
+2024/04/23 09:14:49.068 [I]=> thread create success, thread handle=0x00000a84, id=19308, name=ReadData
+2024/04/23 09:14:49.068 [I]=> thread information, name=ReadData, tid=19308(0x00004b6c)
+2024/04/23 09:14:49.073 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/23 09:14:49.240 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/23 09:14:52.873 [I]=> Cancel Read Data
+2024/04/23 09:14:52.873 [I]=> prepare exit thread..., name=ReadData, tid=19308(0x00004b6c)
+2024/04/23 09:14:52.880 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/23 09:14:53.046 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/23 09:14:53.361 [I]=> thread exit, name=ReadData, tid=19308(0x00004b6c)
+2024/04/23 09:14:53.363 [I]=> thread exit over, name=ReadData, tid=19308(0x00004b6c)
+2024/04/23 09:14:53.373 [I]=> Stop Realtime data show.
+2024/04/23 09:18:51.578 [I]=> Start Realtime data show.
+2024/04/23 09:18:51.578 [I]=> thread create success, thread handle=0x00000a7c, id=27876, name=ReadData
+2024/04/23 09:18:51.578 [I]=> thread information, name=ReadData, tid=27876(0x00006ce4)
+2024/04/23 09:18:51.584 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/23 09:18:51.753 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/23 09:18:54.579 [I]=> Cancel Read Data
+2024/04/23 09:18:54.579 [I]=> prepare exit thread..., name=ReadData, tid=27876(0x00006ce4)
+2024/04/23 09:18:54.600 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/23 09:18:54.764 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/23 09:18:55.081 [I]=> thread exit, name=ReadData, tid=27876(0x00006ce4)
+2024/04/23 09:18:55.083 [I]=> thread exit over, name=ReadData, tid=27876(0x00006ce4)
+2024/04/23 09:18:55.097 [I]=> Stop Realtime data show.
+2024/04/23 09:58:13.205 [I]=> Cancel Read Data
+2024/04/23 09:58:13.211 [I]=> Stop Realtime data show.
+2024/04/23 09:58:13.211 [I]=> Cancel Read Data
+2024/04/23 09:58:13.219 [I]=> Stop Realtime data show.
+2024/04/23 09:58:13.225 [I]=> Cancel Read Data
+2024/04/23 09:58:13.225 [I]=> CloseSerial: mSerialFile=0x0000093c
+2024/04/23 09:58:13.226 [I]=> Cancel Read Data
+2024/04/23 09:58:13.226 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/04/23 09:58:13.226 [I]=> CloseSerial: mSerialFile=0xffffffff

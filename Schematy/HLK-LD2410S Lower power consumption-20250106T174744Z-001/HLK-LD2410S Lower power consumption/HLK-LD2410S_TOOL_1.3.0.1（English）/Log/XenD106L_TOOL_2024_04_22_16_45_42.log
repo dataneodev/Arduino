@@ -1,0 +1,107 @@
+2024/04/22 16:45:45.362 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/04/22 16:45:45.362 [I]=> Prepare Open Serial: Com=\\.\COM18 BaudRate=115200
+2024/04/22 16:45:45.368 [I]=> OpenSerial: Com=\\.\COM18 BaudRate=115200, Success=1, mSerialFile=0x00000950
+2024/04/22 16:45:45.374 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:45:45.533 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:45:45.548 [I]=> ReadVersion Return: v0.0.3_32768.0
+2024/04/22 16:45:45.651 [I]=> ReadSerialNumber Return: 12345678
+2024/04/22 16:45:45.756 [I]=> RadarOperatorConfig_ReadDetectSetting, result: Success
+2024/04/22 16:45:45.863 [I]=> RadarOperatorConfig_ReadTriggerThreshold, result: Success
+2024/04/22 16:45:45.971 [I]=> RadarOperatorConfig_ReadHoldThreshold, result: Success
+2024/04/22 16:45:46.948 [I]=> Start Realtime data show.
+2024/04/22 16:45:46.948 [I]=> thread create success, thread handle=0x00000a34, id=23392, name=ReadData
+2024/04/22 16:45:46.948 [I]=> thread information, name=ReadData, tid=23392(0x00005b60)
+2024/04/22 16:45:46.954 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:45:47.126 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:45:58.451 [I]=> Cancel Read Data
+2024/04/22 16:45:58.451 [I]=> prepare exit thread..., name=ReadData, tid=23392(0x00005b60)
+2024/04/22 16:45:58.465 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:45:58.645 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:45:58.960 [I]=> thread exit, name=ReadData, tid=23392(0x00005b60)
+2024/04/22 16:45:58.961 [I]=> thread exit over, name=ReadData, tid=23392(0x00005b60)
+2024/04/22 16:45:58.977 [I]=> Stop Realtime data show.
+2024/04/22 16:46:00.849 [I]=> Cancel Read Data
+2024/04/22 16:46:00.854 [I]=> Stop Realtime data show.
+2024/04/22 16:46:00.854 [I]=> Cancel Read Data
+2024/04/22 16:46:00.854 [I]=> CloseSerial: mSerialFile=0x00000950
+2024/04/22 16:46:12.921 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/04/22 16:46:12.921 [I]=> Prepare Open Serial: Com=\\.\COM18 BaudRate=115200
+2024/04/22 16:46:12.923 [I]=> OpenSerial: Com=\\.\COM18 BaudRate=115200, Success=1, mSerialFile=0x0000082c
+2024/04/22 16:46:12.929 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:46:13.089 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:46:13.104 [I]=> ReadVersion Return: v0.0.3_32768.0
+2024/04/22 16:46:13.207 [I]=> ReadSerialNumber Return: 12345678
+2024/04/22 16:46:13.312 [I]=> RadarOperatorConfig_ReadDetectSetting, result: Success
+2024/04/22 16:46:13.419 [I]=> RadarOperatorConfig_ReadTriggerThreshold, result: Success
+2024/04/22 16:46:13.527 [I]=> RadarOperatorConfig_ReadHoldThreshold, result: Success
+2024/04/22 16:46:14.770 [I]=> Start Realtime data show.
+2024/04/22 16:46:14.771 [I]=> thread create success, thread handle=0x00000b04, id=26536, name=ReadData
+2024/04/22 16:46:14.771 [I]=> thread information, name=ReadData, tid=26536(0x000067a8)
+2024/04/22 16:46:14.777 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:46:14.949 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:46:21.482 [I]=> Cancel Read Data
+2024/04/22 16:46:21.482 [I]=> prepare exit thread..., name=ReadData, tid=26536(0x000067a8)
+2024/04/22 16:46:21.493 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:46:21.658 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:46:21.973 [I]=> thread exit, name=ReadData, tid=26536(0x000067a8)
+2024/04/22 16:46:21.975 [I]=> thread exit over, name=ReadData, tid=26536(0x000067a8)
+2024/04/22 16:46:21.987 [I]=> Stop Realtime data show.
+2024/04/22 16:46:21.987 [I]=> Cancel Read Data
+2024/04/22 16:46:21.987 [I]=> CloseSerial: mSerialFile=0x0000082c
+2024/04/22 16:48:40.065 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/04/22 16:48:40.065 [I]=> Prepare Open Serial: Com=\\.\COM18 BaudRate=115200
+2024/04/22 16:48:40.066 [I]=> OpenSerial: Com=\\.\COM18 BaudRate=115200, Success=1, mSerialFile=0x00000ad0
+2024/04/22 16:48:40.073 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:48:40.247 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:48:40.261 [I]=> ReadVersion Return: v0.0.3_32768.0
+2024/04/22 16:48:40.364 [I]=> ReadSerialNumber Return: 12345678
+2024/04/22 16:48:40.468 [I]=> RadarOperatorConfig_ReadDetectSetting, result: Success
+2024/04/22 16:48:40.576 [I]=> RadarOperatorConfig_ReadTriggerThreshold, result: Success
+2024/04/22 16:48:40.684 [I]=> RadarOperatorConfig_ReadHoldThreshold, result: Success
+2024/04/22 16:48:43.394 [I]=> Start Realtime data show.
+2024/04/22 16:48:43.394 [I]=> thread create success, thread handle=0x00000ac4, id=29516, name=ReadData
+2024/04/22 16:48:43.394 [I]=> thread information, name=ReadData, tid=29516(0x0000734c)
+2024/04/22 16:48:43.400 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:48:43.559 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:48:50.242 [I]=> Cancel Read Data
+2024/04/22 16:48:50.242 [I]=> prepare exit thread..., name=ReadData, tid=29516(0x0000734c)
+2024/04/22 16:48:50.249 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:48:50.429 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:48:50.746 [I]=> thread exit, name=ReadData, tid=29516(0x0000734c)
+2024/04/22 16:48:50.749 [I]=> thread exit over, name=ReadData, tid=29516(0x0000734c)
+2024/04/22 16:48:50.762 [I]=> Stop Realtime data show.
+2024/04/22 16:48:50.762 [I]=> Cancel Read Data
+2024/04/22 16:48:50.762 [I]=> CloseSerial: mSerialFile=0x00000ad0
+2024/04/22 16:49:05.034 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/04/22 16:49:05.034 [I]=> Prepare Open Serial: Com=\\.\COM18 BaudRate=115200
+2024/04/22 16:49:05.035 [I]=> OpenSerial: Com=\\.\COM18 BaudRate=115200, Success=1, mSerialFile=0x00000b28
+2024/04/22 16:49:07.038 [W]=> CRadarProtocolDevice::OpenCmdMode: CMDID(0x00FF) failed with:A001
+2024/04/22 16:49:07.201 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:49:09.216 [W]=> CRadarProtocolDevice::ReadVersion: CMDID(0x0000) failed with:A001
+2024/04/22 16:49:09.216 [I]=> Cancel Read Data
+2024/04/22 16:49:09.216 [I]=> CloseSerial: mSerialFile=0x00000b28
+2024/04/22 16:49:25.658 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/04/22 16:49:25.658 [I]=> Prepare Open Serial: Com=\\.\COM18 BaudRate=115200
+2024/04/22 16:49:25.659 [I]=> OpenSerial: Com=\\.\COM18 BaudRate=115200, Success=1, mSerialFile=0x00000ad4
+2024/04/22 16:49:25.665 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:49:25.826 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:49:25.841 [I]=> ReadVersion Return: v0.0.3_32768.0
+2024/04/22 16:49:25.945 [I]=> ReadSerialNumber Return: 12345678
+2024/04/22 16:49:26.049 [I]=> RadarOperatorConfig_ReadDetectSetting, result: Success
+2024/04/22 16:49:26.157 [I]=> RadarOperatorConfig_ReadTriggerThreshold, result: Success
+2024/04/22 16:49:26.264 [I]=> RadarOperatorConfig_ReadHoldThreshold, result: Success
+2024/04/22 16:49:27.561 [I]=> Cancel Read Data
+2024/04/22 16:49:27.570 [I]=> Stop Realtime data show.
+2024/04/22 16:49:28.276 [I]=> Start Realtime data show.
+2024/04/22 16:49:28.276 [I]=> thread create success, thread handle=0x00000a30, id=3232, name=ReadData
+2024/04/22 16:49:28.276 [I]=> thread information, name=ReadData, tid=3232(0x00000ca0)
+2024/04/22 16:49:28.282 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:49:28.457 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:49:32.827 [I]=> Cancel Read Data
+2024/04/22 16:49:32.827 [I]=> prepare exit thread..., name=ReadData, tid=3232(0x00000ca0)
+2024/04/22 16:49:32.842 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:49:33.023 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/22 16:49:33.342 [I]=> thread exit, name=ReadData, tid=3232(0x00000ca0)
+2024/04/22 16:49:33.345 [I]=> thread exit over, name=ReadData, tid=3232(0x00000ca0)
+2024/04/22 16:49:33.358 [I]=> Stop Realtime data show.
+2024/04/2
