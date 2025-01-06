@@ -1,21 +1,38 @@
 // Board: https://github.com/MCUdude/MicroCore
 // ATtiny13
 // Lib: https://github.com/MCUdude/MicroCore/tree/master/avr/libraries/ADCTouch
+// Clock (Internal) 128 kHz
 
-#include <ADCTouch.h>
+#include "ADCTouch.h"
 #include <EEPROM.h>
 
 // Touch threshold for turning on or off the LEDs
 // Lower is more sensitive
+//60 at 1.2MHz
+//25 at 128kHz
 const uint8_t threshold = 100;
 
-// Sample each touch pin 512 times
-const uint16_t ADCTouch::samples = 512;
+// Sample each touch pin 128 times
+const uint16_t ADCTouch::samples = 128;
 
-#define SENSOR_PIN A3
-#define OUT_PIN PB4
+#define SENSOR_PIN A2
+#define OUT_PIN PB0
 #define RECALIBRATE 3600000  //1h
-#define DEBUG
+
+//ustawić odpowiednio clock i bound rate dla Serial
+/*
+(External) 20 MHz 	115200
+(External) 16 MHz 	115200
+(External) 12 MHz 	115200
+(External) 8 MHz 	115200
+(External) 1 MHz 	19200
+(Internal) 9.6 MHz 	115200
+(Internal) 4.8 MHz 	57600
+(Internal) 1.2 MHz 	19200
+(Internal) 600 kHz 	9600
+(Internal) 128 kHz 	Not supported
+*/
+//#define DEBUG
 
 uint16_t reference;
 uint32_t lastTouch;
@@ -60,7 +77,8 @@ void checkReference(uint32_t now, bool isTouch) {
 
 bool getTouchResult() {
   int16_t value = Touch.read(SENSOR_PIN);
-  bool isTouch = value > reference ? false :  (reference - value) > threshold;
+  int16_t r = value > reference ? (value - reference) : (reference - value);
+  bool isTouch = r > threshold;
 
 #ifdef DEBUG
   Serial.print("T: ");
@@ -81,6 +99,10 @@ bool getTouchResult() {
 
   delay(1000);
 #endif
+
+  if (r < 4) {
+    reference = reference + r * (value > reference ? 1 : -1)/2;
+  }
 
   return isTouch;
 }

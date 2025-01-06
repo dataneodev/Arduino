@@ -1,0 +1,12 @@
+2024/02/18 15:17:31.086 [I]=> Cancel Read Data
+2024/02/18 15:17:31.094 [I]=> Stop Realtime data show.
+2024/02/18 15:17:37.080 [I]=> thread create success, thread handle=0x0000083c, id=17392, name=SensingGenerate
+2024/02/18 15:17:37.080 [I]=> thread information, name=SensingGenerate, tid=17392(0x000043f0)
+2024/02/18 15:17:37.190 [I]=> thread exit, name=SensingGenerate, tid=17392(0x000043f0)
+2024/02/18 15:17:37.192 [I]=> prepare exit thread..., name=SensingGenerate, tid=17392(0x000043f0)
+2024/02/18 15:17:37.192 [I]=> thread exit over, name=SensingGenerate, tid=17392(0x000043f0)
+2024/02/18 15:17:45.928 [I]=> Cancel Read Data
+2024/02/18 15:17:45.933 [I]=> Stop Realtime data show.
+2024/02/18 15:17:45.935 [I]=> Cancel Read Data
+2024/02/18 15:17:45.935 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/02/18 15:17:45.935 [I]=> CloseSerial: mSerialFile=0xffffffff

@@ -1,0 +1,15 @@
+2024/03/04 17:48:00.261 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/03/04 17:48:00.261 [I]=> Prepare Open Serial: Com=\\.\COM6 BaudRate=115200
+2024/03/04 17:48:00.296 [I]=> OpenSerial: Com=\\.\COM6 BaudRate=115200, Success=1, mSerialFile=0x00000950
+2024/03/04 17:48:00.298 [W]=> CRadarProtocolDevice::OpenCmdMode: CMDID(0x00FF) failed with:A002
+2024/03/04 17:48:02.468 [W]=> CRadarProtocolDevice::OpenCmdMode: CMDID(0x00FF) failed with:A001
+2024/03/04 17:48:04.472 [W]=> CRadarProtocolDevice::OpenCmdMode: CMDID(0x00FF) failed with:A001
+2024/03/04 17:48:04.478 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/03/04 17:48:06.481 [W]=> CRadarProtocolDevice::ReadVersion: CMDID(0x0000) failed with:A001
+2024/03/04 17:48:06.481 [I]=> Cancel Read Data
+2024/03/04 17:48:06.481 [I]=> CloseSerial: mSerialFile=0x00000950
+2024/03/04 17:48:08.442 [I]=> Cancel Read Data
+2024/03/04 17:48:08.450 [I]=> Stop Realtime data show.
+2024/03/04 17:48:08.458 [I]=> Cancel Read Data
+2024/03/04 17:48:08.458 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/03/04 17:48:08.458 [I]=> CloseSerial: mSerialFile=0xffffffff

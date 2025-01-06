@@ -1,0 +1,34 @@
+2024/04/26 09:56:59.159 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/04/26 09:56:59.159 [I]=> Prepare Open Serial: Com=\\.\COM8 BaudRate=115200
+2024/04/26 09:56:59.161 [I]=> OpenSerial: Com=\\.\COM8 BaudRate=115200, Success=1, mSerialFile=0x00000a28
+2024/04/26 09:56:59.168 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/26 09:56:59.351 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/26 09:56:59.454 [I]=> ReadVersion Return: v1.1.1_32768.0
+2024/04/26 09:56:59.557 [I]=> ReadSerialNumber Return: 12345678
+2024/04/26 09:56:59.661 [I]=> RadarOperatorConfig_ReadDetectSetting, result: Success
+2024/04/26 09:56:59.770 [I]=> RadarOperatorConfig_ReadTriggerThreshold, result: Success
+2024/04/26 09:56:59.879 [I]=> RadarOperatorConfig_ReadHoldThreshold, result: Success
+2024/04/26 09:57:22.733 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/26 09:57:22.906 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/26 09:57:23.038 [I]=> RadarOperatorConfig_WriteDetectSetting, result: Success
+2024/04/26 09:57:23.170 [I]=> RadarOperatorConfig_WriteTriggerThreshold, result: Success
+2024/04/26 09:57:23.304 [I]=> RadarOperatorConfig_WriteHoldThreshold, result: Success
+2024/04/26 09:57:29.265 [I]=> Start Realtime data show.
+2024/04/26 09:57:29.265 [I]=> thread create success, thread handle=0x00000a48, id=15956, name=ReadData
+2024/04/26 09:57:29.265 [I]=> thread information, name=ReadData, tid=15956(0x00003e54)
+2024/04/26 09:57:29.271 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/26 09:57:29.437 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/26 09:57:31.207 [I]=> Cancel Read Data
+2024/04/26 09:57:31.207 [I]=> prepare exit thread..., name=ReadData, tid=15956(0x00003e54)
+2024/04/26 09:57:31.224 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/26 09:57:31.389 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/26 09:57:31.706 [I]=> thread exit, name=ReadData, tid=15956(0x00003e54)
+2024/04/26 09:57:31.707 [I]=> thread exit over, name=ReadData, tid=15956(0x00003e54)
+2024/04/26 09:57:31.716 [I]=> Stop Realtime data show.
+2024/04/26 10:17:05.859 [I]=> Cancel Read Data
+2024/04/26 10:17:05.864 [I]=> Stop Realtime data show.
+2024/04/26 10:17:05.866 [I]=> Cancel Read Data
+2024/04/26 10:17:05.866 [I]=> CloseSerial: mSerialFile=0x00000a28
+2024/04/26 10:17:05.866 [I]=> Cancel Read Data
+2024/04/26 10:17:05.866 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/04/26 10:17:05.866 [I]=> CloseSerial: mSerialFile=0xffffffff

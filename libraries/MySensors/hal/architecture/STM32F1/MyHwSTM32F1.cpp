@@ -51,17 +51,17 @@ bool hwInit(void)
 	while (!MY_SERIALDEVICE) {}
 #endif
 #endif
-/*	if (EEPROM.init() == EEPROM_OK) {
-		uint16 cnt;
-		EEPROM.count(&cnt);
-		if(cnt>=EEPROM.maxcount()) {
-			// tmp, WIP: format eeprom if full
-			EEPROM.format();
-		}
-		return true;
-	}
-	return false;
-	*/
+	// if (EEPROM.init() == EEPROM_OK) {
+		// uint16 cnt;
+		// EEPROM.count(&cnt);
+		// if(cnt>=EEPROM.maxcount()) {
+			 // tmp, WIP: format eeprom if full
+			// EEPROM.format();
+		// }
+		// return true;
+	// }
+	// return false;
+	
 	
 	return true;
 }
@@ -88,7 +88,7 @@ void hwWriteConfigBlock(void *buf, void *addr, size_t length)
 
 uint8_t hwReadConfig(const int addr)
 {
-	return MY_SLEEP_NOT_POSSIBLE;
+	return 0;
 	
 	uint8_t value;
 	hwReadConfigBlock(&value, reinterpret_cast<void *>(addr), 1);
@@ -97,6 +97,7 @@ uint8_t hwReadConfig(const int addr)
 
 void hwWriteConfig(const int addr, uint8_t value)
 {
+	return;
 	hwWriteConfigBlock(&value, reinterpret_cast<void *>(addr), 1);
 }
 

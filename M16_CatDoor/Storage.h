@@ -149,7 +149,12 @@ public:
     writeBleEnabled(availableId, true);
   }
 
-  void deleteBleDevice(uint8_t id) {
+  void deleteBleDevice(BLEAddress* address) {
+    uint8_t id = getBleDeviceId(address) ; 
+    if(id == 0){
+      return;
+    }
+
     for (int i = 0; i < _deviceCount; i++) {
       if (_devices[i].getId() != id) {
         continue;
@@ -250,6 +255,7 @@ private:
       EEPROM24C32->writeByte(116, FALSE_VALUE, false, false);  // auth
       EEPROM24C32->writeByte(117, TRUE_VALUE, false, false);   // light
       EEPROM24C32->writeByte(118, 60, false, false);           // min RSSI
+      EEPROM24C32->writeUInt32(122, 0, false, false);  // open door count
 
       writeDefaultBle();  //ble
     }

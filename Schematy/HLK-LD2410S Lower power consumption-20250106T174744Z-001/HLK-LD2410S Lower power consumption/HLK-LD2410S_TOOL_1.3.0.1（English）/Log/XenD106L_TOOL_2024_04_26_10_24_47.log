@@ -1,0 +1,76 @@
+2024/04/26 10:24:59.573 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/04/26 10:24:59.573 [I]=> Prepare Open Serial: Com=\\.\COM8 BaudRate=115200
+2024/04/26 10:24:59.575 [I]=> OpenSerial: Com=\\.\COM8 BaudRate=115200, Success=1, mSerialFile=0x00000a40
+2024/04/26 10:24:59.581 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/26 10:24:59.742 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/26 10:24:59.757 [I]=> ReadVersion Return: v1.1.1_32768.0
+2024/04/26 10:24:59.861 [I]=> ReadSerialNumber Return: 12345678
+2024/04/26 10:24:59.966 [I]=> RadarOperatorConfig_ReadDetectSetting, result: Success
+2024/04/26 10:25:00.074 [I]=> RadarOperatorConfig_ReadTriggerThreshold, result: Success
+2024/04/26 10:25:00.183 [I]=> RadarOperatorConfig_ReadHoldThreshold, result: Success
+2024/04/26 10:25:18.011 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/26 10:25:18.193 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/26 10:25:18.326 [I]=> RadarOperatorConfig_WriteDetectSetting, result: Success
+2024/04/26 10:25:18.458 [I]=> RadarOperatorConfig_WriteTriggerThreshold, result: Success
+2024/04/26 10:25:18.591 [I]=> RadarOperatorConfig_WriteHoldThreshold, result: Success
+2024/04/26 10:25:22.379 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/26 10:25:22.545 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/26 10:25:22.649 [I]=> RadarOperatorConfig_ReadDetectSetting, result: Success
+2024/04/26 10:25:22.758 [I]=> RadarOperatorConfig_ReadTriggerThreshold, result: Success
+2024/04/26 10:25:22.866 [I]=> RadarOperatorConfig_ReadHoldThreshold, result: Success
+2024/04/26 10:25:32.107 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/26 10:25:32.289 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/26 10:25:32.422 [I]=> RadarOperatorConfig_WriteDetectSetting, result: Success
+2024/04/26 10:25:32.555 [I]=> RadarOperatorConfig_WriteTriggerThreshold, result: Success
+2024/04/26 10:25:32.687 [I]=> RadarOperatorConfig_WriteHoldThreshold, result: Success
+2024/04/26 10:28:18.816 [I]=> thread create success, thread handle=0x00000a74, id=2380, name=SensingGenerate
+2024/04/26 10:28:18.816 [I]=> thread information, name=SensingGenerate, tid=2380(0x0000094c)
+2024/04/26 10:28:18.822 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/26 10:28:18.988 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/26 10:28:19.333 [I]=> process=0
+2024/04/26 10:28:19.581 [I]=> process=0
+2024/04/26 10:28:19.847 [I]=> process=0
+2024/04/26 10:28:20.112 [I]=> process=0
+2024/04/26 10:28:20.364 [I]=> process=1
+2024/04/26 10:28:20.629 [I]=> process=1
+2024/04/26 10:28:20.879 [I]=> process=1
+2024/04/26 10:28:21.146 [I]=> process=1
+2024/04/26 10:28:21.410 [I]=> process=1
+2024/04/26 10:28:21.658 [I]=> process=2
+2024/04/26 10:28:21.925 [I]=> process=2
+2024/04/26 10:28:22.178 [I]=> process=2
+2024/04/26 10:28:22.446 [I]=> process=2
+2024/04/26 10:28:22.712 [I]=> process=2
+2024/04/26 10:28:22.963 [I]=> process=3
+2024/04/26 10:28:23.230 [I]=> process=3
+2024/04/26 10:28:23.495 [I]=> process=3
+2024/04/26 10:28:23.745 [I]=> process=3
+2024/04/26 10:28:24.010 [I]=> process=3
+2024/04/26 10:28:24.273 [I]=> process=4
+2024/04/26 10:28:24.539 [I]=> process=4
+2024/04/26 10:28:24.792 [I]=> process=4
+2024/04/26 10:28:25.058 [I]=> process=4
+2024/04/26 10:28:25.326 [I]=> process=5
+2024/04/26 10:28:25.590 [I]=> process=5
+2024/04/26 10:28:25.841 [I]=> process=5
+2024/04/26 10:28:26.109 [I]=> process=5
+2024/04/26 10:28:26.361 [I]=> process=5
+2024/04/26 10:28:26.624 [I]=> process=6
+2024/04/26 10:28:26.804 [I]=> prepare exit thread..., name=SensingGenerate, tid=2380(0x0000094c)
+2024/04/26 10:28:26.890 [I]=> thread exit, name=SensingGenerate, tid=2380(0x0000094c)
+2024/04/26 10:28:26.891 [I]=> thread exit over, name=SensingGenerate, tid=2380(0x0000094c)
+2024/04/26 10:28:27.182 [I]=> thread create success, thread handle=0x0000060c, id=18612, name=SensingGenerate
+2024/04/26 10:28:27.182 [I]=> thread information, name=SensingGenerate, tid=18612(0x000048b4)
+2024/04/26 10:28:27.188 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/26 10:28:27.361 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/04/26 10:28:27.704 [I]=> process=0
+2024/04/26 10:28:27.917 [I]=> prepare exit thread..., name=SensingGenerate, tid=18612(0x000048b4)
+2024/04/26 10:28:27.969 [I]=> thread exit, name=SensingGenerate, tid=18612(0x000048b4)
+2024/04/26 10:28:27.970 [I]=> thread exit over, name=SensingGenerate, tid=18612(0x000048b4)
+2024/04/26 10:28:50.190 [I]=> Cancel Read Data
+2024/04/26 10:28:50.195 [I]=> Stop Realtime data show.
+2024/04/26 10:28:50.198 [I]=> Cancel Read Data
+2024/04/26 10:28:50.198 [I]=> CloseSerial: mSerialFile=0x00000a40
+2024/04/26 10:28:50.198 [I]=> Cancel Read Data
+2024/04/26 10:28:50.198 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/04/26 10:28:50.198 [I]=> CloseSerial: mSerialFile=0xffffffff

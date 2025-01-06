@@ -1,0 +1,35 @@
+2024/02/27 09:26:45.540 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/02/27 09:26:45.540 [I]=> Prepare Open Serial: Com=\\.\COM3 BaudRate=115200
+2024/02/27 09:26:45.541 [I]=> OpenSerial: Com=\\.\COM3 BaudRate=115200, Success=1, mSerialFile=0x00000958
+2024/02/27 09:26:45.547 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/02/27 09:26:45.721 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/02/27 09:26:45.824 [I]=> ReadVersion Return: v0.0.3_32768.0
+2024/02/27 09:26:45.928 [I]=> ReadSerialNumber Return: 12345678
+2024/02/27 09:26:46.032 [I]=> RadarOperatorConfig_ReadDetectSetting, result: Success
+2024/02/27 09:26:46.140 [I]=> RadarOperatorConfig_ReadTriggerThreshold, result: Success
+2024/02/27 09:26:46.249 [I]=> RadarOperatorConfig_ReadHoldThreshold, result: Success
+2024/02/27 09:26:51.620 [I]=> Cancel Read Data
+2024/02/27 09:26:51.629 [I]=> Stop Realtime data show.
+2024/02/27 09:26:51.629 [I]=> Cancel Read Data
+2024/02/27 09:26:51.629 [I]=> CloseSerial: mSerialFile=0x00000958
+2024/02/27 09:26:52.572 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/02/27 09:26:52.572 [I]=> Prepare Open Serial: Com=\\.\COM3 BaudRate=115200
+2024/02/27 09:26:52.573 [I]=> OpenSerial: Com=\\.\COM3 BaudRate=115200, Success=1, mSerialFile=0x00000960
+2024/02/27 09:26:52.579 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/02/27 09:26:52.752 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/02/27 09:26:52.855 [I]=> ReadVersion Return: v0.0.3_32768.0
+2024/02/27 09:26:52.959 [I]=> ReadSerialNumber Return: 12345678
+2024/02/27 09:26:53.064 [I]=> RadarOperatorConfig_ReadDetectSetting, result: Success
+2024/02/27 09:26:53.171 [I]=> RadarOperatorConfig_ReadTriggerThreshold, result: Success
+2024/02/27 09:26:53.279 [I]=> RadarOperatorConfig_ReadHoldThreshold, result: Success
+2024/02/27 09:26:54.990 [I]=> Cancel Read Data
+2024/02/27 09:26:54.998 [I]=> Stop Realtime data show.
+2024/02/27 09:26:54.998 [I]=> Cancel Read Data
+2024/02/27 09:26:54.998 [I]=> CloseSerial: mSerialFile=0x00000960
+2024/02/27 09:26:56.598 [I]=> Cancel Read Data
+2024/02/27 09:26:56.608 [I]=> Stop Realtime data show.
+2024/02/27 09:26:56.608 [I]=> Cancel Read Data
+2024/02/27 09:26:56.616 [I]=> Stop Realtime data show.
+2024/02/27 09:26:56.618 [I]=> Cancel Read Data
+2024/02/27 09:26:56.618 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/02/27 09:26:56.618 [I]=> CloseSerial: mSerialFile=0xffffffff

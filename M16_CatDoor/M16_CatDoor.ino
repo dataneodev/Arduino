@@ -5,6 +5,8 @@
 
 #include "esp_random.h"  //brakuje w plikach mysensors dla esp32, sprawdzic i usunąć w nowych wersjach
 /*
+Działa z wersja 3.0.1
+Uwaga aby nie zainstalować Arduino ESP32 Boards - trzeba po odinstalowaniu przeinstalować esp32
 Dodać link w ustawieniach additional boards manager urls: https://espressif.github.io/arduino-esp32/package_esp32_dev_index.json
 Płytka: ESP32C6 Dev Module
 
@@ -98,8 +100,11 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #define MS_MIN_RSSI_ID 26
 #define MS_OPEN_LOCK_ID 27
 
+#define MS_DOOR_ADD_ID 40
+#define MS_DOOR_REMOVE_ID 41
+
 #define MS_SEND_TIMEOUT 10 * 1000
-#define WAIT_TIME_FOR_MS_MESSAGE_BEFORE_SLEEP 10
+#define WAIT_TIME_FOR_MS_MESSAGE_BEFORE_SLEEP 40
 #pragma endregion MY_SENSORS_CONFIGURATION
 
 #pragma region TYPES
@@ -177,101 +182,101 @@ enum MotionDetectState {
 
 
 // klasa wykrywa ruch na podstawie przejscia 0/1
-class MotionDetect {
-private:
-  unsigned long _startAt;
-  unsigned long _lastMotionAt;
+// class MotionDetect {
+// private:
+//   unsigned long _startAt;
+//   unsigned long _lastMotionAt;
 
-  byte _pin;
-  unsigned long _motionDelay;
-  unsigned long _motionDelayTotal;
+//   byte _pin;
+//   unsigned long _motionDelay;
+//   unsigned long _motionDelayTotal;
 
-  bool _lastState;
-  bool _secondMotionDetected;
+//   bool _lastState;
+//   bool _secondMotionDetected;
 
-public:
-  MotionDetect(byte pin, unsigned long motionDelay, unsigned long motionDelayWait) {
-    _pin = pin;
-    _motionDelay = motionDelay;
-    _motionDelayTotal = motionDelay + motionDelayWait;
-  }
+// public:
+//   MotionDetect(byte pin, unsigned long motionDelay, unsigned long motionDelayWait) {
+//     _pin = pin;
+//     _motionDelay = motionDelay;
+//     _motionDelayTotal = motionDelay + motionDelayWait;
+//   }
 
-  bool getPinState() {
-    return digitalRead(_pin);
-  }
+//   bool getPinState() {
+//     return digitalRead(_pin);
+//   }
 
-  void start() {
-    _secondMotionDetected = false;
-    _lastState = getPinState();
-    _startAt = 0;
+//   void start() {
+//     _secondMotionDetected = false;
+//     _lastState = getPinState();
+//     _startAt = 0;
 
-    if (_lastState) {
-      _lastMotionAt = millis();
-    }
-  }
+//     if (_lastState) {
+//       _lastMotionAt = millis();
+//     }
+//   }
 
-  void weakUp() {
-    _lastState = getPinState();
-    _secondMotionDetected = false;
-    if (_lastState) {
-      _startAt = millis();
-      _lastMotionAt = _startAt;
-    }
-  }
+//   void weakUp() {
+//     _lastState = getPinState();
+//     _secondMotionDetected = false;
+//     if (_lastState) {
+//       _startAt = millis();
+//       _lastMotionAt = _startAt;
+//     }
+//   }
 
-  MotionDetectState ping() {
-    unsigned long current = millis();
-    bool state = getPinState();
+//   MotionDetectState ping() {
+//     unsigned long current = millis();
+//     bool state = getPinState();
 
-    if (state) {
-      _lastMotionAt = current;
-    }
+//     if (state) {
+//       _lastMotionAt = current;
+//     }
 
-    if (_startAt > current) {
-      _startAt = 0;
-      _secondMotionDetected = false;
-      _lastState = state;
-      return NO_MOTION;
-    }
+//     if (_startAt > current) {
+//       _startAt = 0;
+//       _secondMotionDetected = false;
+//       _lastState = state;
+//       return NO_MOTION;
+//     }
 
-    bool invoke = !_lastState && state && ((current - _startAt) > 100);
-    _lastState = state;
+//     bool invoke = !_lastState && state && ((current - _startAt) > 100);
+//     _lastState = state;
 
-    bool init = _startAt == 0;
-    bool isTotalPassed = current > (_startAt + _motionDelayTotal);
-    bool isDelayPassed = isTotalPassed || (current > (_startAt + _motionDelay));
+//     bool init = _startAt == 0;
+//     bool isTotalPassed = current > (_startAt + _motionDelayTotal);
+//     bool isDelayPassed = isTotalPassed || (current > (_startAt + _motionDelay));
 
-    if (invoke && isDelayPassed && !isTotalPassed && !init) {
-      _secondMotionDetected = true;
-      return MOTIONS_DETECTED;
-    }
+//     if (invoke && isDelayPassed && !isTotalPassed && !init) {
+//       _secondMotionDetected = true;
+//       return MOTIONS_DETECTED;
+//     }
 
-    if (_secondMotionDetected && !isTotalPassed && !init) {
-      return MOTIONS_DETECTED;
-    }
+//     if (_secondMotionDetected && !isTotalPassed && !init) {
+//       return MOTIONS_DETECTED;
+//     }
 
-    if (!isTotalPassed && !init) {
-      return ONE_MOTION_DETECTED;
-    }
+//     if (!isTotalPassed && !init) {
+//       return ONE_MOTION_DETECTED;
+//     }
 
-    _secondMotionDetected = false;
+//     _secondMotionDetected = false;
 
-    if (invoke) {
-      _startAt = current;
-      return ONE_MOTION_DETECTED;
-    }
+//     if (invoke) {
+//       _startAt = current;
+//       return ONE_MOTION_DETECTED;
+//     }
 
-    return NO_MOTION;
-  }
+//     return NO_MOTION;
+//   }
 
-  bool isElapsedFromLastMotionDetection(unsigned long elapsed) {
-    unsigned long current = millis();
+//   bool isElapsedFromLastMotionDetection(unsigned long elapsed) {
+//     unsigned long current = millis();
 
-    return _lastMotionAt + elapsed < current;
-  }
+//     return _lastMotionAt + elapsed < current;
+//   }
 
-private:
-};
+// private:
+// };
 
 // klasa wykrywa ruch na podstawie ciągłego stanu
 class MotionDetectContinue {
@@ -329,11 +334,11 @@ public:
       return MOTIONS_DETECTED;
     }
 
-    if (_lastLow + 400 > current) {
-      return NO_MOTION;
+    if (_lastLow + 400 < current) {
+      return ONE_MOTION_DETECTED;
     }
 
-    return ONE_MOTION_DETECTED;
+    return NO_MOTION;
   }
 
   bool isElapsedFromLastMotionDetection(unsigned long elapsed) {
@@ -396,9 +401,6 @@ MotionDetectContinue M3(MOTION_SENSOR_3_PIN, 5 * 1000);
 Fadinglight Out1(OUPUT_1_PIN, false, 2);
 Blinkenlight Out2(OUPUT_2_PIN);
 Blinkenlight Out3(OUPUT_3_PIN);
-
-temperature_sensor_handle_t temp_sensor = NULL;
-temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(-40, 50);
 #pragma endregion GLOBAL_VARIABLE
 
 #pragma region TIME
@@ -417,7 +419,7 @@ bool canOpenDoorFromLastClose() {
 
   time_t now = getNow();
 
-  if(now < _lastDoorClose){
+  if (now < _lastDoorClose) {
     _lastDoorClose = 0;
     return true;
   }
@@ -1179,9 +1181,11 @@ void defineTransition() {
 bool isPresentedToController = false;
 void presentation()  // MySensors
 {
+  MessageReceiveTime.stateStart();
+
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
 
-  present(MS_DOOR_STATUS_ID, S_BINARY, "Status otwarcia dzwi");
+  present(MS_DOOR_STATUS_ID, S_DOOR, "Status otwarcia dzwi");
   present(MS_OPEN_DOOR_COUNT_ID, S_INFO, "Liczba cykli otwarcia");
   present(MS_OPEN_DOOR_ID, S_BINARY, "Drzwi zawsze otwarte");
   present(MS_CLOSE_DOOR_ID, S_BINARY, "Drzwi zawsze zamknięte");
@@ -1190,6 +1194,9 @@ void presentation()  // MySensors
   present(MS_TEMP_ID, S_TEMP, "Temperatura");
   present(MS_MIN_RSSI_ID, S_INFO, "Min RSSI");
   present(MS_OPEN_LOCK_ID, S_INFO, "Czas blokady");
+
+  present(MS_DOOR_ADD_ID, S_INFO, "Dodanie BLE Address");
+  present(MS_DOOR_REMOVE_ID, S_INFO, "Usunięcie BLE Address");
 
   presentBleDevices();
 
@@ -1291,21 +1298,23 @@ void sentTempStatus() {
   MessageSentTime.stateStart();
   messageSent = false;
 
+  temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(10, 50);
+  temperature_sensor_handle_t temp_sensor = NULL;
+  temperature_sensor_install(&temp_sensor_config, &temp_sensor);
   temperature_sensor_enable(temp_sensor);
-
-  float tsens_value;
-  temperature_sensor_get_celsius(temp_sensor, &tsens_value);
-
+  float tvalue;
+  temperature_sensor_get_celsius(temp_sensor, &tvalue);
   temperature_sensor_disable(temp_sensor);
+  temperature_sensor_uninstall(temp_sensor);
 
 #if defined(DEBUG_GK)
   Serial.print("sentTempStatus");
-  Serial.println(tsens_value);
+  Serial.println(tvalue);
 #endif
 
   mMessage.setType(V_TEMP);
   mMessage.setSensor(MS_TEMP_ID);
-  send(mMessage.set(tsens_value, 1));
+  send(mMessage.set(tvalue, 1));
 
   messageSent = true;
 }
@@ -1367,7 +1376,7 @@ void sentMyClientOpenDoorStatusMy(int clientId, bool status) {
   Serial.println(status ? "1" : "0");
 #endif
 
-  mMessage.setType(V_STATUS);
+  mMessage.setType(V_TRIPPED);
   mMessage.setSensor(clientId);
   send(mMessage.set(status ? "1" : "0"));
 
@@ -1410,7 +1419,7 @@ void sentMinRssi() {
   messageSent = true;
 }
 
-void setDoorLockTime() {
+void sentDoorLockTime() {
   MessageSentTime.stateStart();
   messageSent = false;
 
@@ -1437,7 +1446,7 @@ void sendAllMySensorsStatus() {
   sentLightStatus();
   sentTempStatus();
   sentMinRssi();
-  setDoorLockTime();
+  sentDoorLockTime();
 }
 
 #pragma endregion MY_SENSORS
@@ -1484,8 +1493,6 @@ void setup() {
 
   EEStorage.Inicjalize();
 
-  temperature_sensor_install(&temp_sensor_config, &temp_sensor);
-
   setLightOff();
 
   if (EEStorage.isAnyDeviceDefined()) {
@@ -1493,7 +1500,6 @@ void setup() {
   }
 
   deInitBle();
-
   defineTransition();
   setDefaultState();
 
@@ -1568,7 +1574,7 @@ void receive(const MyMessage &message) {
     sentLightStatus();
   }
 
-  if (MS_DOOR_STATUS_ID == message.sensor && message.getType() == V_VAR1) {
+  if (MS_DOOR_ADD_ID == message.sensor && message.getType() == V_TEXT) {
     const char *mess = message.getString();
 
     uint8_t data[6];
@@ -1582,10 +1588,15 @@ void receive(const MyMessage &message) {
     sentMyAllClientOpenDoorDefaultStatus();
   }
 
-  if (message.sensor > MS_DOOR_STATUS_ID && message.sensor < 12 && message.getType() == V_VAR1) {
-    if (message.getBool()) {
-      EEStorage.deleteBleDevice(message.sensor);
-    }
+  if (MS_DOOR_REMOVE_ID == message.sensor && message.getType() == V_TEXT) {
+    const char *mess = message.getString();
+
+    uint8_t data[6];
+    sscanf(mess, "%x:%x:%x:%x:%x:%x", &data[0], &data[1], &data[2], &data[3], &data[4], &data[5]);
+
+    BLEAddress bleAddress(data);
+
+    EEStorage.deleteBleDevice(&bleAddress);
 
     presentBleDevices();
     sentMyAllClientOpenDoorDefaultStatus();
@@ -1597,8 +1608,8 @@ void receive(const MyMessage &message) {
   }
 
   if (MS_OPEN_LOCK_ID == message.sensor && message.getType() == V_TEXT) {
-    EEStorage.setDoorLockTime(message.getULong());
-    setDoorLockTime();
+    EEStorage.setDoorLockTime(message.getUInt());
+    sentDoorLockTime();
   }
 }
 #pragma endregion MAIN
@@ -1633,7 +1644,7 @@ void deInitBle() {
   esp_wifi_stop();
   esp_bluedroid_disable();
   esp_bluedroid_deinit();
-  esp_bt_controller_disable();
+ esp_bt_controller_disable();
   esp_bt_controller_deinit();
   esp_bt_controller_mem_release(ESP_BT_MODE_BLE);
 }

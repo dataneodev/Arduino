@@ -36,9 +36,9 @@ void setup() {
 
   // SELECT ONE OF THE FOLLOWING :
   // 1) IF YOUR INPUT HAS AN INTERNAL PULL-UP
-  // bounce.attach( BOUNCE_PIN ,  INPUT_PULLUP ); // USE INTERNAL PULL-UP
+  bounce.attach( BOUNCE_PIN ,  INPUT_PULLUP ); // USE INTERNAL PULL-UP
   // 2) IF YOUR INPUT USES AN EXTERNAL PULL-UP
-  bounce.attach( BOUNCE_PIN, INPUT ); // USE EXTERNAL PULL-UP
+  //bounce.attach( BOUNCE_PIN, INPUT ); // USE EXTERNAL PULL-UP
 
   // DEBOUNCE INTERVAL IN MILLISECONDS
   bounce.interval(5); // interval in ms

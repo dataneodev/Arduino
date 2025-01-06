@@ -1,0 +1,10 @@
+2025/01/06 21:54:01.563 [I]=> CloseSerial: mSerialFile=0xffffffff
+2025/01/06 21:54:01.563 [I]=> Prepare Open Serial: Com=\\.\COM8 BaudRate=115200
+2025/01/06 21:54:01.563 [I]=> Open \\.\COM8 failed:5
+2025/01/06 21:54:01.563 [I]=> OpenSerial: Com=\\.\COM8 BaudRate=115200, Success=0, mSerialFile=0xffffffff
+2025/01/06 21:54:01.563 [I]=> CloseSerial: mSerialFile=0xffffffff
+2025/01/06 21:54:10.049 [I]=> Cancel Read Data
+2025/01/06 21:54:10.068 [I]=> Stop Realtime data show.
+2025/01/06 21:54:10.068 [I]=> Cancel Read Data
+2025/01/06 21:54:10.068 [I]=> CloseSerial: mSerialFile=0xffffffff
+2025/01/06 21:54:10.068 [I]=> CloseSerial: mSerialFile=0xffffffff

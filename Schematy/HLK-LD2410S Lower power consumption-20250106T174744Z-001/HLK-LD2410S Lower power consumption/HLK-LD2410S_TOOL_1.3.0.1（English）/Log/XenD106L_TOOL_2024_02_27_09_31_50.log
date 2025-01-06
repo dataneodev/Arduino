@@ -1,0 +1,55 @@
+2024/02/27 09:31:54.060 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/02/27 09:31:54.060 [I]=> Prepare Open Serial: Com=\\.\COM3 BaudRate=115200
+2024/02/27 09:31:54.061 [I]=> OpenSerial: Com=\\.\COM3 BaudRate=115200, Success=1, mSerialFile=0x00000860
+2024/02/27 09:31:54.067 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/02/27 09:31:54.227 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/02/27 09:31:54.330 [I]=> ReadVersion Return: v0.0.3_32768.0
+2024/02/27 09:31:54.434 [I]=> ReadSerialNumber Return: 12345678
+2024/02/27 09:31:54.538 [I]=> RadarOperatorConfig_ReadDetectSetting, result: Success
+2024/02/27 09:31:54.647 [I]=> RadarOperatorConfig_ReadTriggerThreshold, result: Success
+2024/02/27 09:31:54.755 [I]=> RadarOperatorConfig_ReadHoldThreshold, result: Success
+2024/02/27 09:31:55.966 [I]=> Start Realtime data show.
+2024/02/27 09:31:55.966 [I]=> thread create success, thread handle=0x00000950, id=21840, name=ReadData
+2024/02/27 09:31:55.967 [I]=> thread information, name=ReadData, tid=21840(0x00005550)
+2024/02/27 09:31:55.973 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/02/27 09:31:56.135 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/02/27 09:32:06.044 [I]=> Cancel Read Data
+2024/02/27 09:32:06.044 [I]=> prepare exit thread..., name=ReadData, tid=21840(0x00005550)
+2024/02/27 09:32:06.062 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/02/27 09:32:06.226 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/02/27 09:32:06.534 [I]=> thread exit, name=ReadData, tid=21840(0x00005550)
+2024/02/27 09:32:06.535 [I]=> thread exit over, name=ReadData, tid=21840(0x00005550)
+2024/02/27 09:32:06.548 [I]=> Stop Realtime data show.
+2024/02/27 09:32:06.548 [I]=> Cancel Read Data
+2024/02/27 09:32:06.548 [I]=> CloseSerial: mSerialFile=0x00000860
+2024/02/27 09:35:51.484 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/02/27 09:35:51.484 [I]=> Prepare Open Serial: Com=\\.\COM3 BaudRate=115200
+2024/02/27 09:35:51.485 [I]=> OpenSerial: Com=\\.\COM3 BaudRate=115200, Success=1, mSerialFile=0x00000948
+2024/02/27 09:35:51.491 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/02/27 09:35:51.675 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/02/27 09:35:51.778 [I]=> ReadVersion Return: v0.0.3_32768.0
+2024/02/27 09:35:51.882 [I]=> ReadSerialNumber Return: 12345678
+2024/02/27 09:35:51.987 [I]=> RadarOperatorConfig_ReadDetectSetting, result: Success
+2024/02/27 09:35:52.095 [I]=> RadarOperatorConfig_ReadTriggerThreshold, result: Success
+2024/02/27 09:35:52.203 [I]=> RadarOperatorConfig_ReadHoldThreshold, result: Success
+2024/02/27 09:37:06.588 [I]=> Start Realtime data show.
+2024/02/27 09:37:06.588 [I]=> thread create success, thread handle=0x000005c8, id=34068, name=ReadData
+2024/02/27 09:37:06.588 [I]=> thread information, name=ReadData, tid=34068(0x00008514)
+2024/02/27 09:37:06.594 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/02/27 09:37:06.766 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/02/27 09:37:39.123 [I]=> Cancel Read Data
+2024/02/27 09:37:39.123 [I]=> prepare exit thread..., name=ReadData, tid=34068(0x00008514)
+2024/02/27 09:37:39.139 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/02/27 09:37:39.316 [I]=> protocol version = 3, send_recv buffer size = 128
+2024/02/27 09:37:39.627 [I]=> thread exit, name=ReadData, tid=34068(0x00008514)
+2024/02/27 09:37:39.628 [I]=> thread exit over, name=ReadData, tid=34068(0x00008514)
+2024/02/27 09:37:39.641 [I]=> Stop Realtime data show.
+2024/02/27 09:37:39.641 [I]=> Cancel Read Data
+2024/02/27 09:37:39.641 [I]=> CloseSerial: mSerialFile=0x00000948
+2024/02/29 14:11:47.997 [I]=> Cancel Read Data
+2024/02/29 14:11:48.004 [I]=> Stop Realtime data show.
+2024/02/29 14:11:48.004 [I]=> Cancel Read Data
+2024/02/29 14:11:48.009 [I]=> Stop Realtime data show.
+2024/02/29 14:11:48.011 [I]=> Cancel Read Data
+2024/02/29 14:11:48.011 [I]=> CloseSerial: mSerialFile=0xffffffff
+2024/02/29 14:11:48.011 [I]=> CloseSerial: mSerialFile=0xffffffff

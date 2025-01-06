@@ -9,7 +9,7 @@
 Bounce	KEYWORD1
 Bounce2		KEYWORD1
 Button		KEYWORD1
-
+Bounce2NameSpace KEYWORD1
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
@@ -24,6 +24,8 @@ duration	KEYWORD2
 pressed	KEYWORD2
 released	KEYWORD2
 setPressedState	KEYWORD2
+currentDuration	KEYWORD2
+previousDuration	KEYWORD2 
 
 #######################################
 # Instances (KEYWORD2)
