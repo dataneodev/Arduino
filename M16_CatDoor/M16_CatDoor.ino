@@ -1499,7 +1499,8 @@ void setup() {
     ScannerGK.init();
   }
 
-  deInitBle();
+  // deInitBle();
+  esp_wifi_stop();
   defineTransition();
   setDefaultState();
 
@@ -1644,7 +1645,7 @@ void deInitBle() {
   esp_wifi_stop();
   esp_bluedroid_disable();
   esp_bluedroid_deinit();
- esp_bt_controller_disable();
+  esp_bt_controller_disable();
   esp_bt_controller_deinit();
   esp_bt_controller_mem_release(ESP_BT_MODE_BLE);
 }
