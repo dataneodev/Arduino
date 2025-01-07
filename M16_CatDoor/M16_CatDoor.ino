@@ -1437,6 +1437,21 @@ void sentDoorLockTime() {
   messageSent = true;
 }
 
+void sentAddressManager() {
+  MessageSentTime.stateStart();
+  messageSent = false;
+
+  mMessage.setType(V_TEXT);
+  mMessage.setSensor(MS_DOOR_ADD_ID);
+  send(mMessage.set("FF:FF:FF:FF:FF:FF"));
+
+  MessageSentTime.stateStart();
+  mMessage.setSensor(MS_DOOR_REMOVE_ID);
+  send(mMessage.set("FF:FF:FF:FF:FF:FF"));
+
+  messageSent = true;
+}
+
 void sendAllMySensorsStatus() {
   sentMyAllClientOpenDoorDefaultStatus();
   sentMyDoorOpenCount();
@@ -1447,6 +1462,7 @@ void sendAllMySensorsStatus() {
   sentTempStatus();
   sentMinRssi();
   sentDoorLockTime();
+  sentAddressManager();
 }
 
 #pragma endregion MY_SENSORS
@@ -1478,8 +1494,6 @@ void preHwInit() {
 }
 
 void before() {}
-
-
 
 void setup() {
 #if defined(DEBUG_GK)
