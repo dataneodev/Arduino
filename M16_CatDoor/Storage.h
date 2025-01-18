@@ -159,7 +159,10 @@ public:
         return;
       }
 
+      _devices[i].setNewAddress(255, 255, 255, 255, 255, 255);
       _devices[i].setEnabled(false);
+      
+      writeBleAddress(i, 255, 255, 255, 255, 255, 255);
       writeBleEnabled(i, false);
     }
   }
@@ -250,7 +253,7 @@ private:
       EEPROM24C32->writeByte(116, FALSE_VALUE, false, false);  // auth
       EEPROM24C32->writeByte(117, TRUE_VALUE, false, false);   // light
       EEPROM24C32->writeByte(118, 60, false, false);           // min RSSI
-      EEPROM24C32->writeUInt32(122, 0, false, false);  // open door count
+      EEPROM24C32->writeUInt32(122, 0, false, false);          // open door count
 
       writeDefaultBle();  //ble
     }
@@ -300,7 +303,7 @@ private:
 
   void writeDefaultBle() {
     for (int i = 0; i < _deviceCount; i++) {
-      writeBleAddress(i, 0, 0, 0, 0, 0, 0);
+      writeBleAddress(i, 255, 255, 255, 255, 255, 255);
       writeBleEnabled(i, false);
     }
   }

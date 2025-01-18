@@ -48,7 +48,7 @@ static __inline__ void __psRestore(const uint32_t *__s)
 
 #define CPU_SPEED 160
 
-#define CHECK_NUMBER 0x43  //zmienic aby zresetować ustawienia zapisane w pamięci
+#define CHECK_NUMBER 0x41  //zmienic aby zresetować ustawienia zapisane w pamięci
 #define FADE 2
 #define FADE_OFF 100000
 #pragma endregion CONFIGURATION
@@ -1208,10 +1208,6 @@ void presentBleDevices() {
   present(1, S_DOOR, SKETCH_NAME);
 
   for (int i = 0; i < EEStorage.getBleDevicesCount(); i++) {
-    if (!EEStorage.isBleEnabled(i)) {
-      continue;
-    }
-
     esp_bd_addr_t *adr = EEStorage.getBleAddress(i)->getNative();
     uint8_t a[6];
     memcpy(&a, adr, 6);
@@ -1346,11 +1342,7 @@ void sentMyAllClientOpenDoorDefaultStatus() {
   sentMyClientOpenDoorStatusMy(1, EEStorage.isDoorOpen());
 
   for (int i = 0; i < devCount; i++) {
-    if (!EEStorage.isBleEnabled(i)) {
-      continue;
-    }
-
-    sentMyClientOpenDoorStatusMy(EEStorage.getBleId(i), EEStorage.isDoorAlwaysOpen());
+    sentMyClientOpenDoorStatusMy(EEStorage.getBleId(i), false);
   }
 }
 
@@ -1670,6 +1662,10 @@ void inicjalizeI2C() {
 }
 
 void inicjalizePins() {
+#ifdef RGB_BUILTIN
+  digitalWrite(RGB_BUILTIN, LOW);  // Turn the RGB LED off
+#endif
+
   pinMode(POWER_PIN, OUTPUT);
   digitalWrite(POWER_PIN, LOW);
 
