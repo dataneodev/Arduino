@@ -72,7 +72,7 @@ public:
   }
 
   static void init() {
-    BLEDevice::init("");
+    BLEDevice::init("GK");
     _pBLEScan = BLEDevice::getScan();
     _pBLEScan->setActiveScan(true);
     _pBLEScan->setInterval(100);

@@ -326,12 +326,13 @@ private:
   }
 
   uint8_t getAvailableId() {
-    uint8_t availableId = 255;
 
     for (int i = 0; i < _deviceCount; i++) {
       if (!_devices[i].isEnabled()) {
         return i;
       }
     }
+
+    return 255;
   }
 };

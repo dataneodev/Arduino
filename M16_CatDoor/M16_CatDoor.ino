@@ -24,6 +24,7 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #include "DeviceDef.h"
 
 #pragma region CONFIGURATION
+//#define DEBUG_GK
 #define ALARM_ENABLED              // w przypadku błędow uruchamiać alarm dzwiękowy
 #define OPEN_CLOSE_SOUND           // sygnał dzwiekowy przy otwarciu/zamknieciu drzwi
 #define OUT_2_ENABLED              // czy są 2 diodu - OUT1 -zielona, OUT2 - czerwona
@@ -48,7 +49,7 @@ static __inline__ void __psRestore(const uint32_t *__s)
 
 #define CPU_SPEED 160
 
-#define CHECK_NUMBER 0x41  //zmienic aby zresetować ustawienia zapisane w pamięci
+#define CHECK_NUMBER 0x40  //zmienic aby zresetować ustawienia zapisane w pamięci
 #define FADE 2
 #define FADE_OFF 100000
 #pragma endregion CONFIGURATION
@@ -1501,12 +1502,10 @@ void setup() {
 
   setLightOff();
 
-  if (EEStorage.isAnyDeviceDefined()) {
-    ScannerGK.init();
-  }
 
-  // deInitBle();
-  esp_wifi_stop();
+  ScannerGK.init();
+  deInitBle();
+
   defineTransition();
   setDefaultState();
 
