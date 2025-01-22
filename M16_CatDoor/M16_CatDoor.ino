@@ -3,7 +3,7 @@
 
 #pragma region INSTALATION
 
-#include "esp_random.h"  //brakuje w plikach mysensors dla esp32, sprawdzic i usunąć w nowych wersjach
+//#include "esp_random.h"  //brakuje w plikach mysensors dla esp32, sprawdzic i usunąć w nowych wersjach
 /*
 Działa z wersja 3.0.1
 Uwaga aby nie zainstalować Arduino ESP32 Boards - trzeba po odinstalowaniu przeinstalować esp32
@@ -1479,16 +1479,16 @@ void setDefaultState() {
   SM.transitionTo(S_START_UP);
 }
 
-void preHwInit() {
-#if defined(DEBUG_GK)
-  Serial.begin(115200);
-#endif
-  Serial1.begin(MY_RS485_BAUD_RATE, SERIAL_8N1, RX_PIN, TX_PIN);
-}
+void preHwInit() {}
 
 void before() {}
 
 void setup() {
+  #if defined(DEBUG_GK)
+  Serial.begin(115200);
+#endif
+  Serial1.begin(MY_RS485_BAUD_RATE, SERIAL_8N1, RX_PIN, TX_PIN);
+
 #if defined(DEBUG_GK)
   Serial.println(SKETCH_NAME);
 #endif
@@ -1501,7 +1501,6 @@ void setup() {
   EEStorage.Inicjalize();
 
   setLightOff();
-
 
   ScannerGK.init();
   deInitBle();
