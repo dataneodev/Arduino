@@ -37,6 +37,7 @@ bool hwInit(void)
 
 void hwReadConfigBlock(void *buf, void *addr, size_t length)
 {
+	return;
 	uint8_t *dst = static_cast<uint8_t *>(buf);
 	int offs = reinterpret_cast<int>(addr);
 	while (length-- > 0) {
@@ -46,6 +47,8 @@ void hwReadConfigBlock(void *buf, void *addr, size_t length)
 
 void hwWriteConfigBlock(void *buf, void *addr, size_t length)
 {
+	return;
+	
 	uint8_t *src = static_cast<uint8_t *>(buf);
 	int offs = reinterpret_cast<int>(addr);
 	while (length-- > 0) {
@@ -56,6 +59,8 @@ void hwWriteConfigBlock(void *buf, void *addr, size_t length)
 
 uint8_t hwReadConfig(const int addr)
 {
+	return 255;
+	
 	uint8_t value;
 	hwReadConfigBlock(&value, reinterpret_cast<void *>(addr), 1);
 	return value;
@@ -63,6 +68,8 @@ uint8_t hwReadConfig(const int addr)
 
 void hwWriteConfig(const int addr, uint8_t value)
 {
+	return;
+	
 	if (hwReadConfig(addr) != value) {
 		hwWriteConfigBlock(&value, reinterpret_cast<void *>(addr), 1);
 	}

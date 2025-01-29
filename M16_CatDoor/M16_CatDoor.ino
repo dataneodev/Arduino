@@ -105,7 +105,7 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #define MS_DOOR_REMOVE_ID 41
 
 #define MS_SEND_TIMEOUT 10 * 1000
-#define WAIT_TIME_FOR_MS_MESSAGE_BEFORE_SLEEP 40
+#define WAIT_TIME_FOR_MS_MESSAGE_BEFORE_SLEEP 100
 #pragma endregion MY_SENSORS_CONFIGURATION
 
 #pragma region TYPES
@@ -1291,30 +1291,30 @@ void sentLightStatus() {
   messageSent = true;
 }
 
-void sentTempStatus() {
-  MessageSentTime.stateStart();
-  messageSent = false;
+// void sentTempStatus() {
+//   MessageSentTime.stateStart();
+//   messageSent = false;
 
-  temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(10, 50);
-  temperature_sensor_handle_t temp_sensor = NULL;
-  temperature_sensor_install(&temp_sensor_config, &temp_sensor);
-  temperature_sensor_enable(temp_sensor);
-  float tvalue;
-  temperature_sensor_get_celsius(temp_sensor, &tvalue);
-  temperature_sensor_disable(temp_sensor);
-  temperature_sensor_uninstall(temp_sensor);
+//   temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(10, 50);
+//   temperature_sensor_handle_t temp_sensor = NULL;
+//   temperature_sensor_install(&temp_sensor_config, &temp_sensor);
+//   temperature_sensor_enable(temp_sensor);
+//   float tvalue;
+//   temperature_sensor_get_celsius(temp_sensor, &tvalue);
+//   temperature_sensor_disable(temp_sensor);
+//   temperature_sensor_uninstall(temp_sensor);
 
-#if defined(DEBUG_GK)
-  Serial.print("sentTempStatus");
-  Serial.println(tvalue);
-#endif
+// #if defined(DEBUG_GK)
+//   Serial.print("sentTempStatus");
+//   Serial.println(tvalue);
+// #endif
 
-  mMessage.setType(V_TEMP);
-  mMessage.setSensor(MS_TEMP_ID);
-  send(mMessage.set(tvalue, 1));
+//   mMessage.setType(V_TEMP);
+//   mMessage.setSensor(MS_TEMP_ID);
+//   send(mMessage.set(tvalue, 1));
 
-  messageSent = true;
-}
+//   messageSent = true;
+// }
 
 void sentMyDoorOpenCount() {
   MessageSentTime.stateStart();
@@ -1391,7 +1391,7 @@ void sentDoorClose() {
   }
 
   sentMyClientOpenDoorStatus(lastOpenClientId, false);
-  sentTempStatus();
+  //sentTempStatus();
 }
 
 void sentMinRssi() {
@@ -1452,7 +1452,7 @@ void sendAllMySensorsStatus() {
   sentMyDoorAlwaysCloseStatus();
   sentMyBleAuthStatus();
   sentLightStatus();
-  sentTempStatus();
+  //sentTempStatus();
   sentMinRssi();
   sentDoorLockTime();
   sentAddressManager();
@@ -1479,21 +1479,17 @@ void setDefaultState() {
   SM.transitionTo(S_START_UP);
 }
 
-void preHwInit() {}
+void preHwInit() {
+  setCpuFrequencyMhz(CPU_SPEED);
 
-void before() {}
-
-void setup() {
-  #if defined(DEBUG_GK)
+#if defined(DEBUG_GK)
   Serial.begin(115200);
 #endif
   Serial1.begin(MY_RS485_BAUD_RATE, SERIAL_8N1, RX_PIN, TX_PIN);
 
 #if defined(DEBUG_GK)
   Serial.println(SKETCH_NAME);
-#endif
-
-  setCpuFrequencyMhz(CPU_SPEED);
+#endif  
 
   inicjalizePins();
   inicjalizeI2C();
@@ -1504,7 +1500,11 @@ void setup() {
 
   ScannerGK.init();
   deInitBle();
+}
 
+void before() {}
+
+void setup() {
   defineTransition();
   setDefaultState();
 
