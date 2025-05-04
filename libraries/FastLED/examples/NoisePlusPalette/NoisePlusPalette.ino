@@ -1,18 +1,31 @@
+/// @file    NoisePlusPalette.ino
+/// @brief   Demonstrates how to mix noise generation with color palettes on a 2D LED matrix
+/// @example NoisePlusPalette.ino
+
 #include <FastLED.h>
+
+#ifdef __AVR__
+// Don't compile this for avr because they typically don't have enough memory.
+void setup() {}
+void loop() {}
+#else
 
 #define LED_PIN     3
 #define BRIGHTNESS  96
 #define LED_TYPE    WS2811
 #define COLOR_ORDER GRB
 
+// Params for width and height
 const uint8_t kMatrixWidth  = 16;
 const uint8_t kMatrixHeight = 16;
+
+// Param for different pixel layouts
 const bool    kMatrixSerpentineLayout = true;
 
 
 // This example combines two features of FastLED to produce a remarkable range of
 // effects from a relatively small amount of code.  This example combines FastLED's 
-// color palette lookup functions with FastLED's Perlin/simplex noise generator, and
+// color palette lookup functions with FastLED's Perlin noise generator, and
 // the combination is extremely powerful.
 //
 // You might want to look at the "ColorPalette" and "Noise" examples separately
@@ -65,10 +78,22 @@ uint8_t noise[MAX_DIMENSION][MAX_DIMENSION];
 CRGBPalette16 currentPalette( PartyColors_p );
 uint8_t       colorLoop = 1;
 
+
+// Forward declare our functions so that we have maximum compatibility
+// with other build tools outside of ArduinoIDE. The *.ino files are
+// special in that Arduino will generate function prototypes for you.
+void SetupRandomPalette();
+void SetupPurpleAndGreenPalette();
+void SetupBlackAndWhiteStripedPalette();
+void SetupRandomPalette();
+void ChangePaletteAndSettingsPeriodically();
+void mapNoiseToLEDsUsingPalette();
+uint16_t XY( uint8_t x, uint8_t y);
+
 void setup() {
   delay(3000);
-  LEDS.addLeds<LED_TYPE,LED_PIN,COLOR_ORDER>(leds,NUM_LEDS);
-  LEDS.setBrightness(BRIGHTNESS);
+  FastLED.addLeds<LED_TYPE,LED_PIN,COLOR_ORDER>(leds,NUM_LEDS);
+  FastLED.setBrightness(BRIGHTNESS);
 
   // Initialize our coordinates to some random values
   x = random16();
@@ -118,6 +143,8 @@ void fillnoise8() {
   y -= speed / 16;
 }
 
+
+
 void mapNoiseToLEDsUsingPalette()
 {
   static uint8_t ihue=0;
@@ -163,7 +190,7 @@ void loop() {
   // using the current palette
   mapNoiseToLEDsUsingPalette();
 
-  LEDS.show();
+  FastLED.show();
   // delay(10);
 }
 
@@ -204,6 +231,8 @@ void ChangePaletteAndSettingsPeriodically()
   }
 }
 
+
+
 // This function generates a random palette that's a gradient
 // between four different colors.  The first is a dim hue, the second is 
 // a bright hue, the third is a bright pastel, and the last is 
@@ -217,6 +246,7 @@ void SetupRandomPalette()
                       CHSV( random8(), 128, 255), 
                       CHSV( random8(), 255, 255)); 
 }
+
 
 // This function sets up a palette of black and white stripes,
 // using code.  Since the palette is effectively an array of
@@ -271,3 +301,5 @@ uint16_t XY( uint8_t x, uint8_t y)
   return i;
 }
 
+
+#endif

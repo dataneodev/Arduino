@@ -1,5 +1,15 @@
 /*  instalacja 
 
+Podmienić na PRODUCT ID: 0x5741 w pliku: C:\Users\Smith\AppData\Local\Arduino15\packages\STMicroelectronics\hardware\stm32\2.9.0\boards.txt
+
+GenF1.vid.0=0x0483
+GenF1.pid.0=0x5740
+
+na
+
+GenF1.vid.0=0x0483
+GenF1.pid.0=0x5741
+
 Podmienić pliki MySensors hal/architecture/STM32F1 z lib(nie działa odczyć i zapis ustawień Ms do EEPROMu)
 DO gatwaya musi by oryginał STM32F103, klon CH32F103 nie działa poprawnie USB
 Board: https://github.com/stm32duino
@@ -34,7 +44,7 @@ HardwareSerial RS485Serial(PA3, PA2);
 #define MY_RS485_DE_PIN PA1            // Define this to enables DE-pin management on defined pin
 #define MY_RS485_BAUD_RATE 9600        // Set RS485 baud rate to use
 #define MY_RS485_HWSERIAL RS485Serial  //
-#define MY_RS485_SOH_COUNT 6
+#define MY_RS485_SOH_COUNT 12
 #define MY_DEFAULT_RX_LED_PIN PC13
 
 // 24C32

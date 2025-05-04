@@ -1,6 +1,4 @@
 /**
- * @file Adafruit_QSPI_Flash.h
- *
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Ha Thach and Dean Miller for Adafruit Industries LLC
@@ -30,6 +28,9 @@
 #include "Adafruit_FlashTransport.h"
 #include "flash_devices.h"
 
+// for debugging
+#define SPIFLASH_DEBUG 0
+
 // An easy to use interface for working with Flash memory.
 //
 // If you are managing allocation of the Flash space yourself, this is the
@@ -41,7 +42,7 @@ public:
   ~Adafruit_SPIFlashBase() {}
 
   bool begin(SPIFlash_Device_t const *flash_devs = NULL, size_t count = 1);
-  bool end(void);
+  void end(void);
 
   void setIndicator(int pin, bool state_on = true);
 
@@ -55,12 +56,14 @@ public:
   void waitUntilReady(void);
   bool writeEnable(void);
   bool writeDisable(void);
+  bool isReady(void); // both WIP and WREN are clear
 
   uint32_t getJEDECID(void);
 
   uint32_t readBuffer(uint32_t address, uint8_t *buffer, uint32_t len);
   uint32_t writeBuffer(uint32_t address, uint8_t const *buffer, uint32_t len);
 
+  bool erasePage(uint32_t pageNumber);
   bool eraseSector(uint32_t sectorNumber);
   bool eraseBlock(uint32_t blockNumber);
   bool eraseChip(void);
@@ -89,8 +92,5 @@ protected:
     }
   }
 };
-
-// for debugging
-#define SPIFLASH_DEBUG 0
 
 #endif /* ADAFRUIT_SPIFLASHBASE_H_ */

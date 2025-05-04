@@ -50,6 +50,7 @@ enum {
   SFLASH_CMD_WRITE_ENABLE = 0x06,
   SFLASH_CMD_WRITE_DISABLE = 0x04,
 
+  SFLASH_CMD_ERASE_PAGE = 0x81,
   SFLASH_CMD_ERASE_SECTOR = 0x20,
   SFLASH_CMD_ERASE_BLOCK = 0xD8,
   SFLASH_CMD_ERASE_CHIP = 0xC7,
@@ -68,6 +69,7 @@ enum {
 class Adafruit_FlashTransport {
 public:
   virtual void begin(void) = 0;
+  virtual void end(void) = 0;
 
   virtual bool supportQuadMode(void) = 0;
 
@@ -99,7 +101,7 @@ public:
 
   /// Erase external flash by address
   /// @param command  can be sector erase (0x20) or block erase 0xD8
-  /// @param address  adddress to be erased
+  /// @param address  address to be erased
   /// @return true if success
   virtual bool eraseCommand(uint8_t command, uint32_t address) = 0;
 
@@ -134,8 +136,12 @@ protected:
 #include "qspi/Adafruit_FlashTransport_QSPI.h"
 #include "spi/Adafruit_FlashTransport_SPI.h"
 
-#if CONFIG_IDF_TARGET_ESP32S2
+#ifdef ARDUINO_ARCH_ESP32
 #include "esp32/Adafruit_FlashTransport_ESP32.h"
+#endif
+
+#ifdef ARDUINO_ARCH_RP2040
+#include "rp2040/Adafruit_FlashTransport_RP2040.h"
 #endif
 
 #endif /* ADAFRUIT_FLASHTRANSPORT_H_ */

@@ -5,7 +5,7 @@
 */
 
 #include <MySensors.h>
-#include <Bounce2.h>
+#include <ButtonDebounce.h>
 #include <QList.h>
 #include <24C32.h>
 #include <Wire.h>

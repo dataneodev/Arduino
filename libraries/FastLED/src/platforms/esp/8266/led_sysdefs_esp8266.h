@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #ifndef ESP8266
 #define ESP8266
 #endif
@@ -35,5 +37,3 @@ typedef uint32_t prog_uint32_t;
 # endif
 #endif
 
-// #define cli() os_intr_lock();
-// #define sei() os_intr_lock();

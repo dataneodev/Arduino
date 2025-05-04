@@ -33,30 +33,32 @@ Dodatek do VS Code #region folding for VS Code
 */
 
 /* #region  user configuration */
-#define MY_NODE_ID 61  // id wezła dla my sensors
+#define MY_NODE_ID 60  // id wezła dla my sensors
 
 //przy zmianie typu sterownika obowiązkowo zmienic cyfre kontrolną dla zresetowania ustawień!
-#define EEPROM_RESET 0x33  // zmienić wartość aby zresetować ustawienia - przy każdej zmianie typu kontrolera
+#define EEPROM_RESET 0x37  // zmienić wartość aby zresetować ustawienia - przy każdej zmianie typu kontrolera
 
-#define VERSION_5X
+//#define VERSION_5X
 
 #if defined VERSION_5X
 #define NODE_1_RGBWW
 #endif
 
-//#define NODE_1_RGBW
+#define NODE_1_RGBW
 //#define NODE_1_RGB
 //#define NODE_1_SINGLE
 
 #define NODE_1_MIN_LIGHT_LEVEL 12      // minimalna jasnosc
 #define NODE_1_MAX_LIGHT_LEVEL 255     // maksymalna jasnosc 0-255
 #define NODE_1_STARTUP_LIGHT_LEVEL 25  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
+#define NODE_1_STARTUP_OFF 1           // 1 nie zapamietuje ustawiń do epprom i na starcie zawsze off
 
 #if !defined NODE_1_RGBWW && !defined NODE_1_RGBW && !defined NODE_1_RGB
 #define NODE_2_SINGLE
 #define NODE_2_MIN_LIGHT_LEVEL 12      // minimalna jasnosc
 #define NODE_2_MAX_LIGHT_LEVEL 255     // maksymalna jasnosc
 #define NODE_2_STARTUP_LIGHT_LEVEL 25  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
+#define NODE_2_STARTUP_OFF 1           // 1 nie zapamietuje ustawiń do epprom i na starcie zawsze off
 #endif
 
 #if !defined NODE_1_RGBWW && !defined NODE_1_RGBW && !defined NODE_1_RGB
@@ -64,6 +66,7 @@ Dodatek do VS Code #region folding for VS Code
 #define NODE_3_MIN_LIGHT_LEVEL 12      // minimalna jasnosc
 #define NODE_3_MAX_LIGHT_LEVEL 255     // maksymalna jasnosc
 #define NODE_3_STARTUP_LIGHT_LEVEL 25  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
+#define NODE_3_STARTUP_OFF 1           // 1 nie zapamietuje ustawiń do epprom i na starcie zawsze off
 #endif
 
 #if !defined NODE_1_RGBWW && !defined NODE_1_RGBW
@@ -71,6 +74,7 @@ Dodatek do VS Code #region folding for VS Code
 #define NODE_4_MIN_LIGHT_LEVEL 5       // minimalna jasnosc
 #define NODE_4_MAX_LIGHT_LEVEL 255     // maksymalna jasnosc
 #define NODE_4_STARTUP_LIGHT_LEVEL 25  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
+#define NODE_4_STARTUP_OFF 1           // 1 nie zapamietuje ustawiń do epprom i na starcie zawsze off
 #endif
 
 #if !defined NODE_1_RGBWW && defined VERSION_5X
@@ -78,6 +82,7 @@ Dodatek do VS Code #region folding for VS Code
 #define NODE_5_MIN_LIGHT_LEVEL 5       // minimalna jasnosc
 #define NODE_5_MAX_LIGHT_LEVEL 255     // maksymalna jasnosc
 #define NODE_5_STARTUP_LIGHT_LEVEL 25  // 0-100 początkowa jasnosc jak włączono sterownik a poziom jasnosci jest 0
+#define NODE_5_STARTUP_OFF 1           // 1 nie zapamietuje ustawiń do epprom i na starcie zawsze off
 #endif
 
 enum Nodes {
@@ -108,20 +113,16 @@ enum ButtonMode { OnOff,
                   Off };
 
 struct inButtonDef {
-  Nodes node;              // który kanał jest połączony z przyciskiem
-  ButtonMode mode;         // tryb OnOff - włączenie/wyłączenie kanału sciśle połączone ze statusem przycisku, Switching - przełączanie aktualnego stanu kanału podczas naciśniecia przycisku, Off - przycisk wyłączony
-  bool prefferOffOnStart;  // działa tylko z trybem OnOff - jeśli podczas startu sterownika stan przycisku jest off lub zapisany stan jest off - zawsze zastosuje stan off,
-                           // w przeciwnym przypadku stan kanału zawsze zostanie ustawiony na stan przycisku
-                           // przykład - jeśli podczas zaniku zasilania było zamknięte to
-  bool invert;             // w mode OnOff stan niski na przycisku włącza kanał, a przy Switching przuszczenie przycisku przełącza kanał
+  Nodes node;       // który kanał jest połączony z przyciskiem
+  ButtonMode mode;  // tryb OnOff - włączenie/wyłączenie kanału sciśle połączone ze statusem przycisku, Switching - przełączanie aktualnego stanu kanału podczas naciśniecia przycisku, Off - przycisk wyłączony
+  bool invert;      // w mode OnOff stan niski na przycisku włącza kanał, a przy Switching przuszczenie przycisku przełącza kanał
 };
 
 //definicja buttonów
 //przycisk 1
 inButtonDef in1Button = {
   Node1,
-  OnOff,
-  true,
+  Switching,
   false,
 };
 
@@ -129,15 +130,13 @@ inButtonDef in1Button = {
 inButtonDef in2Button = {
   Node1,
   Switching,
-  false,
-  true
+  false
 };
 
 //przycisk 3
 inButtonDef in3Button = {
   Node1,
   Switching,
-  true,
   false
 };
 
@@ -146,8 +145,7 @@ inButtonDef in3Button = {
 inButtonDef in4Button = {
   Node1,
   Switching,
-  false,
-  true
+  false
 };
 
 #if defined(VERSION_5X)
@@ -155,7 +153,6 @@ inButtonDef in4Button = {
 inButtonDef in5Button = {
   Node1,
   Switching,
-  false,
   true
 };
 
@@ -266,7 +263,7 @@ HardwareSerial RS485Serial(PA3, PA2);
 /* #endregion */
 
 /* #region Imports */
-#include <ButtonDebounce.h>
+#include "ButtonDebounce.h"
 #include <MySensors.h>
 #include <24C32.h>
 #include <Wire.h>
@@ -316,13 +313,13 @@ public:
 /* #endregion */
 
 /* #region  global variable */
-ButtonDebounce in1(IN_1, 50);
-ButtonDebounce in2(IN_2, 50);
-ButtonDebounce in3(IN_3, 50);
-ButtonDebounce in4(IN_4, 50);
+ButtonDebounce in1(IN_1);
+ButtonDebounce in2(IN_2);
+ButtonDebounce in3(IN_3);
+ButtonDebounce in4(IN_4);
 
 #if defined(VERSION_5X)
-ButtonDebounce in5(IN_5, 50);
+ButtonDebounce in5(IN_5);
 
 #endif
 
@@ -556,27 +553,47 @@ void readSettingFromEPPROM() {
 #endif
 
 #if defined NODE_1_SINGLE || defined NODE_1_RGBWW || defined NODE_1_RGBW || defined NODE_1_RGB
-  node1Enabled = EEPROM24C32.readByte(100) == TRUE_BYTE;
+  if (NODE_1_STARTUP_OFF == 0) {
+    node1Enabled = EEPROM24C32.readByte(100) == TRUE_BYTE;
+  } else {
+    node1Enabled = false;
+  }
   node1LightLevel = EEPROM24C32.readByte(101);
 #endif
 
 #if defined NODE_2_SINGLE
-  node2Enabled = EEPROM24C32.readByte(200) == TRUE_BYTE;
+  if (NODE_2_STARTUP_OFF == 0) {
+    node2Enabled = EEPROM24C32.readByte(200) == TRUE_BYTE;
+  } else {
+    node2Enabled = false;
+  }
   node2LightLevel = EEPROM24C32.readByte(201);
 #endif
 
 #if defined NODE_3_SINGLE
-  node3Enabled = EEPROM24C32.readByte(300) == TRUE_BYTE;
+  if (NODE_3_STARTUP_OFF == 0) {
+    node3Enabled = EEPROM24C32.readByte(300) == TRUE_BYTE;
+  } else {
+    node3Enabled = false;
+  }
   node3LightLevel = EEPROM24C32.readByte(301);
 #endif
 
 #if defined NODE_4_SINGLE
-  node4Enabled = EEPROM24C32.readByte(400) == TRUE_BYTE;
+  if (NODE_4_STARTUP_OFF == 0) {
+    node4Enabled = EEPROM24C32.readByte(400) == TRUE_BYTE;
+  } else {
+    node4Enabled = false;
+  }
   node4LightLevel = EEPROM24C32.readByte(401);
 #endif
 
 #if defined NODE_5_SINGLE
-  node5Enabled = EEPROM24C32.readByte(450) == TRUE_BYTE;
+  if (NODE_5_STARTUP_OFF == 0) {
+    node5Enabled = EEPROM24C32.readByte(450) == TRUE_BYTE;
+  } else {
+    node5Enabled = false;
+  }
   node5LightLevel = EEPROM24C32.readByte(451);
 #endif
 }
@@ -633,8 +650,12 @@ void saveNode1EnableToEPPROM(bool enabled) {
   }
 
   node1Enabled = enabled;
-  EEPROM24C32.writeByte(100, enabled ? TRUE_BYTE : 0x06, false, false);
+
+  if (NODE_1_STARTUP_OFF == 0) {
+    EEPROM24C32.writeByte(100, enabled ? TRUE_BYTE : 0x06, false, false);
+  }
 }
+
 
 void setNode1LightLevelToEPPROM(uint8_t lightLevel) {
   if (node1LightLevel == lightLevel) {
@@ -692,7 +713,10 @@ void saveNode2EnableToEPPROM(bool enabled) {
   }
 
   node2Enabled = enabled;
-  EEPROM24C32.writeByte(200, enabled ? TRUE_BYTE : 0x07, false, false);
+
+  if (NODE_2_STARTUP_OFF == 0) {
+    EEPROM24C32.writeByte(200, enabled ? TRUE_BYTE : 0x07, false, false);
+  }
 }
 
 void setNode2LightLevelToEPPROM(uint8_t lightLevel) {
@@ -712,7 +736,10 @@ void saveNode3EnableToEPPROM(bool enabled) {
   }
 
   node3Enabled = enabled;
-  EEPROM24C32.writeByte(300, enabled ? TRUE_BYTE : 0x08, false, false);
+
+  if (NODE_3_STARTUP_OFF == 0) {
+    EEPROM24C32.writeByte(300, enabled ? TRUE_BYTE : 0x08, false, false);
+  }
 }
 
 void setNode3LightLevelToEPPROM(uint8_t lightLevel) {
@@ -732,7 +759,10 @@ void saveNode4EnableToEPPROM(bool enabled) {
   }
 
   node4Enabled = enabled;
-  EEPROM24C32.writeByte(400, enabled ? TRUE_BYTE : 0x09, false, false);
+
+  if (NODE_4_STARTUP_OFF == 0) {
+    EEPROM24C32.writeByte(400, enabled ? TRUE_BYTE : 0x09, false, false);
+  }
 }
 
 void setNode4LightLevelToEPPROM(uint8_t lightLevel) {
@@ -741,6 +771,7 @@ void setNode4LightLevelToEPPROM(uint8_t lightLevel) {
   }
 
   node4LightLevel = lightLevel;
+
   EEPROM24C32.writeByte(401, lightLevel, false, false);
 }
 #endif
@@ -752,7 +783,10 @@ void saveNode5EnableToEPPROM(bool enabled) {
   }
 
   node5Enabled = enabled;
-  EEPROM24C32.writeByte(450, enabled ? TRUE_BYTE : 0x09, false, false);
+
+  if (NODE_5_STARTUP_OFF == 0) {
+    EEPROM24C32.writeByte(450, enabled ? TRUE_BYTE : 0x09, false, false);
+  }
 }
 
 void setNode5LightLevelToEPPROM(uint8_t lightLevel) {
@@ -816,10 +850,10 @@ void presentToControler() {
 #if defined NODE_1_RGBWW
 void sendNode1WhiteChannelsBalance() {
   mMessage.setSensor(BALANCE_ID);
-  mMessage.setType(V_PERCENTAGE );
+  mMessage.setType(V_PERCENTAGE);
   send(mMessage.set(node1WhiteChannelsBalance));
 
-  mMessage.setType(V_STATUS );
+  mMessage.setType(V_STATUS);
   send(mMessage.set(node1WhiteChannelsBalance == 0 ? false : true));
 }
 #endif
@@ -1157,14 +1191,14 @@ void receive(const MyMessage &message)  // MySensors
 
 #if defined NODE_1_SINGLE || defined NODE_1_RGBWW || defined NODE_1_RGBW || defined NODE_1_RGB
 
-void setNode1Enabled(bool enabled, bool onlyDataSave) {
+void setNode1Enabled(bool enabled, bool changeStateOnly) {
   saveNode1EnableToEPPROM(enabled);
 
   if (enabled && node1LightLevel == 0) {
     setNode1LightLevelToEPPROM(NODE_1_STARTUP_LIGHT_LEVEL);
   }
 
-  if (onlyDataSave) {
+  if (changeStateOnly) {
     return;
   }
 
@@ -1708,34 +1742,35 @@ bool getButtonState(uint8_t buttonLp) {
   return false;
 }
 
-void setNodeState(Nodes node, bool state, bool onlyDataSave) {
+void setNodeState(Nodes node, bool state, bool onlyStateChange) {
+
 #if defined NODE_1_SINGLE || defined NODE_1_RGBWW || defined NODE_1_RGBW || defined NODE_1_RGB
   if (node == Node1) {
-    setNode1Enabled(state, onlyDataSave);
+    setNode1Enabled(state, onlyStateChange);
   }
 #endif
 
 #if defined NODE_2_SINGLE
   if (node == Node2) {
-    setNode2Enabled(state, onlyDataSave);
+    setNode2Enabled(state, onlyStateChange);
   }
 #endif
 
 #if defined NODE_3_SINGLE
   if (node == Node3) {
-    setNode3Enabled(state, onlyDataSave);
+    setNode3Enabled(state, onlyStateChange);
   }
 #endif
 
 #if defined NODE_4_SINGLE
   if (node == Node4) {
-    setNode4Enabled(state, onlyDataSave);
+    setNode4Enabled(state, onlyStateChange);
   }
 #endif
 
 #if defined NODE_5_SINGLE
   if (node == Node5) {
-    setNode5Enabled(state, onlyDataSave);
+    setNode5Enabled(state, onlyStateChange);
   }
 #endif
 
@@ -1754,19 +1789,22 @@ void updateNodesFromButtons() {
 }
 
 void updateNodesFromButton(inButtonDef button, uint8_t buttonLp) {
-  if (button.mode != OnOff) {
+  if (button.mode == Off) {
     return;
   }
 
   bool epState = getNodeState(button.node);
-  bool buttonState = getInvertedState(button, getButtonState(buttonLp));
 
-  if (button.prefferOffOnStart && (!epState || !buttonState)) {
-    setNodeState(button.node, false, true);
+  if (button.mode == OnOff) {
+    setNodeState(button.node, epState, true);
     return;
   }
 
-  setNodeState(button.node, buttonState, true);
+  if (button.mode == Switching) {
+    bool epState = getNodeState(button.node);
+    setNodeState(button.node, epState, true);
+    return;
+  }
 }
 
 void inicjalizeButtons() {
