@@ -16,6 +16,14 @@ public:
     return _id;
   }
 
+  bool isEqualsEditNo(uint8_t no) {
+    return getEditNoId() == no;
+  }
+
+  int getEditNoId() {
+    return _id + MS_DOOR_EDIT_START_ID;
+  }
+
   BLEAddress* getAddress() {
     return _address;
   }

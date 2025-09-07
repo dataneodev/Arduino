@@ -101,8 +101,7 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #define MS_MIN_RSSI_ID 26
 #define MS_OPEN_LOCK_ID 27
 
-#define MS_DOOR_ADD_ID 40
-#define MS_DOOR_REMOVE_ID 41
+#define MS_DOOR_EDIT_START_ID 38
 
 #define MS_SEND_TIMEOUT 10 * 1000
 #define WAIT_TIME_FOR_MS_MESSAGE_BEFORE_SLEEP 100
@@ -1209,17 +1208,11 @@ void presentBleDevices() {
   present(1, S_DOOR, SKETCH_NAME);
 
   for (int i = 0; i < EEStorage.getBleDevicesCount(); i++) {
-    esp_bd_addr_t *adr = EEStorage.getBleAddress(i)->getNative();
-    uint8_t a[6];
-    memcpy(&a, adr, 6);
+    present(EEStorage.getBleId(i), S_DOOR, EEStorage.getBleId(i));
+  }
 
-    auto size = 18;
-    char *namech = (char *)malloc(size);
-    snprintf(namech, size, "%02X:%02X:%02X:%02X:%02X:%02X", a[0], a[1], a[2], a[3], a[4], a[5]);
-
-    present(EEStorage.getBleId(i), S_DOOR, namech);
-
-    free(namech);
+  for (int i = 0; i < EEStorage.getBleDevicesCount(); i++) {
+    present(EEStorage.getEditNoId(i), V_TEXT, EEStorage.getBleId(i));
   }
 }
 
@@ -1376,6 +1369,37 @@ void sentMyClientOpenDoorStatusMy(int clientId, bool status) {
   messageSent = true;
 }
 
+void sentMyAllClientDoorAddress() {
+#if defined(DEBUG_GK)
+  Serial.println("sentMyAllClientDoorAddress");
+#endif
+  int devCount = EEStorage.getBleDevicesCount();
+
+  for (int i = 0; i < devCount; i++) {
+    sentMyDoorAddress(EEStorage.getEditNoId(i), EEStorage.getBleAddress(i));
+  }
+}
+
+void sentMyDoorAddress(int clientId, BLEAddress *address) {
+  MessageSentTime.stateStart();
+  messageSent = false;
+
+  esp_bd_addr_t *adr = address->getNative();
+  uint8_t a[6];
+  memcpy(&a, adr, 6);
+
+  auto size = 18;
+  char *namech = (char *)malloc(size);
+  snprintf(namech, size, "%02X:%02X:%02X:%02X:%02X:%02X", a[0], a[1], a[2], a[3], a[4], a[5]);
+
+  mMessage.setType(V_TEXT);
+  mMessage.setSensor(clientId);
+  send(mMessage.set(namech));
+
+  messageSent = true;
+  free(namech);
+}
+
 int lastOpenClientId = 0;
 
 void sentDoorOpen() {
@@ -1447,6 +1471,7 @@ void sentAddressManager() {
 
 void sendAllMySensorsStatus() {
   sentMyAllClientOpenDoorDefaultStatus();
+  sentMyAllClientDoorAddress();
   sentMyDoorOpenCount();
   sentMyDoorAlwaysOpenStatus();
   sentMyDoorAlwaysCloseStatus();
@@ -1489,7 +1514,7 @@ void preHwInit() {
 
 #if defined(DEBUG_GK)
   Serial.println(SKETCH_NAME);
-#endif  
+#endif
 
   inicjalizePins();
   inicjalizeI2C();
@@ -1579,33 +1604,6 @@ void receive(const MyMessage &message) {
     sentLightStatus();
   }
 
-  if (MS_DOOR_ADD_ID == message.sensor && message.getType() == V_TEXT) {
-    const char *mess = message.getString();
-
-    uint8_t data[6];
-    sscanf(mess, "%x:%x:%x:%x:%x:%x", &data[0], &data[1], &data[2], &data[3], &data[4], &data[5]);
-
-    BLEAddress bleAddress(data);
-
-    EEStorage.addNewBleAddress(&bleAddress);
-
-    presentBleDevices();
-    sentMyAllClientOpenDoorDefaultStatus();
-  }
-
-  if (MS_DOOR_REMOVE_ID == message.sensor && message.getType() == V_TEXT) {
-    const char *mess = message.getString();
-
-    uint8_t data[6];
-    sscanf(mess, "%x:%x:%x:%x:%x:%x", &data[0], &data[1], &data[2], &data[3], &data[4], &data[5]);
-
-    BLEAddress bleAddress(data);
-
-    EEStorage.deleteBleDevice(&bleAddress);
-
-    presentBleDevices();
-    sentMyAllClientOpenDoorDefaultStatus();
-  }
 
   if (MS_MIN_RSSI_ID == message.sensor && message.getType() == V_TEXT) {
     EEStorage.setMinRSSI(message.getByte());
@@ -1615,6 +1613,20 @@ void receive(const MyMessage &message) {
   if (MS_OPEN_LOCK_ID == message.sensor && message.getType() == V_TEXT) {
     EEStorage.setDoorLockTime(message.getUInt());
     sentDoorLockTime();
+  }
+
+
+  if (message.sensor >= MS_DOOR_EDIT_START_ID + 2 && message.sensor <= MS_DOOR_EDIT_START_ID + 11 && message.getType() == V_TEXT) {
+    const char *mess = message.getString();
+
+    uint8_t data[6];
+    sscanf(mess, "%x:%x:%x:%x:%x:%x", &data[0], &data[1], &data[2], &data[3], &data[4], &data[5]);
+
+    BLEAddress bleAddress(data);
+
+    EEStorage.editBleAddress(message.sensor, &bleAddress);
+
+    sentMyAllClientDoorAddress();
   }
 }
 #pragma endregion MAIN

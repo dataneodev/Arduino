@@ -119,52 +119,32 @@ public:
     return 0;
   }
 
-  void addNewBleAddress(BLEAddress* address) {
+  void editBleAddress(uint8_t no, BLEAddress* address) {
+
+    uint8_t deviceIndex = 255;
+
     for (int i = 0; i < _deviceCount; i++) {
-      if (_devices[i].isEquals(address)) {
-
-        if (!isBleEnabled(i)) {
-          _devices[i].setEnabled(true);
-          writeBleEnabled(i, true);
-        }
-
-        return;
+      if (_devices[i].isEqualsEditNo(no)) {
+        deviceIndex = i;
       }
     }
 
-    uint8_t availableId = getAvailableId();
-    if (availableId == 255) {
+    if (deviceIndex == 255) {
       return;
     }
+
+    bool isDisabled = a[0] == 0 && a[1] == 0 && a[2] == 0 && a[3] == 0 && a[4] == 0 && a[5] == 0 || a[0] == 255 && a[1] == 255 && a[2] == 255 && a[3] == 255 && a[4] == 255 && a[5] == 255;
 
     esp_bd_addr_t* adr = address->getNative();
 
     uint8_t a[6];
     memcpy(&a, adr, 6);
 
-    _devices[availableId].setNewAddress(a[0], a[1], a[2], a[3], a[4], a[5]);
-    _devices[availableId].setEnabled(true);
+    _devices[deviceIndex].setNewAddress(a[0], a[1], a[2], a[3], a[4], a[5]);
+    _devices[deviceIndex].setEnabled(!isDisabled);
 
-    writeBleAddress(availableId, a[0], a[1], a[2], a[3], a[4], a[5]);
-    writeBleEnabled(availableId, true);
-  }
-
-  void deleteBleDevice(BLEAddress* address) {
-    for (int i = 0; i < _deviceCount; i++) {
-      if (!_devices[i].isEquals(address)) {
-        continue;
-      }
-
-      if (!isBleEnabled(i)) {
-        return;
-      }
-
-      _devices[i].setNewAddress(255, 255, 255, 255, 255, 255);
-      _devices[i].setEnabled(false);
-      
-      writeBleAddress(i, 255, 255, 255, 255, 255, 255);
-      writeBleEnabled(i, false);
-    }
+    writeBleAddress(deviceIndex, a[0], a[1], a[2], a[3], a[4], a[5]);
+    writeBleEnabled(deviceIndex, !isDisabled);
   }
 
   bool isBleEnabled(uint8_t lp) {
@@ -181,6 +161,14 @@ public:
     }
 
     return _devices[lp].getId();
+  }
+
+    uint8_t getEditNoId(uint8_t lp) {
+    if (lp > _deviceCount) {
+      return false;
+    }
+
+    return _devices[lp].getEditNoId();
   }
 
   BLEAddress* getBleAddress(uint8_t lp) {
@@ -323,16 +311,5 @@ private:
     uint16_t addressStart = 200 + lp * 50;
 
     EEPROM24C32->writeByte(addressStart, enabled ? TRUE_VALUE : FALSE_VALUE, false, false);
-  }
-
-  uint8_t getAvailableId() {
-
-    for (int i = 0; i < _deviceCount; i++) {
-      if (!_devices[i].isEnabled()) {
-        return i;
-      }
-    }
-
-    return 255;
   }
 };

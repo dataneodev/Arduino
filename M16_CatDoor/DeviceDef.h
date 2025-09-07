@@ -14,6 +14,14 @@ bool IsEquals(BLEAddress* address){
   return address->equals(*_address);
 }
 
+bool IsEqualsEditNo(uint8_t no){
+  return GetEditNo() == no;
+}
+
+int GetEditNo(){
+  return _id + MS_DOOR_EDIT_START_ID;
+}
+
 int GetId(){
   return _id;
 }
