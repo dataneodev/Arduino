@@ -29,8 +29,5 @@
 + 27 - S_INFO - "Minimalny czas blokady otwarcia po ostatnim zamknięciu drzwi (w sek), 0 bez blokady"
     + V_TEXT - "Poziom get/set <0, 3600>"
 	
-+ 40 - S_INFO - "Dodanie nowego BLE"
-	+ V_TEXT - dodanie nowego urządzenia BLE, treść wiadomosci to adres np.: CB:F7:92:0F:3B:2E
-	
-+ 41 - S_INFO - "Usunięcie urzadzenia BLE"
-	+ V_TEXT - usuniecie urządzenia BLE, treść wiadomosci to adres urządzenia do usunięcia np.: CB:F7:92:0F:3B:2E
++ 40 - 49 - S_INFO - "Edycja adresu urządzenia BLE"
+	+ V_TEXT - dodanie nowego urządzenia BLE, treść wiadomosci to adres np.: CB:F7:92:0F:3B:2E lub aby usunąć FF:FF:FF:FF:FF:FF

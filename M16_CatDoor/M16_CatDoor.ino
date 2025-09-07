@@ -21,7 +21,7 @@ static __inline__ void __psRestore(const uint32_t *__s)
 */
 #pragma endregion INSTALATION
 
-#include "DeviceDef.h"
+//#include "DeviceDef.h"
 
 #pragma region CONFIGURATION
 //#define DEBUG_GK
@@ -1195,9 +1195,6 @@ void presentation()  // MySensors
   present(MS_MIN_RSSI_ID, S_INFO, "Min RSSI");
   present(MS_OPEN_LOCK_ID, S_INFO, "Czas blokady");
 
-  present(MS_DOOR_ADD_ID, S_INFO, "Dodanie BLE Address");
-  present(MS_DOOR_REMOVE_ID, S_INFO, "Usunięcie BLE Address");
-
   presentBleDevices();
 
   SCM.isStateChanged(false, 1);
@@ -1208,11 +1205,17 @@ void presentBleDevices() {
   present(1, S_DOOR, SKETCH_NAME);
 
   for (int i = 0; i < EEStorage.getBleDevicesCount(); i++) {
-    present(EEStorage.getBleId(i), S_DOOR, EEStorage.getBleId(i));
+   char buf[6];
+    snprintf(buf, sizeof(buf), "%u", EEStorage.getBleId(i));
+
+    present(EEStorage.getBleId(i), S_DOOR, buf, false);  
   }
 
   for (int i = 0; i < EEStorage.getBleDevicesCount(); i++) {
-    present(EEStorage.getEditNoId(i), V_TEXT, EEStorage.getBleId(i));
+    char buf[6];
+    snprintf(buf, sizeof(buf), "%u", EEStorage.getBleId(i));
+
+    present(EEStorage.getEditNoId(i), S_INFO, buf, false);
   }
 }
 
@@ -1376,15 +1379,15 @@ void sentMyAllClientDoorAddress() {
   int devCount = EEStorage.getBleDevicesCount();
 
   for (int i = 0; i < devCount; i++) {
-    sentMyDoorAddress(EEStorage.getEditNoId(i), EEStorage.getBleAddress(i));
+    sentMyDoorAddress(i);
   }
 }
 
-void sentMyDoorAddress(int clientId, BLEAddress *address) {
+void sentMyDoorAddress(int lp) {
   MessageSentTime.stateStart();
   messageSent = false;
 
-  esp_bd_addr_t *adr = address->getNative();
+  esp_bd_addr_t *adr = EEStorage.getBleAddress(lp)->getNative();
   uint8_t a[6];
   memcpy(&a, adr, 6);
 
@@ -1393,7 +1396,7 @@ void sentMyDoorAddress(int clientId, BLEAddress *address) {
   snprintf(namech, size, "%02X:%02X:%02X:%02X:%02X:%02X", a[0], a[1], a[2], a[3], a[4], a[5]);
 
   mMessage.setType(V_TEXT);
-  mMessage.setSensor(clientId);
+  mMessage.setSensor(EEStorage.getEditNoId(lp));
   send(mMessage.set(namech));
 
   messageSent = true;
@@ -1454,21 +1457,6 @@ void sentDoorLockTime() {
   messageSent = true;
 }
 
-void sentAddressManager() {
-  MessageSentTime.stateStart();
-  messageSent = false;
-
-  mMessage.setType(V_TEXT);
-  mMessage.setSensor(MS_DOOR_ADD_ID);
-  send(mMessage.set("FF:FF:FF:FF:FF:FF"));
-
-  MessageSentTime.stateStart();
-  mMessage.setSensor(MS_DOOR_REMOVE_ID);
-  send(mMessage.set("FF:FF:FF:FF:FF:FF"));
-
-  messageSent = true;
-}
-
 void sendAllMySensorsStatus() {
   sentMyAllClientOpenDoorDefaultStatus();
   sentMyAllClientDoorAddress();
@@ -1480,7 +1468,6 @@ void sendAllMySensorsStatus() {
   //sentTempStatus();
   sentMinRssi();
   sentDoorLockTime();
-  sentAddressManager();
 }
 
 #pragma endregion MY_SENSORS
@@ -1615,8 +1602,13 @@ void receive(const MyMessage &message) {
     sentDoorLockTime();
   }
 
-
   if (message.sensor >= MS_DOOR_EDIT_START_ID + 2 && message.sensor <= MS_DOOR_EDIT_START_ID + 11 && message.getType() == V_TEXT) {
+    uint8_t no = EEStorage.getLpForBLENo(message.sensor);
+
+    if(no == 255){
+      return;
+    }
+
     const char *mess = message.getString();
 
     uint8_t data[6];
@@ -1626,7 +1618,7 @@ void receive(const MyMessage &message) {
 
     EEStorage.editBleAddress(message.sensor, &bleAddress);
 
-    sentMyAllClientDoorAddress();
+    sentMyDoorAddress(no);
   }
 }
 #pragma endregion MAIN

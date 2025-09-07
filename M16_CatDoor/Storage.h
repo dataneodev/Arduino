@@ -119,26 +119,30 @@ public:
     return 0;
   }
 
-  void editBleAddress(uint8_t no, BLEAddress* address) {
-
-    uint8_t deviceIndex = 255;
-
+  uint8_t getLpForBLENo(uint8_t no){
     for (int i = 0; i < _deviceCount; i++) {
       if (_devices[i].isEqualsEditNo(no)) {
-        deviceIndex = i;
+       return i;
       }
     }
+
+    return 255;
+  }
+
+  void editBleAddress(uint8_t no, BLEAddress* address) {
+
+    uint8_t deviceIndex = getLpForBLENo(no);
 
     if (deviceIndex == 255) {
       return;
     }
 
-    bool isDisabled = a[0] == 0 && a[1] == 0 && a[2] == 0 && a[3] == 0 && a[4] == 0 && a[5] == 0 || a[0] == 255 && a[1] == 255 && a[2] == 255 && a[3] == 255 && a[4] == 255 && a[5] == 255;
-
     esp_bd_addr_t* adr = address->getNative();
 
     uint8_t a[6];
     memcpy(&a, adr, 6);
+
+    bool isDisabled = a[0] == 0 && a[1] == 0 && a[2] == 0 && a[3] == 0 && a[4] == 0 && a[5] == 0 || a[0] == 255 && a[1] == 255 && a[2] == 255 && a[3] == 255 && a[4] == 255 && a[5] == 255;
 
     _devices[deviceIndex].setNewAddress(a[0], a[1], a[2], a[3], a[4], a[5]);
     _devices[deviceIndex].setEnabled(!isDisabled);
@@ -163,7 +167,7 @@ public:
     return _devices[lp].getId();
   }
 
-    uint8_t getEditNoId(uint8_t lp) {
+  uint8_t getEditNoId(uint8_t lp) {
     if (lp > _deviceCount) {
       return false;
     }
