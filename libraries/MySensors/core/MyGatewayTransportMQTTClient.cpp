@@ -120,7 +120,7 @@ bool gatewayTransportSend(MyMessage &message)
 	GATEWAY_DEBUG(PSTR("GWT:TPS:TOPIC=%s,MSG SENT\n"), topic);
 #if defined(MY_MQTT_CLIENT_PUBLISH_RETAIN)
 	const bool retain = message.getCommand() == C_SET ||
-	                    (message.getCommand() == C_INTERNAL && message.getType() == I_BATTERY_LEVEL);
+	(message.getCommand() == C_INTERNAL && message.getType() == I_BATTERY_LEVEL);
 #else
 	const bool retain = false;
 #endif /* End of MY_MQTT_CLIENT_PUBLISH_RETAIN */
@@ -187,8 +187,8 @@ bool gatewayTransportConnect(void)
 	}
 #endif /* End of MY_IP_ADDRESS */
 	GATEWAY_DEBUG(PSTR("GWT:TPC:IP=%" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8 "\n"),
-	              Ethernet.localIP()[0],
-	              Ethernet.localIP()[1], Ethernet.localIP()[2], Ethernet.localIP()[3]);
+	Ethernet.localIP()[0],
+	Ethernet.localIP()[1], Ethernet.localIP()[2], Ethernet.localIP()[3]);
 	// give the Ethernet interface a second to initialize
 	delay(1000);
 #endif

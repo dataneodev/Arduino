@@ -26,7 +26,7 @@
 // global variables
 extern MyMessage _msgTmp;
 
-char _serialInputString[MY_GATEWAY_MAX_RECEIVE_LENGTH];    // A buffer for incoming commands from serial interface
+char _serialInputString[MY_GATEWAY_MAX_RECEIVE_LENGTH];// A buffer for incoming commands from serial interface
 uint8_t _serialInputPos;
 MyMessage _serialMsg;
 

@@ -231,7 +231,7 @@
  * @brief The maximum message length used for RS485.
  */
 #ifndef MY_RS485_MAX_MESSAGE_LENGTH
-#define MY_RS485_MAX_MESSAGE_LENGTH (40)
+#define MY_RS485_MAX_MESSAGE_LENGTH (46)
 #endif
 
 /**
@@ -239,7 +239,7 @@
  * @brief Use this in case of collisions on the bus. 3 might be a good setting.
  */
 #ifndef MY_RS485_SOH_COUNT
-#define MY_RS485_SOH_COUNT (1)
+#define MY_RS485_SOH_COUNT (6)
 #endif
 
 

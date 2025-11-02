@@ -1,7 +1,9 @@
 #include "Arduino.h"
-#include "ButtonDebounce.h"
+#include "GKButtonDebounce.h"
 
-ButtonDebounce::ButtonDebounce(u_int32_t pin){
+unsigned long GKButtonDebounce::Delay = 100;
+
+GKButtonDebounce::GKButtonDebounce(u_int32_t pin){
   pinMode(pin, INPUT_PULLDOWN);
   
   _pin = digitalPinToPinName(pin);
@@ -9,11 +11,11 @@ ButtonDebounce::ButtonDebounce(u_int32_t pin){
   _lastStateBtn = HIGH;
 }
 
-bool ButtonDebounce::isTimeToUpdate(){
-  return (millis() - _lastDebounceTime) > DELAY;
+bool GKButtonDebounce::isTimeToUpdate(){
+  return (millis() - _lastDebounceTime) > Delay;
 }
 
-void ButtonDebounce::update(){
+void GKButtonDebounce::update(){
   if(!isTimeToUpdate()) return;
   _lastDebounceTime = millis();
   int btnState = (_pin == NC) ? 0 : digitalReadFast(_pin);
@@ -22,10 +24,10 @@ void ButtonDebounce::update(){
   if(this->callback) this->callback(_lastStateBtn);
 }
 
-byte ButtonDebounce::state(){
+byte GKButtonDebounce::state(){
   return _lastStateBtn;
 }
 
-void ButtonDebounce::setCallback(BTN_CALLBACK){
-  this->callback = callback;
+void GKButtonDebounce::setCallback(GKBTN_CALLBACK_STD cb){
+  this->callback = cb;
 }

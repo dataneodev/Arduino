@@ -6,7 +6,7 @@
  * network topology allowing messages to be routed to nodes.
  *
  * Created by Tomas Hozza <thozza@gmail.com>
- * Copyright (C) 2015  Tomas Hozza
+ * Copyright (C) 2015Tomas Hozza
  * Full contributor list: https://github.com/mysensors/MySensors/graphs/contributors
  *
  * Documentation: http://www.mysensors.org

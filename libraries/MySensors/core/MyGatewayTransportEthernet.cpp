@@ -6,7 +6,7 @@
  * network topology allowing messages to be routed to nodes.
  *
  * Created by Tomas Hozza <thozza@gmail.com>
- * Copyright (C) 2015  Tomas Hozza
+ * Copyright (C) 2015Tomas Hozza
  * Full contributor list: https://github.com/mysensors/MySensors/graphs/contributors
  *
  * Documentation: http://www.mysensors.org
@@ -77,7 +77,7 @@ uint8_t _ethernetGatewayMAC[] = { MY_MAC_ADDRESS };
 uint16_t _ethernetGatewayPort = MY_PORT;
 MyMessage _ethernetMsg;
 
-#define ARRAY_SIZE(x)  (sizeof(x)/sizeof(x[0]))
+#define ARRAY_SIZE(x)(sizeof(x)/sizeof(x[0]))
 
 typedef struct {
 	// Suppress the warning about unused members in this struct because it is used through a complex
@@ -204,8 +204,8 @@ bool gatewayTransportInit(void)
 	}
 #endif /* End of MY_IP_GATEWAY_ADDRESS && MY_IP_SUBNET_ADDRESS */
 	GATEWAY_DEBUG(PSTR("GWT:TIN:IP=%" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8 "\n"),
-	              Ethernet.localIP()[0],
-	              Ethernet.localIP()[1], Ethernet.localIP()[2], Ethernet.localIP()[3]);
+	Ethernet.localIP()[0],
+	Ethernet.localIP()[1], Ethernet.localIP()[2], Ethernet.localIP()[3]);
 	// give the Ethernet interface a second to initialize
 	delay(1000);
 #endif /* MY_GATEWAY_ESP8266 / MY_GATEWAY_ESP32 */

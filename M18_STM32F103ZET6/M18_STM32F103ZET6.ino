@@ -300,6 +300,19 @@ na
 /* #endregion */
 
 /* #region Imports */
+class StateChangeManager {
+private:
+  bool _states[10];
+
+public:
+  bool isStateChanged(bool state, int index) {
+    bool changed = _states[index] != state;
+    _states[index] = state;
+
+    return changed;
+  }
+};
+
 #include <MySensors.h>
 #include <24C32.h>
 #include <Wire.h>
@@ -314,7 +327,9 @@ EE EEPROM24C32;
 #include "C:\Programowanie\7.Projekty\5.Arduino\M_Library\SwitchManager\SwitchManager.h"
 
 SwitchManager mySwitchManager = SwitchManager();
+bool isPresentedToController = false;
 
+StateChangeManager SCM;
 
 void inicjalizeI2C() {
   Wire.setSDA(SDA_24C32_PIN);
@@ -394,6 +409,8 @@ void presentation() {
   sendSketchInfo("Switch Sensor Manager", "1.0");
 
   mySwitchManager.presentAllToControler();  //M4_MS_SwitchSensorManager
+  SCM.isStateChanged(false, 0);
+  isPresentedToController = true;
 }
 
 
@@ -510,7 +527,7 @@ void before() {
   mySwitchManager.addSwitch(P_XI_7, NORMAL_CLOSE, "P_XI_7");  // M4_MS_SwitchSensorManager
   mySwitchManager.addSwitch(P_XI_8, NORMAL_CLOSE, "P_XI_8");  // M4_MS_SwitchSensorManager
 
-  // XII
+  // XIIc:\Programowanie\7.Projekty\5.Arduino\M1_MS_RelayManager\M1_MS_RelayManager.ino
   mySwitchManager.addSwitch(P_XII_1, NORMAL_CLOSE, "P_XII_1");  // M4_MS_SwitchSensorManager
   mySwitchManager.addSwitch(P_XII_2, NORMAL_CLOSE, "P_XII_2");  // M4_MS_SwitchSensorManager
   mySwitchManager.addSwitch(P_XII_3, NORMAL_CLOSE, "P_XII_3");  // M4_MS_SwitchSensorManager
@@ -529,6 +546,10 @@ void setup() {
 }
 
 void loop() {
+    if (SCM.isStateChanged(isPresentedToController, 0)) {
+    mySwitchManager.sentAllState();
+  }
+
   // put your main code here, to run repeatedly:
   mySwitchManager.switchCheckState();  //M4_MS_SwitchSensorManager
 }
