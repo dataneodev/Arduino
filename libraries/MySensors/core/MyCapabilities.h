@@ -33,7 +33,7 @@
  * This string indicate what configuration the node is running with.
  *
  * The string symbols are ordered in the following way:
- * | Setting | Reset | Radio | OTA| Node | Architecture |Signing | Buffering | Encryption
+ * | Setting   |       Reset       |       Radio       |         OTA        |       Node       |   Architecture   |      Signing     |     Buffering     |   Encryption
  * |-----------|-------------------|-------------------|--------------------|------------------|------------------|------------------|-------------------|-----------------
  * | Indicator | @ref MY_CAP_RESET | @ref MY_CAP_RADIO | @ref MY_CAP_OTA_FW | @ref MY_CAP_TYPE | @ref MY_CAP_ARCH | @ref MY_CAP_SIGN | @ref MY_CAP_RXBUF | @ref MY_CAP_ENCR
  *
@@ -49,10 +49,10 @@
  *
  * @see MY_DISABLE_REMOTE_RESET
  *
- * | Setting| Indicator
+ * | Setting    | Indicator
  * |------------|----------
- * | Enabled| R
- * | Disabled | N
+ * | Enabled    | R
+ * | Disabled   | N
  */
 #if defined(MY_DISABLE_REMOTE_RESET)
 #define MY_CAP_RESET "N"
@@ -67,10 +67,10 @@
  *
  * @see MY_OTA_FIRMWARE_FEATURE
  *
- * | Setting| Indicator
+ * | Setting    | Indicator
  * |------------|----------
- * | Enabled| O
- * | Disabled | N
+ * | Enabled    | O
+ * | Disabled   | N
  */
 #if defined(MY_OTA_FIRMWARE_FEATURE)
 #define MY_CAP_OTA_FW "O"
@@ -85,14 +85,14 @@
  *
  * @see MY_RADIO_RF24, MY_RADIO_NRF5_ESB, MY_RADIO_RFM69, MY_RFM69_NEW_DRIVER, MY_RADIO_RFM95, MY_RS485
  *
- * | Radio| Indicator
+ * | Radio        | Indicator
  * |--------------|----------
- * | nRF24/nRF5 | N
+ * | nRF24/nRF5   | N
  * | %RFM69 (old) | R
  * | %RFM69 (new) | P
- * | RFM95| L
- * | RS485| S
- * | None | -
+ * | RFM95        | L
+ * | RS485        | S
+ * | None         | -
  */
 #if defined(MY_RADIO_RF24) || defined(MY_RADIO_NRF5_ESB)
 #define MY_CAP_RADIO "N"
@@ -121,10 +121,10 @@
  *
  * | Node type | Indicator
  * |-----------|----------
- * | Gateway | G
- * | Repeater| R
- * | Passive | P
- * | Node| N
+ * | Gateway   | G
+ * | Repeater  | R
+ * | Passive   | P
+ * | Node      | N
  */
 #if defined(MY_GATEWAY_FEATURE)
 #define MY_CAP_TYPE "G"
@@ -145,14 +145,14 @@
  *
  * | Architecture | Indicator
  * |--------------|----------
- * | SAMD | S
- * | nRF5 | N
- * | ESP8266| E
- * | AVR| A
- * | STM32F1| F
- * | TEENSY | T
- * | Linux| L
- * | Unknown| -
+ * | SAMD         | S
+ * | nRF5         | N
+ * | ESP8266      | E
+ * | AVR          | A
+ * | STM32F1      | F
+ * | TEENSY       | T
+ * | Linux        | L
+ * | Unknown      | -
  */
 #if defined(ARDUINO_ARCH_SAMD)
 #define MY_CAP_ARCH "S"
@@ -183,9 +183,9 @@
  *
  * | Signing backend | Indicator
  * |-----------------|----------
- * | ATSHA204| A
- * | Software| S
- * | No signing| -
+ * | ATSHA204        | A
+ * | Software        | S
+ * | No signing      | -
  */
 #if defined(MY_SIGNING_ATSHA204)
 #define MY_CAP_SIGN "A"
@@ -202,10 +202,10 @@
  *
  * @see MY_RX_MESSAGE_BUFFER_FEATURE
  *
- * | Setting| Indicator
+ * | Setting    | Indicator
  * |------------|----------
- * | Enabled| Q
- * | Disabled | -
+ * | Enabled    | Q
+ * | Disabled   | -
  */
 #if defined(MY_RX_MESSAGE_BUFFER_FEATURE)
 #define MY_CAP_RXBUF "Q"
@@ -220,10 +220,10 @@
  *
  * @see MY_ENCRYPTION_FEATURE
  *
- * | Setting| Indicator
+ * | Setting    | Indicator
  * |------------|----------
- * | Enabled| X
- * | Disabled | -
+ * | Enabled    | X
+ * | Disabled   | -
  */
 #if defined(MY_ENCRYPTION_FEATURE)
 #define MY_CAP_ENCR "X"

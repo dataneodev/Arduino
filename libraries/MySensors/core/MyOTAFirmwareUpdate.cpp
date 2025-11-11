@@ -35,12 +35,12 @@ SPIFlash _flash(MY_OTA_FLASH_SS, MY_OTA_FLASH_JDECID);
 #define _flash_initialize()	_flash.initialize()
 #define _flash_readByte(addr)	_flash.readByte(addr)
 #define _flash_writeBytes( dstaddr, data, size) _flash.writeBytes( dstaddr, data, size)
-#define_flash_blockErase32K(num)_flash.blockErase32K(num)
+#define  _flash_blockErase32K(num)  _flash.blockErase32K(num)
 #define _flash_busy() _flash.busy()
 #else
 #define _flash_initialize()	true
 #define _flash_readByte(addr)	(*((uint8_t *)(addr)))
-#define_flash_blockErase32K(num)Flash.erase((uint32_t *)FLASH_AREA_IMAGE_1_OFFSET_0, FLASH_AREA_IMAGE_1_SIZE_0)
+#define  _flash_blockErase32K(num)  Flash.erase((uint32_t *)FLASH_AREA_IMAGE_1_OFFSET_0, FLASH_AREA_IMAGE_1_SIZE_0)
 #define _flash_busy() false
 #endif
 
@@ -54,7 +54,7 @@ LOCAL bool _firmwareResponse(uint16_t block, uint8_t *data);
 LOCAL void readFirmwareSettings(void)
 {
 	hwReadConfigBlock((void*)&_nodeFirmwareConfig, (void*)EEPROM_FIRMWARE_TYPE_ADDRESS,
-	sizeof(nodeFirmwareConfig_t));
+	                  sizeof(nodeFirmwareConfig_t));
 }
 
 LOCAL void firmwareOTAUpdateRequest(void)
@@ -76,10 +76,10 @@ LOCAL void firmwareOTAUpdateRequest(void)
 		firmwareRequest.version = _nodeFirmwareConfig.version;
 		firmwareRequest.block = (_firmwareBlock - 1);
 		OTA_DEBUG(PSTR("OTA:FRQ:FW REQ,T=%04" PRIX16 ",V=%04" PRIX16 ",B=%04" PRIX16 "\n"),
-		_nodeFirmwareConfig.type,
-		_nodeFirmwareConfig.version, _firmwareBlock - 1); // request FW update block
+		          _nodeFirmwareConfig.type,
+		          _nodeFirmwareConfig.version, _firmwareBlock - 1); // request FW update block
 		(void)_sendRoute(build(_msgTmp, GATEWAY_ADDRESS, NODE_SENSOR_ID, C_STREAM, ST_FIRMWARE_REQUEST,
-		 false).set(&firmwareRequest, sizeof(requestFirmwareBlock_t)));
+		                       false).set(&firmwareRequest, sizeof(requestFirmwareBlock_t)));
 	}
 }
 
@@ -185,7 +185,7 @@ LOCAL void presentBootloaderInformation(void)
 #endif
 	_firmwareUpdateOngoing = false;
 	(void)_sendRoute(build(_msgTmp, GATEWAY_ADDRESS, NODE_SENSOR_ID, C_STREAM,
-	 ST_FIRMWARE_CONFIG_REQUEST, false));
+	                       ST_FIRMWARE_CONFIG_REQUEST, false));
 }
 
 LOCAL bool isFirmwareUpdateOngoing(void)
@@ -208,8 +208,8 @@ LOCAL bool transportIsValidFirmware(void)
 		}
 	}
 	OTA_DEBUG(PSTR("OTA:CRC:B=%04" PRIX16 ",C=%04" PRIX16 ",F=%04" PRIX16 "\n"),
-	_nodeFirmwareConfig.blocks,crc,
-	_nodeFirmwareConfig.crc);
+	          _nodeFirmwareConfig.blocks,crc,
+	          _nodeFirmwareConfig.crc);
 	return crc == _nodeFirmwareConfig.crc;
 }
 
@@ -228,13 +228,13 @@ LOCAL bool _firmwareResponse(uint16_t block, uint8_t *data)
 		// Save block to flash
 #ifdef MCUBOOT_PRESENT
 		uint32_t addr = ((size_t)(((_firmwareBlock - 1) * FIRMWARE_BLOCK_SIZE)) + (size_t)(
-		 FIRMWARE_START_OFFSET));
+		                     FIRMWARE_START_OFFSET));
 		if (addr<FLASH_AREA_IMAGE_SCRATCH_OFFSET_0) {
 			Flash.write_block( (uint32_t *)addr, (uint32_t *)data, FIRMWARE_BLOCK_SIZE>>2);
 		}
 #else
 		_flash_writeBytes( ((_firmwareBlock - 1) * FIRMWARE_BLOCK_SIZE) + FIRMWARE_START_OFFSET,
-		 data, FIRMWARE_BLOCK_SIZE);
+		                   data, FIRMWARE_BLOCK_SIZE);
 #endif
 		// wait until flash written
 		while (_flash_busy()) {}
@@ -262,7 +262,7 @@ LOCAL bool _firmwareResponse(uint16_t block, uint8_t *data)
 				OTA_DEBUG(PSTR("OTA:FWP:CRC OK\n"));	// FW checksum ok
 				// Write the new firmware config to eeprom
 				hwWriteConfigBlock((void*)&_nodeFirmwareConfig, (void*)EEPROM_FIRMWARE_TYPE_ADDRESS,
-				 sizeof(nodeFirmwareConfig_t));
+				                   sizeof(nodeFirmwareConfig_t));
 #ifndef MCUBOOT_PRESENT
 				// All seems ok, write size and signature to flash (DualOptiboot will pick this up and flash it)
 				const uint16_t firmwareSize = FIRMWARE_BLOCK_SIZE * _nodeFirmwareConfig.blocks;

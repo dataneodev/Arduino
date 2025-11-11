@@ -27,27 +27,27 @@
 * MyOTAFirmwareUpdate-related log messages, format: [!]SYSTEM:[SUB SYSTEM:]MESSAGE
 * - [!] Exclamation mark is prepended in case of error or warning
 * - SYSTEM:
-*- <b>OTA</b> messages emitted by MyOTAFirmwareUpdate
+*  - <b>OTA</b> messages emitted by MyOTAFirmwareUpdate
 * - SUB SYSTEMS:
-*- OTA:<b>FRQ</b>	from @ref firmwareOTAUpdateRequest()
-*- OTA:<b>FWP</b>	from @ref firmwareOTAUpdateProcess()
+*  - OTA:<b>FRQ</b>	from @ref firmwareOTAUpdateRequest()
+*  - OTA:<b>FWP</b>	from @ref firmwareOTAUpdateProcess()
 *
 * MyOTAFirmwareUpdate debug log messages:
 *
-* |E| SYS | SUB | Message | Comment
+* |E| SYS | SUB | Message                     | Comment
 * |-|-----|-----|-----------------------------|----------------------------------------------------------------------------
-* | | OTA | FWP | UPDATE| FW update initiated
-* |!| OTA | FWP | UPDO| FW config response received, FW update already ongoing
-* |!| OTA | FWP | FLASH INIT FAIL | Failed to initialise flash
-* | | OTA | FWP | UPDATE SKIPPED| FW update skipped, no newer version available
-* | | OTA | FWP | RECV B=%04X | Received FW block (B)
-* |!| OTA | FWP | WRONG FWB | Wrong FW block received
-* | | OTA | FWP | FW END| FW received, proceed to CRC verification
-* | | OTA | FWP | CRC OK| FW CRC verification OK
-* |!| OTA | FWP | CRC FAIL| FW CRC verification failed
+* | | OTA | FWP | UPDATE                      | FW update initiated
+* |!| OTA | FWP | UPDO                        | FW config response received, FW update already ongoing
+* |!| OTA | FWP | FLASH INIT FAIL             | Failed to initialise flash
+* | | OTA | FWP | UPDATE SKIPPED              | FW update skipped, no newer version available
+* | | OTA | FWP | RECV B=%04X                 | Received FW block (B)
+* |!| OTA | FWP | WRONG FWB                   | Wrong FW block received
+* | | OTA | FWP | FW END                      | FW received, proceed to CRC verification
+* | | OTA | FWP | CRC OK                      | FW CRC verification OK
+* |!| OTA | FWP | CRC FAIL                    | FW CRC verification failed
 * | | OTA | FRQ | FW REQ,T=%04X,V=%04X,B=%04X | Request FW update, FW type (T), version (V), block (B)
-* |!| OTA | FRQ | FW UPD FAIL | FW update failed
-* | | OTA | CRC | B=%04X,C=%04X,F=%04X| FW CRC verification. FW blocks (B), calculated CRC (C), FW CRC (F)
+* |!| OTA | FRQ | FW UPD FAIL                 | FW update failed
+* | | OTA | CRC | B=%04X,C=%04X,F=%04X        | FW CRC verification. FW blocks (B), calculated CRC (C), FW CRC (F)
 *
 *
 * @brief API declaration for MyOTAFirmwareUpdate
@@ -131,8 +131,8 @@ typedef struct {
 	uint16_t crc;								//!< CRC of block data
 	uint16_t BLVersion;							//!< Bootloader version
 #ifdef FIRMWARE_PROTOCOL_31
-	uint8_tblockSize;							//!< Blocksize, when protocol version >= 3.1 is reported. Otherwhise the blocksize is 16
-	uint8_timg_commited;							//!< mcuboot image_ok attribute commited firmware=0x01(mcuboot)|0x02(DualOptiboot), when protocol version >= 3.1 is reported
+	uint8_t  blockSize;							//!< Blocksize, when protocol version >= 3.1 is reported. Otherwhise the blocksize is 16
+	uint8_t  img_commited;							//!< mcuboot image_ok attribute commited firmware=0x01(mcuboot)|0x02(DualOptiboot), when protocol version >= 3.1 is reported
 	uint16_t img_revision;							//!< mcuboot revision attribute, when protocol version >= 3.1 is reported
 	uint32_t img_build_num;							//!< mcuboot build_num attribute, when protocol version >= 3.1 is reported
 #endif
@@ -148,7 +148,7 @@ typedef struct {
 } __attribute__((packed)) requestFirmwareBlock_t;
 
 /**
-* @briefFW block reply structure
+* @brief  FW block reply structure
 */
 typedef struct {
 	uint16_t type;								//!< Type of config
@@ -158,7 +158,7 @@ typedef struct {
 } __attribute__((packed)) replyFirmwareBlock_t;
 
 /**
-* @briefFW block reply structure (RLE)
+* @brief  FW block reply structure (RLE)
 */
 typedef struct {
 	uint16_t type;								//!< Type of config

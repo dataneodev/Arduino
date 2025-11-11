@@ -46,10 +46,10 @@
  * You will see the hwMillis() of the receiving node. After each \n character, a
  * new debug message line starts. Incomplete messages are ending with '...'
  *
- * @param logNodeDestination node ID
- * @param echo Enable or disable echo flag
- * @param fmtprintf format string
- * @param ...arguments
+ * @param logNode    Destination node ID
+ * @param echo       Enable or disable echo flag
+ * @param fmt        printf format string
+ * @param ...        arguments
  */
 void OTALog(uint8_t logNode, bool echo, const char *fmt, ... );
 

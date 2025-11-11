@@ -69,17 +69,17 @@ bool signerAtsha204SoftInit(void)
 	} else {
 		(void)memset((void *)_signing_hmac_key, 0x00, sizeof(_signing_hmac_key));
 		(void)memcpy((void *)_signing_hmac_key, MY_SIGNING_SIMPLE_PASSWD, strnlen(MY_SIGNING_SIMPLE_PASSWD,
-		 32));
+		             32));
 		(void)memset((void *)_signing_node_serial_info, 0x00, sizeof(_signing_node_serial_info));
 		(void)memcpy((void *)_signing_node_serial_info, MY_SIGNING_SIMPLE_PASSWD,
-		 strnlen(MY_SIGNING_SIMPLE_PASSWD, 8));
+		             strnlen(MY_SIGNING_SIMPLE_PASSWD, 8));
 		_signing_node_serial_info[8] = getNodeId();
 	}
 #else
 	hwReadConfigBlock((void *)_signing_hmac_key, (void *)EEPROM_SIGNING_SOFT_HMAC_KEY_ADDRESS,
-	SIZE_SIGNING_SOFT_HMAC_KEY);
+	                  SIZE_SIGNING_SOFT_HMAC_KEY);
 	hwReadConfigBlock((void *)_signing_node_serial_info, (void *)EEPROM_SIGNING_SOFT_SERIAL_ADDRESS,
-	SIZE_SIGNING_SOFT_SERIAL);
+	                  SIZE_SIGNING_SOFT_SERIAL);
 #endif
 
 	uint16_t chk = 0;
@@ -87,7 +87,7 @@ bool signerAtsha204SoftInit(void)
 		chk += _signing_node_serial_info[i];
 	}
 	if (chk==SIZE_SIGNING_SOFT_SERIAL *
-	0xFF) { // test if == { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }
+	        0xFF) { // test if == { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }
 		unique_id_t uniqueID;
 		// There is no serial, attempt to get unique ID for serial instead
 		if (hwUniqueID(&uniqueID)) {
@@ -167,7 +167,7 @@ void signerAtsha204SoftPutNonce(MyMessage &msg)
 		return;
 	}
 	(void)memcpy((void *)_signing_nonce, (const void *)msg.getCustom(), MIN((uint8_t)MAX_PAYLOAD_SIZE,
-	 (uint8_t)32));
+	             (uint8_t)32));
 	if (MAX_PAYLOAD_SIZE < 32) {
 		// We set the part of the 32-byte nonce that does not fit into a message to 0xAA
 		(void)memset((void *)&_signing_nonce[MAX_PAYLOAD_SIZE], 0xAA, 32u - MAX_PAYLOAD_SIZE);
@@ -179,7 +179,7 @@ bool signerAtsha204SoftSignMsg(MyMessage &msg)
 	// If we cannot fit any signature in the message, refuse to sign it
 	if (msg.getLength() > MAX_PAYLOAD_SIZE - 2u) {
 		SIGN_DEBUG(PSTR("!SGN:BND:SIG,SIZE,%" PRIu8 ">%" PRIu8 "\n"), msg.getLength(),
-		 MAX_PAYLOAD_SIZE - 2); //Message too large
+		           MAX_PAYLOAD_SIZE - 2); //Message too large
 		return false;
 	}
 
@@ -207,7 +207,7 @@ bool signerAtsha204SoftSignMsg(MyMessage &msg)
 
 	// Transfer as much signature data as the remaining space in the message permits
 	(void)memcpy((void *)&msg.data[msg.getLength()], (const void *)_signing_hmac,
-	 MIN((uint8_t)(MAX_PAYLOAD_SIZE - msg.getLength()), (uint8_t)32));
+	             MIN((uint8_t)(MAX_PAYLOAD_SIZE - msg.getLength()), (uint8_t)32));
 
 	return true;
 }
@@ -261,7 +261,7 @@ bool signerAtsha204SoftVerifyMsg(MyMessage &msg)
 
 		// Compare the calculated signature with the provided signature
 		if (signerMemcmp(&msg.data[msg.getLength()], _signing_hmac,
-		 MIN((uint8_t)(MAX_PAYLOAD_SIZE - msg.getLength()), (uint8_t)32))) {
+		                 MIN((uint8_t)(MAX_PAYLOAD_SIZE - msg.getLength()), (uint8_t)32))) {
 			return false;
 		} else {
 			return true;
@@ -361,7 +361,7 @@ static void signerAtsha204AHmac(uint8_t *dest, const uint8_t *nonce, const uint8
 	_signing_buffer[1 + 64] = 0x04; // Mode
 	//_signing_buffer[2 + 64] = 0x00; // SlotID(1)
 	//_signing_buffer[3 + 64] = 0x00; // SlotID(2)
-	//_signing_buffer[4 + 64..14 + 64] => 0x00;// 11 bytes zeroes
+	//_signing_buffer[4 + 64..14 + 64] => 0x00;  // 11 bytes zeroes
 	_signing_buffer[15 + 64] = 0xEE; // SN[8]
 	//_signing_buffer[16 + 64..19 + 64] => 0x00; // 4 bytes zeroes
 	_signing_buffer[20 + 64] = 0x01;

@@ -64,7 +64,7 @@ bool signerAtsha204Init(void)
 	(void)atsha204_wakeup(_signing_temp_message);
 	// Read the configuration lock flag to determine if device is personalized or not
 	if (atsha204_read(_signing_tx_buffer, _signing_rx_buffer,
-	SHA204_ZONE_CONFIG, 0x15<<2) != SHA204_SUCCESS) {
+	                  SHA204_ZONE_CONFIG, 0x15<<2) != SHA204_SUCCESS) {
 		SIGN_DEBUG(PSTR("!SGN:BND:INIT FAIL\n")); //Could not read ATSHA204A lock config
 		init_ok = false;
 	} else if (_signing_rx_buffer[SHA204_BUFFER_POS_DATA+3] != 0x00) {
@@ -118,16 +118,16 @@ bool signerAtsha204GetNonce(MyMessage &msg)
 	// nonce
 	(void)atsha204_wakeup(_signing_temp_message);
 	if (atsha204_execute(SHA204_RANDOM, RANDOM_SEED_UPDATE, 0, 0, NULL,
-	 RANDOM_COUNT, _signing_tx_buffer, RANDOM_RSP_SIZE, _signing_rx_buffer) !=
-	SHA204_SUCCESS) {
+	                     RANDOM_COUNT, _signing_tx_buffer, RANDOM_RSP_SIZE, _signing_rx_buffer) !=
+	        SHA204_SUCCESS) {
 		return false;
 	}
 	for (int i = 0; i < 32; i++) {
 		_signing_verifying_nonce[i] = _signing_rx_buffer[SHA204_BUFFER_POS_DATA+i] ^ (hwMillis()&0xFF);
 	}
 	(void)memcpy((void *)_signing_verifying_nonce, (const void *)signerSha256(_signing_verifying_nonce,
-	 32),
-	 min((uint8_t)MAX_PAYLOAD_SIZE, 32u));
+	             32),
+	             min((uint8_t)MAX_PAYLOAD_SIZE, 32u));
 
 	// We just idle the chip now since we expect to use it soon when the signed message arrives
 	atsha204_idle();
@@ -151,7 +151,7 @@ void signerAtsha204PutNonce(MyMessage &msg)
 	}
 
 	(void)memcpy((void *)_signing_signing_nonce, (const void *)msg.getCustom(),
-	 min((uint8_t)MAX_PAYLOAD_SIZE, 32u));
+	             min((uint8_t)MAX_PAYLOAD_SIZE, 32u));
 	if (MAX_PAYLOAD_SIZE < 32u) {
 		// We set the part of the 32-byte nonce that does not fit into a message to 0xAA
 		(void)memset((void *)&_signing_signing_nonce[MAX_PAYLOAD_SIZE], 0xAA, 32u - MAX_PAYLOAD_SIZE);
@@ -163,7 +163,7 @@ bool signerAtsha204SignMsg(MyMessage &msg)
 	// If we cannot fit any signature in the message, refuse to sign it
 	if (msg.getLength() > MAX_PAYLOAD_SIZE - 2) {
 		SIGN_DEBUG(PSTR("!SGN:BND:SIG,SIZE,%" PRIu8 ">%" PRIu8 "\n"), msg.getLength(),
-		 MAX_PAYLOAD_SIZE - 2); //Message too large
+		           MAX_PAYLOAD_SIZE - 2); //Message too large
 		return false;
 	}
 
@@ -196,7 +196,7 @@ bool signerAtsha204SignMsg(MyMessage &msg)
 
 	// Transfer as much signature data as the remaining space in the message permits
 	(void)memcpy((void *)&msg.data[msg.getLength()], (const void *)_signing_hmac,
-	 min(MAX_PAYLOAD_SIZE - msg.getLength(), 32));
+	             min(MAX_PAYLOAD_SIZE - msg.getLength(), 32));
 
 	return true;
 }
@@ -256,7 +256,7 @@ bool signerAtsha204VerifyMsg(MyMessage &msg)
 
 		// Compare the calculated signature with the provided signature
 		if (signerMemcmp(&msg.data[msg.getLength()], _signing_hmac,
-		 min(MAX_PAYLOAD_SIZE - msg.getLength(), 32))) {
+		                 min(MAX_PAYLOAD_SIZE - msg.getLength(), 32))) {
 			return false;
 		} else {
 			return true;
@@ -313,23 +313,23 @@ static uint8_t* signerAtsha204AHmac(const uint8_t* nonce, const uint8_t* data)
 {
 	// Program the data to sign into the ATSHA204
 	(void)atsha204_execute(SHA204_WRITE, SHA204_ZONE_DATA | SHA204_ZONE_COUNT_FLAG, 8 << 3, 32,
-	 (uint8_t*)data,
-	 WRITE_COUNT_LONG, _signing_tx_buffer, WRITE_RSP_SIZE, _signing_rx_buffer);
+	                       (uint8_t*)data,
+	                       WRITE_COUNT_LONG, _signing_tx_buffer, WRITE_RSP_SIZE, _signing_rx_buffer);
 
 	// Program the nonce to use for the signature (has to be done just before GENDIG
 	// due to chip limitations)
 	(void)atsha204_execute(SHA204_NONCE, NONCE_MODE_PASSTHROUGH, 0, 32, (uint8_t*)nonce,
-	 NONCE_COUNT_LONG, _signing_tx_buffer, NONCE_RSP_SIZE_SHORT,
-	 _signing_rx_buffer);
+	                       NONCE_COUNT_LONG, _signing_tx_buffer, NONCE_RSP_SIZE_SHORT,
+	                       _signing_rx_buffer);
 
 	// Generate digest of data and nonce
 	(void)atsha204_execute(SHA204_GENDIG, GENDIG_ZONE_DATA, 8, 0, NULL,
-	 GENDIG_COUNT_DATA, _signing_tx_buffer, GENDIG_RSP_SIZE,
-	 _signing_rx_buffer);
+	                       GENDIG_COUNT_DATA, _signing_tx_buffer, GENDIG_RSP_SIZE,
+	                       _signing_rx_buffer);
 
 	// Calculate HMAC of message+nonce digest and secret key
 	(void)atsha204_execute(SHA204_HMAC, HMAC_MODE_SOURCE_FLAG_MATCH, 0, 0, NULL,
-	 HMAC_COUNT, _signing_tx_buffer, HMAC_RSP_SIZE, _signing_rx_buffer);
+	                       HMAC_COUNT, _signing_tx_buffer, HMAC_RSP_SIZE, _signing_rx_buffer);
 	return &_signing_rx_buffer[SHA204_BUFFER_POS_DATA];
 }
 
@@ -340,8 +340,8 @@ static uint8_t* signerSha256(const uint8_t* data, size_t sz)
 {
 	// Initiate SHA256 calculator
 	(void)atsha204_execute(SHA204_SHA, SHA_INIT, 0, 0, NULL,
-	 SHA_COUNT_SHORT, _signing_tx_buffer, SHA_RSP_SIZE_SHORT,
-	 _signing_rx_buffer);
+	                       SHA_COUNT_SHORT, _signing_tx_buffer, SHA_RSP_SIZE_SHORT,
+	                       _signing_rx_buffer);
 
 	// Calculate a hash
 	memset(_signing_temp_message, 0x00, SHA_MSG_SIZE);
@@ -351,7 +351,7 @@ static uint8_t* signerSha256(const uint8_t* data, size_t sz)
 	_signing_temp_message[SHA_MSG_SIZE-2] = (sz >> 5);
 	_signing_temp_message[SHA_MSG_SIZE-1] = (sz << 3);
 	(void)atsha204_execute(SHA204_SHA, SHA_CALC, 0, SHA_MSG_SIZE, _signing_temp_message,
-	 SHA_COUNT_LONG, _signing_tx_buffer, SHA_RSP_SIZE_LONG, _signing_rx_buffer);
+	                       SHA_COUNT_LONG, _signing_tx_buffer, SHA_RSP_SIZE_LONG, _signing_rx_buffer);
 	return &_signing_rx_buffer[SHA204_BUFFER_POS_DATA];
 }
 #endif //MY_SIGNING_ATSHA204

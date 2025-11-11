@@ -29,15 +29,15 @@
 
 * These helper macros generate a numerical and alphanumerical (see http://www.semver.org) representation of the library version number, i.e
 *
-* | SemVer| Numerical | Comments
+* | SemVer      | Numerical   | Comments
 * |-------------|-------------|------------------
-* | 2.1.0 | 0x020100FF| final
-* | 2.1.1-beta| 0x02010100| first pre-release
-* | 2.1.1 | 0x020101FF| final
-* | 2.2.0-beta| 0x02020000| first pre-release
-* | 2.2.0-rc.1| 0x02020001|
-* | 2.2.0-rc.2| 0x02020002|
-* | 2.2.0 | 0x020200FF| final
+* | 2.1.0       | 0x020100FF  | final
+* | 2.1.1-beta  | 0x02010100  | first pre-release
+* | 2.1.1       | 0x020101FF  | final
+* | 2.2.0-beta  | 0x02020000  | first pre-release
+* | 2.2.0-rc.1  | 0x02020001  |
+* | 2.2.0-rc.2  | 0x02020002  |
+* | 2.2.0       | 0x020200FF  | final
 */
 
 #ifndef Version_h

@@ -90,8 +90,8 @@ void OTALogPrintPrefix()
 	char prefix[37];
 	// prepend debug message to be handled correctly by controller (C_INTERNAL, I_LOG_MESSAGE)
 	snprintf_P(prefix, sizeof(prefix),
-	 PSTR("%" PRId8 ";%" PRId8 ";%" PRId8 ";0;%" PRId8 ";%" PRIu32 " "),
-	 OTALogBufferNode, OTALogBufferSensor, C_INTERNAL, I_LOG_MESSAGE, hwMillis());
+	           PSTR("%" PRId8 ";%" PRId8 ";%" PRId8 ";0;%" PRId8 ";%" PRIu32 " "),
+	           OTALogBufferNode, OTALogBufferSensor, C_INTERNAL, I_LOG_MESSAGE, hwMillis());
 	MY_SERIALDEVICE.print(prefix);
 }
 
@@ -111,7 +111,7 @@ inline void OTALogPrint(const MyMessage &message)
 
 	// FLush buffer, when node id changes
 	if ((OTALogBufferNode!=BROADCAST_ADDRESS) && ((OTALogBufferNode != message.getSender()) ||
-	(OTALogBufferSensor != message.getSensor()))) {
+	        (OTALogBufferSensor != message.getSensor()))) {
 		OTALogPrintPrefix();
 		MY_SERIALDEVICE.print(OTALogfmtBuffer);
 		MY_SERIALDEVICE.println("...");
@@ -121,7 +121,7 @@ inline void OTALogPrint(const MyMessage &message)
 	// Add data to buffer
 	const char *str = message.getString();
 	strncpy(&OTALogfmtBuffer[OTALogfmtBufferPos], str,
-	sizeof(OTALogfmtBuffer)-OTALogfmtBufferPos);
+	        sizeof(OTALogfmtBuffer)-OTALogfmtBufferPos);
 	OTALogfmtBufferPos += strlen(str);
 
 	// Store node ID and sensor ID

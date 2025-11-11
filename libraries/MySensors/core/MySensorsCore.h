@@ -27,13 +27,13 @@
 * MySensorsCore-related log messages, format: [!]SYSTEM:[SUB SYSTEM:]MESSAGE
 * - [!] Exclamation mark is prepended in case of error or warning
 * - SYSTEM:
-*- <b>MCO</b> messages emitted by MySensorsCore
+*  - <b>MCO</b> messages emitted by MySensorsCore
 * - SUB SYSTEMS:
-*- MCO:<b>BGN</b>	from @ref _begin()
-*- MCO:<b>REG</b>	from @ref _registerNode()
-*- MCO:<b>SND</b>	from @ref send()
-*- MCO:<b>PIM</b>	from @ref _processInternalCoreMessage()
-*- MCO:<b>NLK</b>	from @ref _nodeLock()
+*  - MCO:<b>BGN</b>	from @ref _begin()
+*  - MCO:<b>REG</b>	from @ref _registerNode()
+*  - MCO:<b>SND</b>	from @ref send()
+*  - MCO:<b>PIM</b>	from @ref _processInternalCoreMessage()
+*  - MCO:<b>NLK</b>	from @ref _nodeLock()
 *
 * MySensorsCore debug log messages:
 *
@@ -138,12 +138,12 @@ void presentNode(void);
  * @return true Returns true if message reached the first stop on its way to destination.
  */
 bool present(const uint8_t sensorId, const mysensors_sensor_t sensorType,
- const char *description = "",
- const bool requestEcho = false);
+             const char *description = "",
+             const bool requestEcho = false);
 #if !defined(__linux__)
 bool present(const uint8_t childSensorId, const mysensors_sensor_t sensorType,
- const __FlashStringHelper *description,
- const bool requestEcho = false);
+             const __FlashStringHelper *description,
+             const bool requestEcho = false);
 #endif
 /**
  * Sends sketch meta information to the gateway. Not mandatory but a nice thing to do.
@@ -158,7 +158,7 @@ bool present(const uint8_t childSensorId, const mysensors_sensor_t sensorType,
 bool sendSketchInfo(const char *name, const char *version, const bool requestEcho = false);
 #if !defined(__linux__)
 bool sendSketchInfo(const __FlashStringHelper *name, const __FlashStringHelper *version,
-const bool requestEcho = false);
+                    const bool requestEcho = false);
 #endif
 
 /**
@@ -220,13 +220,13 @@ bool sendTXPowerLevel(const uint8_t level, const bool requestEcho = false);
 * Requests a value from gateway or some other sensor in the radio network.
 * Make sure to add callback-method in begin-method to handle request responses.
 *
-* @param childSensorIdThe unique child id for the different sensors connected to this Arduino. 0-254.
+* @param childSensorId  The unique child id for the different sensors connected to this Arduino. 0-254.
 * @param variableType The variableType to fetch
 * @param destination The nodeId of other node in radio network. Default is gateway
 * @return true Returns true if message reached the first stop on its way to destination.
 */
 bool request(const uint8_t childSensorId, const uint8_t variableType,
- const uint8_t destination = GATEWAY_ADDRESS);
+             const uint8_t destination = GATEWAY_ADDRESS);
 
 /**
  * Requests time from controller. Answer will be delivered to receiveTime function in sketch.
@@ -258,13 +258,13 @@ void saveState(const uint8_t pos, const uint8_t value);
 /**
  * Load a state (from local EEPROM).
  *
- * @param pos The position to fetch value from(0-255)
+ * @param pos The position to fetch value from  (0-255)
  * @return Value to store in position
  */
 uint8_t loadState(const uint8_t pos);
 
 /**
- * Wait for a specified amount of time to pass.Keeps process()ing.
+ * Wait for a specified amount of time to pass.  Keeps process()ing.
  * This does not power-down the radio nor the Arduino.
  * Because this calls process() in a loop, it is a good way to wait
  * in your loop() on a repeater node or sensor that listens to messages.
@@ -273,7 +273,7 @@ uint8_t loadState(const uint8_t pos);
 void wait(const uint32_t waitingMS);
 
 /**
- * Wait for a specified amount of time to pass or until specified message received.Keeps process()ing.
+ * Wait for a specified amount of time to pass or until specified message received.  Keeps process()ing.
  * This does not power-down the radio nor the Arduino.
  * Because this calls process() in a loop, it is a good way to wait
  * in your loop() on a repeater node or sensor that listens to messages.
@@ -284,7 +284,7 @@ void wait(const uint32_t waitingMS);
 bool wait(const uint32_t waitingMS, const mysensors_command_t cmd);
 
 /**
- * Wait for a specified amount of time to pass or until specified message received.Keeps process()ing.
+ * Wait for a specified amount of time to pass or until specified message received.  Keeps process()ing.
  * This does not power-down the radio nor the Arduino.
  * Because this calls process() in a loop, it is a good way to wait
  * in your loop() on a repeater node or sensor that listens to messages.
@@ -321,7 +321,7 @@ int8_t sleep(const uint32_t sleepingMS, const bool smartSleep = false);
  * @return Interrupt number if wake up was triggered by pin change, @ref MY_WAKE_UP_BY_TIMER if wake up was triggered by timer, @ref MY_SLEEP_NOT_POSSIBLE if sleep was not possible (e.g. ongoing FW update)
  */
 int8_t sleep(const uint8_t interrupt, const uint8_t mode, const uint32_t sleepingMS = 0,
- const bool smartSleep = false);
+             const bool smartSleep = false);
 
 /**
  * Sleep (PowerDownMode) the MCU and radio. Wake up on timer or pin change for two separate interrupts.
@@ -336,7 +336,7 @@ int8_t sleep(const uint8_t interrupt, const uint8_t mode, const uint32_t sleepin
  * @return Interrupt number if wake up was triggered by pin change, @ref MY_WAKE_UP_BY_TIMER if wake up was triggered by timer, @ref MY_SLEEP_NOT_POSSIBLE if sleep was not possible (e.g. ongoing FW update)
  */
 int8_t sleep(const uint8_t interrupt1, const uint8_t mode1, const uint8_t interrupt2,
- const uint8_t mode2, const uint32_t sleepingMS = 0, const bool smartSleep = false);
+             const uint8_t mode2, const uint32_t sleepingMS = 0, const bool smartSleep = false);
 
 /**
 * \deprecated Use sleep(ms, true) instead
@@ -370,7 +370,7 @@ int8_t smartSleep(const uint8_t interrupt, const uint8_t mode, const uint32_t sl
 * @return Interrupt number if wake up was triggered by pin change, @ref MY_WAKE_UP_BY_TIMER if wake up was triggered by timer, @ref MY_SLEEP_NOT_POSSIBLE if sleep was not possible (e.g. ongoing FW update)
 */
 int8_t smartSleep(const uint8_t interrupt1, const uint8_t mode1, const uint8_t interrupt2,
-const uint8_t mode2, const uint32_t sleepingMS = 0);
+                  const uint8_t mode2, const uint32_t sleepingMS = 0);
 
 /**
 * Sleep (PowerDownMode) the MCU and radio. Wake up on timer or pin change for two separate interrupts.
@@ -385,8 +385,8 @@ const uint8_t mode2, const uint32_t sleepingMS = 0);
 * @return Interrupt number if wake up was triggered by pin change, @ref MY_WAKE_UP_BY_TIMER if wake up was triggered by timer, @ref MY_SLEEP_NOT_POSSIBLE if sleep was not possible (e.g. ongoing FW update)
 */
 int8_t _sleep(const uint32_t sleepingMS, const bool smartSleep = false,
-const uint8_t interrupt1 = INTERRUPT_NOT_DEFINED, const uint8_t mode1 = MODE_NOT_DEFINED,
-const uint8_t interrupt2 = INTERRUPT_NOT_DEFINED, const uint8_t mode2 = MODE_NOT_DEFINED);
+              const uint8_t interrupt1 = INTERRUPT_NOT_DEFINED, const uint8_t mode1 = MODE_NOT_DEFINED,
+              const uint8_t interrupt2 = INTERRUPT_NOT_DEFINED, const uint8_t mode2 = MODE_NOT_DEFINED);
 
 /**
  * Return the sleep time remaining after waking up from sleep.
@@ -480,7 +480,7 @@ void loop(void) __attribute__((weak));
 
 // Inline function and macros
 static inline MyMessage& build(MyMessage &msg, const uint8_t destination, const uint8_t sensor,
- const mysensors_command_t command, const uint8_t type, const bool requestEcho = false)
+                               const mysensors_command_t command, const uint8_t type, const bool requestEcho = false)
 {
 	msg.setSender(getNodeId());
 	msg.setDestination(destination);

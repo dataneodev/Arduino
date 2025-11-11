@@ -19,7 +19,7 @@
 
 #include "MyLeds.h"
 
-#define LED_ON_OFF_RATIO(4) // Power of 2 please
+#define LED_ON_OFF_RATIO        (4)       // Power of 2 please
 #define LED_PROCESS_INTERVAL_MS (MY_DEFAULT_LED_BLINK_PERIOD/LED_ON_OFF_RATIO)
 
 // these variables don't need to be volatile, since we are not using interrupts
@@ -37,16 +37,16 @@ inline void ledsInit()
 
 	// Setup led pins
 #if defined(MY_DEFAULT_RX_LED_PIN)
-	hwPinMode(MY_DEFAULT_RX_LED_PIN,OUTPUT);
+	hwPinMode(MY_DEFAULT_RX_LED_PIN,  OUTPUT);
 #endif
 #if defined(MY_DEFAULT_TX_LED_PIN)
-	hwPinMode(MY_DEFAULT_TX_LED_PIN,OUTPUT);
+	hwPinMode(MY_DEFAULT_TX_LED_PIN,  OUTPUT);
 #endif
 #if defined(MY_DEFAULT_ERR_LED_PIN)
 	hwPinMode(MY_DEFAULT_ERR_LED_PIN, OUTPUT);
 #endif
 	prevTime = hwMillis() -
-	 LED_PROCESS_INTERVAL_MS; // Subtract some, to make sure leds gets updated on first run.
+	           LED_PROCESS_INTERVAL_MS;     // Subtract some, to make sure leds gets updated on first run.
 	ledsProcess();
 }
 

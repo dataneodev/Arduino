@@ -52,7 +52,7 @@
  * @image html MySigning/wiring.png
  * @note The pull-up resistor is optional but recommended.
  * @note If you change the default pin (A3) make sure you use a pin that supports input/output
- * (ex. A6 & A7 on a Pro Mini are input only pins).
+ *       (ex. A6 & A7 on a Pro Mini are input only pins).
  *
  * To use signing, you need to perform three major steps which are described below.
  *
@@ -145,25 +145,25 @@
  *
  * To personalize a ATSHA204A do the following procedure:
  * 1. Enable @ref GENERATE_KEYS_ATSHA204A<br>
- *This will lock the ATSHA204A and generate random keys for HMAC (signing) and %AES (encryption).
- *Copy the keys generated and replace the corresponding definitions under
- *"User defined key data", specifically @ref MY_HMAC_KEY and @ref MY_AES_KEY.
+ *    This will lock the ATSHA204A and generate random keys for HMAC (signing) and %AES (encryption).
+ *    Copy the keys generated and replace the corresponding definitions under
+ *    "User defined key data", specifically @ref MY_HMAC_KEY and @ref MY_AES_KEY.
  * 2. Disable @ref GENERATE_KEYS_ATSHA204A and enable @ref PERSONALIZE_ATSHA204A<br>
- *This will store the HMAC key to the ATSHA204A and the %AES key to EEPROM. It will also write
- *a checksum of the personalization data in EEPROM to be able to detect if the data is
- *altered.<br>
- *Personalization is now complete.
+ *    This will store the HMAC key to the ATSHA204A and the %AES key to EEPROM. It will also write
+ *    a checksum of the personalization data in EEPROM to be able to detect if the data is
+ *    altered.<br>
+ *    Personalization is now complete.
  *
  * To personalize for software signing do the following procedure:
  * 1. Enable @ref GENERATE_KEYS_SOFT<br>
- *This will generate random keys for HMAC (signing) and %AES (encryption).
- *Copy the keys generated and replace the corresponding definitions under
- *"User defined key data", specifically @ref MY_HMAC_KEY and @ref MY_AES_KEY.
+ *    This will generate random keys for HMAC (signing) and %AES (encryption).
+ *    Copy the keys generated and replace the corresponding definitions under
+ *    "User defined key data", specifically @ref MY_HMAC_KEY and @ref MY_AES_KEY.
  * 2. Disable @ref GENERATE_KEYS_SOFT and enable @ref PERSONALIZE_SOFT<br>
- *This will store the HMAC key and the %AES key to EEPROM. It will also write
- *a checksum of the personalization data in EEPROM to be able to detect if the data is
- *altered.<br>
- *Personalization is now complete.
+ *    This will store the HMAC key and the %AES key to EEPROM. It will also write
+ *    a checksum of the personalization data in EEPROM to be able to detect if the data is
+ *    altered.<br>
+ *    Personalization is now complete.
  *
  * If you want to use soft signing and you want to use whitelisting (the ability to revoke/ban
  * compromised nodes in the network) and your target does not provide a unique device ID, you have
@@ -179,13 +179,13 @@
  *
  * If you are using a Raspberry PI-based gateway, personalizaion is done slightly differently:
  * 1. Generate keys, execute @c mysgw with arguments
- ** To generate HMAC key @verbatim --gen-soft-hmac-key @endverbatim
- ** To generate %AES key @verbatim --gen-aes-key @endverbatim
- ** To generate a soft serial number @verbatim --gen-soft-serial @endverbatim
+ *    * To generate HMAC key @verbatim --gen-soft-hmac-key @endverbatim
+ *    * To generate %AES key @verbatim --gen-aes-key @endverbatim
+ *    * To generate a soft serial number @verbatim --gen-soft-serial @endverbatim
  * 2. Update the gateway config file with the generated keys/valeus
- ** For HMAC key @verbatim soft_hmac_key=<DATA> @endverbatim
- ** For %AES key @verbatim aes_key=<DATA> @endverbatim
- ** For soft serial number @verbatim soft_serial_key=<DATA> @endverbatim
+ *    * For HMAC key @verbatim soft_hmac_key=<DATA> @endverbatim
+ *    * For %AES key @verbatim aes_key=<DATA> @endverbatim
+ *    * For soft serial number @verbatim soft_serial_key=<DATA> @endverbatim
  *
  * You are now set and ready to use message signing in your network.
  * As of now, the following restrictions will be applied to your nodes:
@@ -212,9 +212,9 @@
  * Consider the situation when you have set up your secure topology. We use the remotely operated
  * garage door as an example:
  * * You have a node inside your garage (considered physically inaccessible) that controls your
- * garage door motor.<br>
- * This node requires signing since you do not want an unauthorized person sending it orders to
- * open the door.
+ *   garage door motor.<br>
+ *   This node requires signing since you do not want an unauthorized person sending it orders to
+ *   open the door.
  * * You have a keyfob node with a signing backend that uses the same PSK as your door opener node.
  *
  * In this setup, your keyfob can securely transmit messages to your door node since the keyfob will
@@ -604,7 +604,7 @@
 
 #ifdef MY_SIGNING_NODE_WHITELISTING
 typedef struct {
-	uint8_t nodeId; /**< @brief The ID of the node */
+	uint8_t nodeId;                   /**< @brief The ID of the node */
 	uint8_t serial[SHA204_SERIAL_SZ]; /**< @brief Node specific serial number */
 } whitelist_entry_t;
 #endif
@@ -738,16 +738,16 @@ int signerMemcmp(const void* a, const void* b, size_t sz);
  * MySigning-related log messages, format: [!]SYSTEM:SUB SYSTEM:MESSAGE
  * - [!] Exclamation mark is prepended in case of error or warning
  * - SYSTEM:
- *- <b>SGN</b> messages emitted by MySigning
+ *  - <b>SGN</b> messages emitted by MySigning
  * - SUB SYSTEMS:
- *- SGN:<b>INI</b>	from @ref signerInit
- *- SGN:<b>PER</b>	from @ref signerInit
- *- SGN:<b>PRE</b>	from @ref signerPresentation
- *- SGN:<b>SGN</b>	from @ref signerSignMsg
- *- SGN:<b>VER</b>	from @ref signerVerifyMsg
- *- SGN:<b>SKP</b>	from @ref signerSignMsg or @ref signerVerifyMsg (skipSign)
- *- SGN:<b>NCE</b>	from @ref signerProcessInternal (signerInternalProcessNonceRequest)
- *- SGN:<b>BND</b>	from the signing backends
+ *  - SGN:<b>INI</b>	from @ref signerInit
+ *  - SGN:<b>PER</b>	from @ref signerInit
+ *  - SGN:<b>PRE</b>	from @ref signerPresentation
+ *  - SGN:<b>SGN</b>	from @ref signerSignMsg
+ *  - SGN:<b>VER</b>	from @ref signerVerifyMsg
+ *  - SGN:<b>SKP</b>	from @ref signerSignMsg or @ref signerVerifyMsg (skipSign)
+ *  - SGN:<b>NCE</b>	from @ref signerProcessInternal (signerInternalProcessNonceRequest)
+ *  - SGN:<b>BND</b>	from the signing backends
  *
  * MySigning debug log messages:
  *
@@ -784,12 +784,12 @@ int signerMemcmp(const void* a, const void* b, size_t sz);
  * |!| SGN | SGN | SGN FAIL									| Message failed to be signed
  * | | SGN | SGN | NREQ='node'							| 'node' does not require signed messages
  * | | SGN | SGN | 'sender'!='us' NUS				| Will not sign because 'sender' is not 'us' (repeater)
- * |!| SGN | SGN | STATE									| Security system in a invalid state (personalization data tampered)
+ * |!| SGN | SGN | STATE  									| Security system in a invalid state (personalization data tampered)
  * |!| SGN | VER | NSG											| Message was not signed, but it should have been
  * |!| SGN | VER | FAIL											| Verification failed
  * | | SGN | VER | OK												| Verification succeeded
  * | | SGN | VER | LEFT='number'						| 'number' of failed verifications left in a row before node is locked
- * |!| SGN | VER | STATE									| Security system in a invalid state (personalization data tampered)
+ * |!| SGN | VER | STATE  									| Security system in a invalid state (personalization data tampered)
  * | | SGN | SKP | MSG CMD='cmd',TYPE='type'| Message with command 'cmd' and type 'type' does not need to be signed
  * | | SGN | SKP | ECHO CMD='cmd',TYPE='type'| ECHO messages does not need to be signed
  * | | SGN | NCE | LEFT='number'						| 'number' of nonce requests between successful verifications left before node is locked
