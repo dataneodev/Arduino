@@ -28,6 +28,14 @@ na
 		pinMode(pin, mode);
 #endif
 
+Zmienić w pliku C:\Programowanie\7.Projekty\5.Arduino\libraries\MySensors\core\MySensorsCore.h
+//GPIO_Gateway 4 - 103
+
+z ->
+#define GATEWAY_ADDRESS					((uint8_t)0)
+
+na ->
+#define GATEWAY_ADDRESS					((uint8_t)103)
 */
 
 
@@ -319,14 +327,12 @@ public:
 
 EE EEPROM24C32;
 
-//#define GATEWAY_ADDRESS					((uint8_t)100)
-
 //#include "C:\Programowanie\7.Projekty\5.Arduino\M_Library\RelayManager\RelayManager.h"
 /* #endregion */
 
 //RelayManager myRelayController = RelayManager( true); //controller
 
-#include "i:\7.Projekty\5.Arduino\M_Library\SwitchManager\SwitchManager.h"
+#include "C:\Programowanie\7.Projekty\5.Arduino\M_Library\SwitchManager\SwitchManager.h"
 
 SwitchManager mySwitchManager = SwitchManager();
 bool isPresentedToController = false;

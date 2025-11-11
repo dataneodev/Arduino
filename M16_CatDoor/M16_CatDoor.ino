@@ -17,7 +17,6 @@ static __inline__ void __psRestore(const uint32_t *__s)
 {
   //XTOS_RESTORE_INTLEVEL(*__s);
 }
-
 */
 #pragma endregion INSTALATION
 
@@ -49,7 +48,7 @@ static __inline__ void __psRestore(const uint32_t *__s)
 
 #define CPU_SPEED 160
 
-#define CHECK_NUMBER 0x40  //zmienic aby zresetować ustawienia zapisane w pamięci
+#define CHECK_NUMBER 0x41  //zmienic aby zresetować ustawienia zapisane w pamięci
 #define FADE 2
 #define FADE_OFF 100000
 #pragma endregion CONFIGURATION
@@ -1183,9 +1182,11 @@ void presentation()  // MySensors
 {
   MessageReceiveTime.stateStart();
 
+  sendHeartbeat();
+
+  wait(100);
+
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
-  
-  wait(10);
 
   present(MS_DOOR_STATUS_ID, S_DOOR, "Status otwarcia dzwi");
   present(MS_OPEN_DOOR_COUNT_ID, S_INFO, "Liczba cykli otwarcia");
@@ -1193,31 +1194,36 @@ void presentation()  // MySensors
   present(MS_CLOSE_DOOR_ID, S_BINARY, "Drzwi zawsze zamknięte");
   present(MS_AUTH_BLE_ID, S_BINARY, "Autoryzacja BLE");
   present(MS_LIGHT_ID, S_BINARY, "Swiatło");
-  present(MS_TEMP_ID, S_TEMP, "Temperatura");
-  present(MS_MIN_RSSI_ID, S_INFO, "Min RSSI");
+
   present(MS_OPEN_LOCK_ID, S_INFO, "Czas blokady");
 
   presentBleDevices();
+
+  present(MS_MIN_RSSI_ID, S_INFO, "Min RSSI");
+
+  wait(100);
+
+  sendHeartbeat();
 
   SCM.isStateChanged(false, 1);
   isPresentedToController = true;
 }
 
 void presentBleDevices() {
-  present(1, S_DOOR, SKETCH_NAME);
+  present(1, S_DOOR, "1");
 
   for (int i = 0; i < EEStorage.getBleDevicesCount(); i++) {
     char buf[6];
     snprintf(buf, sizeof(buf), "%u", EEStorage.getBleId(i));
 
-    present(EEStorage.getBleId(i), S_DOOR, buf, false);
+    present(EEStorage.getBleId(i), S_DOOR, buf);
   }
 
   for (int i = 0; i < EEStorage.getBleDevicesCount(); i++) {
     char buf[6];
     snprintf(buf, sizeof(buf), "%u", EEStorage.getBleId(i));
 
-    present(EEStorage.getEditNoId(i), S_INFO, buf, false);
+    present(EEStorage.getEditNoId(i), S_INFO, buf);
   }
 }
 
@@ -1460,6 +1466,7 @@ void sentDoorLockTime() {
 }
 
 void sendAllMySensorsStatus() {
+  wait(10);
   sentMyAllClientOpenDoorDefaultStatus();
   sentMyAllClientDoorAddress();
   sentMyDoorOpenCount();

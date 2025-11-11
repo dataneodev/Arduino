@@ -259,9 +259,15 @@ void inicjalizeI2C() {
 bool isPresentedToController = false;
 void presentation()  // MySensors
 {
+  sendHeartbeat();
+  wait(100);
+
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
   presentToControler();
 
+  wait(100);
+  sendHeartbeat();
+  
   SCM.isStateChanged(false, 0);
   isPresentedToController = true;
 }
@@ -562,7 +568,7 @@ void checkTimeRequest(uint32_t now) {
   }
 
   if (lastRequestTime + 86400 < now) {  //1days
-    lastRequestTime -= 3600;             //1h
+    lastRequestTime -= 3600;            //1h
     requestTime();
   }
 }
@@ -582,7 +588,7 @@ void clockInterrupt(void) {
 
   if (EEStorage.enableMotionDetection() && motionEnableTime != 0 && motionEnableTime < nowUnixtime) {
     bool clockAutoActionInProgress = clockEnableTime != 0 && clockEnableTime > nowUnixtime + 10;
-     stopMotionAutoAction(clockAutoActionInProgress && isAnyClockActionEnabled());
+    stopMotionAutoAction(clockAutoActionInProgress && isAnyClockActionEnabled());
   }
 
   if (EEStorage.enableClockSchedule() && clockEnableTime != 0 && clockEnableTime < nowUnixtime) {

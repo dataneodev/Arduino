@@ -806,9 +806,14 @@ void setNode5LightLevelToEPPROM(uint8_t lightLevel) {
 bool isPresentedToController = false;
 void presentation()  // MySensors
 {
+  sendHeartbeat();
+
+  wait(100);
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
   presentToControler();
 
+  wait(100);
+  sendHeartbeat();
   SCM.isStateChanged(false, 0);
   isPresentedToController = true;
 }
