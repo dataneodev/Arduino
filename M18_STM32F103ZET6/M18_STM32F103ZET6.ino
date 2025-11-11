@@ -319,6 +319,8 @@ public:
 
 EE EEPROM24C32;
 
+//#define GATEWAY_ADDRESS					((uint8_t)100)
+
 //#include "C:\Programowanie\7.Projekty\5.Arduino\M_Library\RelayManager\RelayManager.h"
 /* #endregion */
 
