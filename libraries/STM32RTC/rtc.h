@@ -37,13 +37,16 @@
 #ifndef __RTC_H
 #define __RTC_H
 
+#define RTC_BKP_SAVE_THE_DATE RTC_BKP_DR2
+
 /* Includes ------------------------------------------------------------------*/
 #include <stdbool.h>
 #include "stm32_def.h"
 #include "backup.h"
 #include "clock.h"
 
-#if defined(HAL_RTC_MODULE_ENABLED) && !defined(HAL_RTC_MODULE_ONLY)
+#if defined(STM32_CORE_VERSION) && (STM32_CORE_VERSION  > 0x01090000) &&\
+    defined(HAL_RTC_MODULE_ENABLED) && !defined(HAL_RTC_MODULE_ONLY)
 
 #ifdef __cplusplus
 extern "C" {
@@ -54,12 +57,6 @@ typedef enum {
   HOUR_FORMAT_12,
   HOUR_FORMAT_24
 } hourFormat_t;
-
-typedef enum {
-  MODE_BINARY_NONE, /* BCD only */
-  MODE_BINARY_ONLY,
-  MODE_BINARY_MIX
-} binaryMode_t;
 
 typedef enum {
   HOUR_AM,
@@ -76,31 +73,12 @@ typedef enum {
   /* NOTE: STM32 RTC can't assign a month or a year to an alarm. Those enum
   are kept for compatibility but are ignored inside enableAlarm(). */
   M_MSK   = 16,
-  Y_MSK   = 32,
-  SUBSEC_MSK = 48,
-  ALL_MSK = 0xFF
+  Y_MSK   = 32
 } alarmMask_t;
-
-typedef enum {
-  ALARM_A = RTC_ALARM_A,
-#ifdef RTC_ALARM_B
-  ALARM_B = RTC_ALARM_B
-#endif
-} alarm_t;
 
 typedef void(*voidCallbackPtr)(void *);
 
 /* Exported constants --------------------------------------------------------*/
-
-#if defined(STM32F1xx)
-/* select 32 bits in backup memory to store date.
-   2 consecutive 16bit reg. are reserved: RTC_BKP_DATE & RTC_BKP_DATE + 1 */
-#if !defined(RTC_BKP_DATE)
-/* can be changed for your convenience (here : LL_RTC_BKP_DR6 & LL_RTC_BKP_DR7) */
-#define RTC_BKP_DATE LL_RTC_BKP_DR6
-#endif
-#endif /* STM32F1xx */
-
 /* Interrupt priority */
 #ifndef RTC_IRQ_PRIO
 #define RTC_IRQ_PRIO       2
@@ -108,12 +86,8 @@ typedef void(*voidCallbackPtr)(void *);
 #ifndef RTC_IRQ_SUBPRIO
 #define RTC_IRQ_SUBPRIO    0
 #endif
-#ifndef RTC_IRQ_SSRU_PRIO
-#define RTC_IRQ_SSRU_PRIO     0
-#endif
-#ifndef RTC_IRQ_SSRU_SUBPRIO
-#define RTC_IRQ_SSRU_SUBPRIO  0
-#endif
+
+
 #define HSE_RTC_MAX 1000000U
 
 #if !defined(STM32F1xx)
@@ -122,14 +96,20 @@ typedef void(*voidCallbackPtr)(void *);
 #endif
 #define PREDIVA_MAX (RTC_PRER_PREDIV_A >> RTC_PRER_PREDIV_A_Pos)
 #define PREDIVS_MAX (RTC_PRER_PREDIV_S >> RTC_PRER_PREDIV_S_Pos)
-#else
-/* for stm32F1 the MAX value is combining PREDIV low & high registers */
-#define PREDIVA_MAX 0xFFFFFU
-#define PREDIVS_MAX 0xFFFFFFFFU /* Unused for STM32F1xx series */
 #endif /* !STM32F1xx */
 
-#if defined(STM32C0xx) || defined(STM32F0xx) || defined(STM32H5xx) || \
-    defined(STM32L0xx) || defined(STM32L5xx) || defined(STM32U5xx)
+/* Ultra Low Power High (ULPH) density */
+#if defined(STM32L100xBA) || defined (STM32L151xBA) || defined (STM32L152xBA) ||\
+    defined(STM32L100xC) || defined (STM32L151xC) || defined (STM32L152xC) ||\
+    defined (STM32L162xC) || defined(STM32L151xCA) || defined (STM32L151xD) ||\
+    defined (STM32L152xCA) || defined (STM32L152xD) || defined (STM32L162xCA) ||\
+    defined (STM32L162xD) || defined(STM32L151xE) || defined(STM32L151xDX) ||\
+    defined (STM32L152xE) || defined (STM32L152xDX) || defined (STM32L162xE) ||\
+    defined (STM32L162xDX)
+#define STM32L1_ULPH
+#endif
+
+#if defined(STM32F0xx) || defined(STM32L0xx)
 #define RTC_Alarm_IRQn RTC_IRQn
 #define RTC_Alarm_IRQHandler RTC_IRQHandler
 #endif
@@ -137,29 +117,6 @@ typedef void(*voidCallbackPtr)(void *);
 #define RTC_Alarm_IRQn RTC_TAMP_IRQn
 #define RTC_Alarm_IRQHandler RTC_TAMP_IRQHandler
 #endif
-
-/* mapping the IRQn for the one-second interrupt depending on the soc */
-#if defined(STM32F1xx) || (defined(STM32F0xx) && defined(RTC_CR_WUTE)) || \
-    defined(STM32H5xx) || defined(STM32L0xx) || defined(STM32L5xx) || \
-    defined(STM32U5xx)
-// specific WakeUp interrupt
-#define ONESECOND_IRQn RTC_IRQn
-#elif defined(STM32MP1xx)
-// global RTC interrupt
-#define ONESECOND_IRQn RTC_WKUP_ALARM_IRQn
-#elif defined(STM32G0xx)
-// global RTC/TAMP interrupt
-#define ONESECOND_IRQn RTC_TAMP_IRQn
-#elif defined(CORE_CM0PLUS) && \
-      (defined(STM32WL54xx) || defined(STM32WL55xx) || defined(STM32WL5Mxx))
-// global RTC/LSS interrupt
-#define ONESECOND_IRQn RTC_LSECSS_IRQn
-#elif defined(RTC_CR_WUTE)
-// specific WakeUp interrupt (including M4 cpu of the STM32WLE5xx)
-#define ONESECOND_IRQn RTC_WKUP_IRQn
-#else
-// no One-Second IRQ available for the series
-#endif /* STM32F1xx || etc */
 
 #if defined(STM32F1xx) && !defined(IS_RTC_WEEKDAY)
 /* Compensate missing HAL definition */
@@ -175,16 +132,28 @@ typedef void(*voidCallbackPtr)(void *);
 #define IS_RTC_HOUR12(HOUR)      IS_RTC_HOUR24(HOUR)
 #endif /* !STM32F1xx && !IS_RTC_WEEKDAY */
 
+/* __HAL_RCC_GET_RTC_SOURCE is not defined for F2*/
+/*
+#ifndef __HAL_RCC_GET_RTC_SOURCE
+static uint32_t RTC_getSource(void) {
+  RCC_PeriphCLKInitTypeDef  *PeriphClkInit;
+  HAL_RCCEx_GetPeriphCLKConfig(PeriphClkInit);
+  return PeriphClkInit->RTCClockSelection;
+}
+#define __HAL_RCC_GET_RTC_SOURCE()  RTC_getSource()
+#endif
+*/
+
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
-RTC_HandleTypeDef *RTC_GetHandle(void);
 void RTC_SetClockSource(sourceClock_t source);
-void RTC_getPrediv(uint32_t *asynch, uint32_t *synch);
-void RTC_setPrediv(uint32_t asynch, uint32_t synch);
 
-bool RTC_init(hourFormat_t format, binaryMode_t mode, sourceClock_t source, bool reset);
-void RTC_DeInit(bool reset_cb);
-bool RTC_IsConfigured(void);
+void RTC_getPrediv(int8_t *asynch, int16_t *synch);
+void RTC_setPrediv(int8_t asynch, int16_t synch);
+
+void RTC_init(hourFormat_t format, sourceClock_t source, bool reset);
+void RTC_DeInit(void);
+bool RTC_IsTimeSet(void);
 
 void RTC_SetTime(uint8_t hours, uint8_t minutes, uint8_t seconds, uint32_t subSeconds, hourAM_PM_t period);
 void RTC_GetTime(uint8_t *hours, uint8_t *minutes, uint8_t *seconds, uint32_t *subSeconds, hourAM_PM_t *period);
@@ -192,20 +161,12 @@ void RTC_GetTime(uint8_t *hours, uint8_t *minutes, uint8_t *seconds, uint32_t *s
 void RTC_SetDate(uint8_t year, uint8_t month, uint8_t day, uint8_t wday);
 void RTC_GetDate(uint8_t *year, uint8_t *month, uint8_t *day, uint8_t *wday);
 
-void RTC_StartAlarm(alarm_t name, uint8_t day, uint8_t hours, uint8_t minutes, uint8_t seconds, uint32_t subSeconds, hourAM_PM_t period, uint8_t mask);
-void RTC_StopAlarm(alarm_t name);
-bool RTC_IsAlarmSet(alarm_t name);
-void RTC_GetAlarm(alarm_t name, uint8_t *day, uint8_t *hours, uint8_t *minutes, uint8_t *seconds, uint32_t *subSeconds, hourAM_PM_t *period, uint8_t *mask);
-void attachAlarmCallback(voidCallbackPtr func, void *data, alarm_t name);
-void detachAlarmCallback(alarm_t name);
-#ifdef ONESECOND_IRQn
-void attachSecondsIrqCallback(voidCallbackPtr func);
-void detachSecondsIrqCallback(void);
-#endif /* ONESECOND_IRQn */
-#ifdef STM32WLxx
-void attachSubSecondsUnderflowIrqCallback(voidCallbackPtr func);
-void detachSubSecondsUnderflowIrqCallback(void);
-#endif /* STM32WLxx */
+void RTC_StartAlarm(uint8_t day, uint8_t hours, uint8_t minutes, uint8_t seconds, uint32_t subSeconds, hourAM_PM_t period, uint8_t mask);
+void RTC_StopAlarm(void);
+void RTC_GetAlarm(uint8_t *day, uint8_t *hours, uint8_t *minutes, uint8_t *seconds, uint32_t *subSeconds, hourAM_PM_t *period, uint8_t *mask);
+void attachAlarmCallback(voidCallbackPtr func, void *data);
+void detachAlarmCallback(void);
+
 #if defined(STM32F1xx)
 void RTC_StoreDate(void);
 #endif

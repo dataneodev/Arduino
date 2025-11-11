@@ -38,13 +38,13 @@ MyMessage::MyMessage(const uint8_t _sensorId, const mysensors_data_t _dataType)
 
 void MyMessage::clear(void)
 {
-	this->last                 = 0u;
-	this->sender               = 0u;
-	this->destination          = GATEWAY_ADDRESS; // Gateway is default destination
-	this->version_length       = 0u;
+	this->last = 0u;
+	this->sender = 0u;
+	this->destination= GATEWAY_ADDRESS; // Gateway is default destination
+	this->version_length = 0u;
 	this->command_echo_payload = 0u;
-	this->type                 = 0u;
-	this->sensor               = 0u;
+	this->type = 0u;
+	this->sensor = 0u;
 	// clear data buffer
 	(void)memset((void *)this->data, 0u, sizeof(this->data));
 
@@ -136,85 +136,85 @@ bool MyMessage::isAck(void) const
 bool MyMessage::isEcho(void) const
 {
 	return (bool)BF_GET(this->command_echo_payload, V2_MYS_HEADER_CEP_ECHO_POS,
-	                    V2_MYS_HEADER_CEP_ECHO_SIZE);
+	V2_MYS_HEADER_CEP_ECHO_SIZE);
 }
 
 MyMessage& MyMessage::setEcho(const bool echo)
 {
 	BF_SET(this->command_echo_payload, echo, V2_MYS_HEADER_CEP_ECHO_POS,
-	       V2_MYS_HEADER_CEP_ECHO_SIZE);
+	 V2_MYS_HEADER_CEP_ECHO_SIZE);
 	return *this;
 }
 
 bool MyMessage::getRequestEcho(void) const
 {
 	return (bool)BF_GET(this->command_echo_payload, V2_MYS_HEADER_CEP_ECHOREQUEST_POS,
-	                    V2_MYS_HEADER_CEP_ECHOREQUEST_SIZE);
+	V2_MYS_HEADER_CEP_ECHOREQUEST_SIZE);
 }
 
 MyMessage& MyMessage::setRequestEcho(const bool requestEcho)
 {
 	BF_SET(this->command_echo_payload, requestEcho, V2_MYS_HEADER_CEP_ECHOREQUEST_POS,
-	       V2_MYS_HEADER_CEP_ECHOREQUEST_SIZE);
+	 V2_MYS_HEADER_CEP_ECHOREQUEST_SIZE);
 	return *this;
 }
 
 uint8_t MyMessage::getVersion(void) const
 {
 	return (uint8_t)BF_GET(this->version_length, V2_MYS_HEADER_VSL_VERSION_POS,
-	                       V2_MYS_HEADER_VSL_VERSION_SIZE);
+	 V2_MYS_HEADER_VSL_VERSION_SIZE);
 }
 
 MyMessage& MyMessage::setVersion(void)
 {
 	BF_SET(this->version_length, V2_MYS_HEADER_PROTOCOL_VERSION, V2_MYS_HEADER_VSL_VERSION_POS,
-	       V2_MYS_HEADER_VSL_VERSION_SIZE);
+	 V2_MYS_HEADER_VSL_VERSION_SIZE);
 	return *this;
 }
 
 mysensors_command_t MyMessage::getCommand(void) const
 {
 	return static_cast<mysensors_command_t>(BF_GET(this->command_echo_payload,
-	                                        V2_MYS_HEADER_CEP_COMMAND_POS, V2_MYS_HEADER_CEP_COMMAND_SIZE));
+	V2_MYS_HEADER_CEP_COMMAND_POS, V2_MYS_HEADER_CEP_COMMAND_SIZE));
 }
 
 MyMessage& MyMessage::setCommand(const mysensors_command_t command)
 {
 	BF_SET(this->command_echo_payload, static_cast<uint8_t>(command), V2_MYS_HEADER_CEP_COMMAND_POS,
-	       V2_MYS_HEADER_CEP_COMMAND_SIZE);
+	 V2_MYS_HEADER_CEP_COMMAND_SIZE);
 	return *this;
 }
 
 mysensors_payload_t MyMessage::getPayloadType(void) const
 {
 	return static_cast<mysensors_payload_t>(BF_GET(this->command_echo_payload,
-	                                        V2_MYS_HEADER_CEP_PAYLOADTYPE_POS, V2_MYS_HEADER_CEP_PAYLOADTYPE_SIZE));
+	V2_MYS_HEADER_CEP_PAYLOADTYPE_POS, V2_MYS_HEADER_CEP_PAYLOADTYPE_SIZE));
 }
 
 MyMessage& MyMessage::setPayloadType(const mysensors_payload_t payloadType)
 {
 	BF_SET(this->command_echo_payload, static_cast<uint8_t>(payloadType),
-	       V2_MYS_HEADER_CEP_PAYLOADTYPE_POS, V2_MYS_HEADER_CEP_PAYLOADTYPE_SIZE);
+	 V2_MYS_HEADER_CEP_PAYLOADTYPE_POS, V2_MYS_HEADER_CEP_PAYLOADTYPE_SIZE);
 	return *this;
 }
 
 bool MyMessage::getSigned(void) const
 {
 	return (bool)BF_GET(this->version_length, V2_MYS_HEADER_VSL_SIGNED_POS,
-	                    V2_MYS_HEADER_VSL_SIGNED_SIZE);
+	V2_MYS_HEADER_VSL_SIGNED_SIZE);
 }
 
 MyMessage& MyMessage::setSigned(const bool signedFlag)
 {
 	BF_SET(this->version_length, signedFlag, V2_MYS_HEADER_VSL_SIGNED_POS,
-	       V2_MYS_HEADER_VSL_SIGNED_SIZE);
+	 V2_MYS_HEADER_VSL_SIGNED_SIZE);
 	return *this;
 }
 
 uint8_t MyMessage::getLength(void) const
 {
 	uint8_t length = BF_GET(this->version_length, V2_MYS_HEADER_VSL_LENGTH_POS,
-	                        V2_MYS_HEADER_VSL_LENGTH_SIZE);
+	V2_MYS_HEADER_VSL_LENGTH_SIZE);
 	// limit length
 	if (length > MAX_PAYLOAD_SIZE) {
 		length = MAX_PAYLOAD_SIZE;
@@ -231,7 +231,7 @@ MyMessage& MyMessage::setLength(const uint8_t length)
 	}
 
 	BF_SET(this->version_length, finalLength, V2_MYS_HEADER_VSL_LENGTH_POS,
-	       V2_MYS_HEADER_VSL_LENGTH_SIZE);
+	 V2_MYS_HEADER_VSL_LENGTH_SIZE);
 	return *this;
 }
 

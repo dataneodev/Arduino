@@ -37,9 +37,9 @@ bool protocolSerial2MyMessage(MyMessage &message, char *inputString)
 
 	// Extract command data coming on serial line
 	for (str = strtok_r(inputString, ";", &p); // split using semicolon
-	        str && index < 5; // loop while str is not null an max 4 times
-	        str = strtok_r(NULL, ";", &p), index++ // get subsequent tokens
-	    ) {
+	str && index < 5; // loop while str is not null an max 4 times
+	str = strtok_r(NULL, ";", &p), index++ // get subsequent tokens
+	) {
 		switch (index) {
 		case 0: // Radio id (destination)
 			message.setDestination(atoi(str));
@@ -91,24 +91,24 @@ bool protocolSerial2MyMessage(MyMessage &message, char *inputString)
 char *protocolMyMessage2Serial(MyMessage &message)
 {
 	(void)snprintf_P(_fmtBuffer, (uint8_t)MY_GATEWAY_MAX_SEND_LENGTH,
-	                 PSTR("%" PRIu8 ";%" PRIu8 ";%" PRIu8 ";%" PRIu8 ";%" PRIu8 ";%s\n"), message.getSender(),
-	                 message.getSensor(), message.getCommand(), message.isEcho(), message.getType(),
-	                 message.getString(_convBuffer));
+	 PSTR("%" PRIu8 ";%" PRIu8 ";%" PRIu8 ";%" PRIu8 ";%" PRIu8 ";%s\n"), message.getSender(),
+	 message.getSensor(), message.getCommand(), message.isEcho(), message.getType(),
+	 message.getString(_convBuffer));
 	return _fmtBuffer;
 }
 
 char *protocolMyMessage2MQTT(const char *prefix, MyMessage &message)
 {
 	(void)snprintf_P(_fmtBuffer, (uint8_t)MY_GATEWAY_MAX_SEND_LENGTH,
-	                 PSTR("%s/%" PRIu8 "/%" PRIu8 "/%" PRIu8 "/%" PRIu8 "/%" PRIu8 ""), prefix,
-	                 message.getSender(), message.getSensor(), message.getCommand(), message.isEcho(),
-	                 message.getType());
+	 PSTR("%s/%" PRIu8 "/%" PRIu8 "/%" PRIu8 "/%" PRIu8 "/%" PRIu8 ""), prefix,
+	 message.getSender(), message.getSensor(), message.getCommand(), message.isEcho(),
+	 message.getType());
 	return _fmtBuffer;
 }
 
 
 bool protocolMQTT2MyMessage(MyMessage &message, char *topic, uint8_t *payload,
-                            const unsigned int length)
+const unsigned int length)
 {
 	char *str, *p;
 	uint8_t index = 0;
@@ -116,9 +116,9 @@ bool protocolMQTT2MyMessage(MyMessage &message, char *topic, uint8_t *payload,
 	message.setLast(GATEWAY_ADDRESS);
 	message.setEcho(false);
 	for (str = strtok_r(topic + strlen(MY_MQTT_SUBSCRIBE_TOPIC_PREFIX) + 1, "/", &p);
-	        str && index < 5;
-	        str = strtok_r(NULL, "/", &p), index++
-	    ) {
+	str && index < 5;
+	str = strtok_r(NULL, "/", &p), index++
+	) {
 		switch (index) {
 		case 0:
 			// Node id

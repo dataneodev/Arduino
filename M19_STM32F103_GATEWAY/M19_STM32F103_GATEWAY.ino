@@ -12,7 +12,7 @@ GenF1.pid.0=0x5741
 
 Podmienić pliki MySensors hal/architecture/STM32F1 z lib(nie działa odczyć i zapis ustawień Ms do EEPROMu)
 DO gatwaya musi by oryginał STM32F103, klon CH32F103 nie działa poprawnie USB
-Board: https://github.com/stm32duino
+Board: STM32 MCU based boards -> https://github.com/stm32duino -> 2.10.1
 Generic STM32F1 Series -> Generic F103C8Tx
 Włączyć w opcjach USB support CDC (generic Serial)
 Zainstalować sterowniki C:\Programowanie\7.Projekty\5.Arduino\M_Library\ch32\Arduino_STM32-master\Arduino_STM32-master\drivers\win\install_drivers.bat

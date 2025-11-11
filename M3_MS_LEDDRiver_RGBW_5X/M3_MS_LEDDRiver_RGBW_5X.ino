@@ -1,6 +1,7 @@
 /* Instalacja
 Dodać board https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json
-Zainstalować board STM32 MCU based boards
+Board: STM32 MCU based boards -> https://github.com/stm32duino -> 2.10.1
+Generic STM32F1 Series -> Generic F103C8Tx
 Zainstalować  Arduino SAM Boards
 Podmienić pliki w MySensors dla STM32F1 libraries\MySensors\hal\architecture\STM32F1\
 Info https://github.com/stm32duino/Arduino_Core_STM32
@@ -263,7 +264,7 @@ HardwareSerial RS485Serial(PA3, PA2);
 /* #endregion */
 
 /* #region Imports */
-#include "ButtonDebounce.h"
+#include <GKButtonDebounce.h>
 #include <MySensors.h>
 #include <24C32.h>
 #include <Wire.h>
@@ -313,13 +314,13 @@ public:
 /* #endregion */
 
 /* #region  global variable */
-ButtonDebounce in1(IN_1);
-ButtonDebounce in2(IN_2);
-ButtonDebounce in3(IN_3);
-ButtonDebounce in4(IN_4);
+GKButtonDebounce in1(IN_1);
+GKButtonDebounce in2(IN_2);
+GKButtonDebounce in3(IN_3);
+GKButtonDebounce in4(IN_4);
 
 #if defined(VERSION_5X)
-ButtonDebounce in5(IN_5);
+GKButtonDebounce in5(IN_5);
 
 #endif
 

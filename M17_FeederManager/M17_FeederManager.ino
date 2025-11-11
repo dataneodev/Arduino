@@ -2,9 +2,10 @@
 
 Podmienić pliki MySensors hal/architecture/STM32F1 z lib(nie działa odczyć i zapis ustawień Ms do EEPROMu)
 Płytka to klon CH32F103 
-Board: https://github.com/stm32duino
+Board: STM32 MCU based boards -> https://github.com/stm32duino -> 2.10.1
 Generic STM32F1 Series -> Generic F103C8Tx
 
+Podmienić biblioteke STM32RTC w libraries
 */
 
 
@@ -44,7 +45,6 @@ HardwareSerial RS485Serial(PB7, PB6);
 #define MY_RS485_BAUD_RATE 9600        // Set RS485 baud rate to use
 #define MY_RS485_HWSERIAL RS485Serial  //
 #define MY_RS485_SOH_COUNT 6
-
 
 // 24C32
 #define SCL_PIN PB8
@@ -602,7 +602,7 @@ void setNewRTCClockAwake() {
 
   time_t now = myTZ.toLocal(rtc.getEpoch());
   time_t sleepTime = getSleepTime(now);
-  rtc.setAlarmEpoch(myTZ.toUTC(sleepTime), rtc.MATCH_YYMMDDHHMMSS);
+  rtc.setAlarmEpoch(myTZ.toUTC(sleepTime), rtc.MATCH_HHMMSS);
 }
 
 time_t getSleepTime(time_t now) {

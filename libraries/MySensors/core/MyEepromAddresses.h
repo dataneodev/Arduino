@@ -37,7 +37,7 @@
 #define SIZE_DISTANCE						(1u)		//!< Size GW distance
 #define SIZE_ROUTES							(256u)	//!< Size routing table
 #define SIZE_CONTROLLER_CONFIG				(23u)	//!< Size controller config
-#define SIZE_PERSONALIZATION_CHECKSUM	(1u)  //!< Size personalization checksum
+#define SIZE_PERSONALIZATION_CHECKSUM	(1u)//!< Size personalization checksum
 #define SIZE_FIRMWARE_TYPE					(2u)		//!< Size firmware type
 #define SIZE_FIRMWARE_VERSION				(2u)		//!< Size firmware version
 #define SIZE_FIRMWARE_BLOCKS				(2u)		//!< Size firmware blocks
