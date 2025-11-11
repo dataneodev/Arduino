@@ -311,7 +311,7 @@ EE EEPROM24C32;
 
 //RelayManager myRelayController = RelayManager( true); //controller
 
-#include "C:\Programowanie\7.Projekty\5.Arduino\M_Library\SwitchManager\SwitchManager.h"
+#include "i:\7.Projekty\5.Arduino\M_Library\SwitchManager\SwitchManager.h"
 
 SwitchManager mySwitchManager = SwitchManager();
 

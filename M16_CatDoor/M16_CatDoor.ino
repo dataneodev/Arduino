@@ -1184,6 +1184,8 @@ void presentation()  // MySensors
   MessageReceiveTime.stateStart();
 
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
+  
+  wait(10);
 
   present(MS_DOOR_STATUS_ID, S_DOOR, "Status otwarcia dzwi");
   present(MS_OPEN_DOOR_COUNT_ID, S_INFO, "Liczba cykli otwarcia");
@@ -1205,10 +1207,10 @@ void presentBleDevices() {
   present(1, S_DOOR, SKETCH_NAME);
 
   for (int i = 0; i < EEStorage.getBleDevicesCount(); i++) {
-   char buf[6];
+    char buf[6];
     snprintf(buf, sizeof(buf), "%u", EEStorage.getBleId(i));
 
-    present(EEStorage.getBleId(i), S_DOOR, buf, false);  
+    present(EEStorage.getBleId(i), S_DOOR, buf, false);
   }
 
   for (int i = 0; i < EEStorage.getBleDevicesCount(); i++) {
@@ -1605,7 +1607,7 @@ void receive(const MyMessage &message) {
   if (message.sensor >= MS_DOOR_EDIT_START_ID + 2 && message.sensor <= MS_DOOR_EDIT_START_ID + 11 && message.getType() == V_TEXT) {
     uint8_t no = EEStorage.getLpForBLENo(message.sensor);
 
-    if(no == 255){
+    if (no == 255) {
       return;
     }
 
