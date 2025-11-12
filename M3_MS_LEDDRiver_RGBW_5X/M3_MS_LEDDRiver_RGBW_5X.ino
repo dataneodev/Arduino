@@ -34,20 +34,20 @@ Dodatek do VS Code #region folding for VS Code
 */
 
 /* #region  user configuration */
-#define MY_NODE_ID 60  // id wezła dla my sensors
+#define MY_NODE_ID 61  // id wezła dla my sensors
 
 //przy zmianie typu sterownika obowiązkowo zmienic cyfre kontrolną dla zresetowania ustawień!
-#define EEPROM_RESET 0x37  // zmienić wartość aby zresetować ustawienia - przy każdej zmianie typu kontrolera
+#define EEPROM_RESET 0x41  // zmienić wartość aby zresetować ustawienia - przy każdej zmianie typu kontrolera
 
-//#define VERSION_5X
+#define VERSION_5X
 
 #if defined VERSION_5X
-#define NODE_1_RGBWW
+//#define NODE_1_RGBWW
 #endif
 
-#define NODE_1_RGBW
+//#define NODE_1_RGBW
 //#define NODE_1_RGB
-//#define NODE_1_SINGLE
+#define NODE_1_SINGLE
 
 #define NODE_1_MIN_LIGHT_LEVEL 12      // minimalna jasnosc
 #define NODE_1_MAX_LIGHT_LEVEL 255     // maksymalna jasnosc 0-255
@@ -123,37 +123,37 @@ struct inButtonDef {
 //przycisk 1
 inButtonDef in1Button = {
   Node1,
-  Switching,
-  false,
+  OnOff,
+  true,
 };
 
 //przycisk 2
 inButtonDef in2Button = {
   Node1,
-  Switching,
-  false
+  OnOff,
+  true
 };
 
 //przycisk 3
 inButtonDef in3Button = {
   Node1,
-  Switching,
-  false
+  OnOff,
+  true
 };
 
 
 //przycisk 4
 inButtonDef in4Button = {
   Node1,
-  Switching,
-  false
+  OnOff,
+  true
 };
 
 #if defined(VERSION_5X)
 //przycisk 5
 inButtonDef in5Button = {
   Node1,
-  Switching,
+  OnOff,
   true
 };
 
