@@ -1554,6 +1554,8 @@ void receive(const MyMessage &message) {
   if (message.isAck())
     return;
 
+  wait(50);
+
   if (MS_OPEN_DOOR_ID == message.sensor && message.getType() == V_STATUS) {
     if (message.getBool() && EEStorage.isDoorAlwaysClose()) {
       EEStorage.setDoorAlwaysClose(false);

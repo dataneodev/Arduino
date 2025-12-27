@@ -34,12 +34,12 @@ Dodatek do VS Code #region folding for VS Code
 */
 
 /* #region  user configuration */
-#define MY_NODE_ID 61  // id wezła dla my sensors
+#define MY_NODE_ID 60  // id wezła dla my sensors
 
 //przy zmianie typu sterownika obowiązkowo zmienic cyfre kontrolną dla zresetowania ustawień!
-#define EEPROM_RESET 0x41  // zmienić wartość aby zresetować ustawienia - przy każdej zmianie typu kontrolera
+#define EEPROM_RESET 0x50  // zmienić wartość aby zresetować ustawienia - przy każdej zmianie typu kontrolera
 
-#define VERSION_5X
+//#define VERSION_5X
 
 #if defined VERSION_5X
 //#define NODE_1_RGBWW
@@ -124,37 +124,37 @@ struct inButtonDef {
 inButtonDef in1Button = {
   Node1,
   OnOff,
-  true,
+  false,
 };
 
 //przycisk 2
 inButtonDef in2Button = {
-  Node1,
+  Node2,
   OnOff,
-  true
+  false
 };
 
 //przycisk 3
 inButtonDef in3Button = {
-  Node1,
+  Node3,
   OnOff,
-  true
+  false
 };
 
 
 //przycisk 4
 inButtonDef in4Button = {
-  Node1,
+  Node4,
   OnOff,
-  true
+  false
 };
 
 #if defined(VERSION_5X)
 //przycisk 5
 inButtonDef in5Button = {
-  Node1,
+  Node5,
   OnOff,
-  true
+  false
 };
 
 #endif
@@ -321,7 +321,6 @@ GKButtonDebounce in4(IN_4);
 
 #if defined(VERSION_5X)
 GKButtonDebounce in5(IN_5);
-
 #endif
 
 
@@ -1036,6 +1035,8 @@ void receive(const MyMessage &message)  // MySensors
     return;
 
   delaySleep(DELAY_MAX_TIME);
+
+  wait(50);
 
 #if defined NODE_1_SINGLE || defined NODE_1_RGBWW || defined NODE_1_RGBW || defined NODE_1_RGB
   if (message.sensor == NODE_ID_1 && message.type == V_STATUS) {

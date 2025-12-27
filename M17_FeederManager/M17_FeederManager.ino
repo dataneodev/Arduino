@@ -267,7 +267,7 @@ void presentation()  // MySensors
 
   wait(100);
   sendHeartbeat();
-  
+
   SCM.isStateChanged(false, 0);
   isPresentedToController = true;
 }
@@ -359,6 +359,8 @@ void receive(const MyMessage &message)  // MySensors
     return;
 
   delaySleep(SLEEP_MAX_TIME);
+
+  wait(50);
 
   if (message.sensor == MY_24V_STATUS_SENSOR_ID && message.type == V_STATUS) {
     setEnable24VOutput(message.getBool(), true);
@@ -559,6 +561,7 @@ void clearAllAutoActions() {
 void checkTimeRequest(uint32_t now) {
   if (lastRequestTime == 0) {
     lastRequestTime = now;
+    requestTime();
     return;
   }
 
@@ -824,7 +827,9 @@ void setup() {
 void loop() {
   if (SCM.isStateChanged(isPresentedToController, 0)) {
     delaySleep(SLEEP_MAX_TIME);
+    wait(50);
     sendAllMySensorsStatus();
+    wait(50);
     requestTime();
     delaySleep(SLEEP_MAX_TIME);
   }
