@@ -284,8 +284,480 @@ na ->
 #define P_XII_7 PB4
 #define P_XII_8 PB6
 
-#define P_C_I A9 //Connector I
-#define P_C_II A10 //Connector II
+#define P_C_I A9    //Connector I
+#define P_C_II A10  //Connector II
+
+// GRUPA I
+#define P_I_1_GPIO GPIOB
+#define P_I_1_IDR GPIO_IDR_IDR12
+#define P_I_2_GPIO GPIOB
+#define P_I_2_IDR GPIO_IDR_IDR14
+#define P_I_3_GPIO GPIOD
+#define P_I_3_IDR GPIO_IDR_IDR8
+#define P_I_4_GPIO GPIOD
+#define P_I_4_IDR GPIO_IDR_IDR10
+#define P_I_5_GPIO GPIOD
+#define P_I_5_IDR GPIO_IDR_IDR12
+#define P_I_6_GPIO GPIOD
+#define P_I_6_IDR GPIO_IDR_IDR14
+#define P_I_7_GPIO GPIOG
+#define P_I_7_IDR GPIO_IDR_IDR2
+#define P_I_8_GPIO GPIOG
+#define P_I_8_IDR GPIO_IDR_IDR4
+
+// GRUPA II
+#define P_II_1_GPIO GPIOB
+#define P_II_1_IDR GPIO_IDR_IDR13
+#define P_II_2_GPIO GPIOB
+#define P_II_2_IDR GPIO_IDR_IDR15
+#define P_II_3_GPIO GPIOD
+#define P_II_3_IDR GPIO_IDR_IDR9
+#define P_II_4_GPIO GPIOD
+#define P_II_4_IDR GPIO_IDR_IDR11
+#define P_II_5_GPIO GPIOD
+#define P_II_5_IDR GPIO_IDR_IDR13
+#define P_II_6_GPIO GPIOD
+#define P_II_6_IDR GPIO_IDR_IDR15
+#define P_II_7_GPIO GPIOG
+#define P_II_7_IDR GPIO_IDR_IDR3
+#define P_II_8_GPIO GPIOG
+#define P_II_8_IDR GPIO_IDR_IDR5
+
+// GRUPA III
+#define P_III_1_GPIO PA15_GPIO
+#define P_III_1_IDR GPIO_IDR_IDR15
+#define P_III_2_GPIO GPIOC
+#define P_III_2_IDR GPIO_IDR_IDR11
+#define P_III_3_GPIO GPIOD
+#define P_III_3_IDR GPIO_IDR_IDR0
+#define P_III_4_GPIO GPIOD
+#define P_III_4_IDR GPIO_IDR_IDR2
+#define P_III_5_GPIO GPIOD
+#define P_III_5_IDR GPIO_IDR_IDR4
+#define P_III_6_GPIO GPIOD
+#define P_III_6_IDR GPIO_IDR_IDR6
+#define P_III_7_GPIO GPIOG
+#define P_III_7_IDR GPIO_IDR_IDR9
+#define P_III_8_GPIO GPIOG
+#define P_III_8_IDR GPIO_IDR_IDR11
+
+// GRUPA IV
+#define P_IV_1_GPIO GPIOC
+#define P_IV_1_IDR GPIO_IDR_IDR10
+#define P_IV_2_GPIO GPIOC
+#define P_IV_2_IDR GPIO_IDR_IDR12
+#define P_IV_3_GPIO GPIOD
+#define P_IV_3_IDR GPIO_IDR_IDR1
+#define P_IV_4_GPIO GPIOD
+#define P_IV_4_IDR GPIO_IDR_IDR3
+#define P_IV_5_GPIO GPIOD
+#define P_IV_5_IDR GPIO_IDR_IDR5
+#define P_IV_6_GPIO GPIOD
+#define P_IV_6_IDR GPIO_IDR_IDR7
+#define P_IV_7_GPIO GPIOG
+#define P_IV_7_IDR GPIO_IDR_IDR10
+#define P_IV_8_GPIO GPIOG
+#define P_IV_8_IDR GPIO_IDR_IDR12
+
+// GRUPA V
+#define P_V_1_GPIO GPIOB
+#define P_V_1_IDR GPIO_IDR_IDR11
+#define P_V_2_GPIO GPIOE
+#define P_V_2_IDR GPIO_IDR_IDR15
+#define P_V_3_GPIO GPIOE
+#define P_V_3_IDR GPIO_IDR_IDR13
+#define P_V_4_GPIO GPIOE
+#define P_V_4_IDR GPIO_IDR_IDR11
+#define P_V_5_GPIO GPIOE
+#define P_V_5_IDR GPIO_IDR_IDR9
+#define P_V_6_GPIO GPIOE
+#define P_V_6_IDR GPIO_IDR_IDR7
+#define P_V_7_GPIO GPIOG
+#define P_V_7_IDR GPIO_IDR_IDR0
+#define P_V_8_GPIO GPIOF
+#define P_V_8_IDR GPIO_IDR_IDR14
+
+// GRUPA VI
+#define P_VI_1_GPIO GPIOB
+#define P_VI_1_IDR GPIO_IDR_IDR10
+#define P_VI_2_GPIO GPIOE
+#define P_VI_2_IDR GPIO_IDR_IDR14
+#define P_VI_3_GPIO GPIOE
+#define P_VI_3_IDR GPIO_IDR_IDR12
+#define P_VI_4_GPIO GPIOE
+#define P_VI_4_IDR GPIO_IDR_IDR10
+#define P_VI_5_GPIO GPIOE
+#define P_VI_5_IDR GPIO_IDR_IDR8
+#define P_VI_6_GPIO GPIOG
+#define P_VI_6_IDR GPIO_IDR_IDR1
+#define P_VI_7_GPIO GPIOF
+#define P_VI_7_IDR GPIO_IDR_IDR15
+#define P_VI_8_GPIO GPIOF
+#define P_VI_8_IDR GPIO_IDR_IDR13
+
+// GRUPA VII
+#define P_VII_1_GPIO GPIOB
+#define P_VII_1_IDR GPIO_IDR_IDR2
+#define P_VII_2_GPIO GPIOB
+#define P_VII_2_IDR GPIO_IDR_IDR0
+#define P_VII_3_GPIO GPIOC
+#define P_VII_3_IDR GPIO_IDR_IDR4
+#define P_VII_4_GPIO GPIOA
+#define P_VII_4_IDR GPIO_IDR_IDR6
+#define P_VII_5_GPIO GPIOA
+#define P_VII_5_IDR GPIO_IDR_IDR4
+#define P_VII_6_GPIO GPIOA
+#define P_VII_6_IDR GPIO_IDR_IDR2
+#define P_VII_7_GPIO GPIOA
+#define P_VII_7_IDR GPIO_IDR_IDR0
+#define P_VII_8_GPIO GPIOC
+#define P_VII_8_IDR GPIO_IDR_IDR2
+
+// GRUPA VIII
+#define P_VIII_1_GPIO GPIOB
+#define P_VIII_1_IDR GPIO_IDR_IDR1
+#define P_VIII_2_GPIO GPIOC
+#define P_VIII_2_IDR GPIO_IDR_IDR5
+#define P_VIII_3_GPIO GPIOA
+#define P_VIII_3_IDR GPIO_IDR_IDR7
+#define P_VIII_4_GPIO GPIOA
+#define P_VIII_4_IDR GPIO_IDR_IDR5
+#define P_VIII_5_GPIO GPIOA
+#define P_VIII_5_IDR GPIO_IDR_IDR3
+#define P_VIII_6_GPIO GPIOA
+#define P_VIII_6_IDR GPIO_IDR_IDR1
+#define P_VIII_7_GPIO GPIOC
+#define P_VIII_7_IDR GPIO_ID_IDR3
+#define P_VIII_8_GPIO GPIOC
+#define P_VIII_8_IDR GPIO_IDR_IDR1
+
+// GRUPA IX
+#define P_IX_1_GPIO GPIOF
+#define P_IX_1_IDR GPIO_IDR_IDR9
+#define P_IX_2_GPIO GPIOF
+#define P_IX_2_IDR GPIO_IDR_IDR7
+#define P_IX_3_GPIO GPIOF
+#define P_IX_3_IDR GPIO_IDR_IDR5
+#define P_IX_4_GPIO GPIOF
+#define P_IX_4_IDR GPIO_IDR_IDR3
+#define P_IX_5_GPIO GPIOF
+#define P_IX_5_IDR GPIO_IDR_IDR1
+#define P_IX_6_GPIO GPIOC
+#define P_IX_6_IDR GPIO_IDR_IDR13
+#define P_IX_7_GPIO GPIOE
+#define P_IX_7_IDR GPIO_IDR_IDR5
+#define P_IX_8_GPIO GPIOE
+#define P_IX_8_IDR GPIO_IDR_IDR3
+
+// GRUPA X
+#define P_X_1_GPIO GPIOF
+#define P_X_1_IDR GPIO_IDR_IDR8
+#define P_X_2_GPIO GPIOF
+#define P_X_2_IDR GPIO_IDR_IDR6
+#define P_X_3_GPIO GPIOF
+#define P_X_3_IDR GPIO_IDR_IDR4
+#define P_X_4_GPIO GPIOF
+#define P_X_4_IDR GPIO_IDR_IDR2
+#define P_X_5_GPIO GPIOF
+#define P_X_5_IDR GPIO_IDR_IDR0
+#define P_X_6_GPIO GPIOE
+#define P_X_6_IDR GPIO_IDR_IDR6
+#define P_X_7_GPIO GPIOE
+#define P_X_7_IDR GPIO_IDR_IDR4
+#define P_X_8_GPIO GPIOE
+#define P_X_8_IDR GPIO_IDR_IDR2
+
+// GRUPA XI
+#define P_XI_1_GPIO GPIOA
+#define P_XI_1_IDR GPIO_IDR_IDR8
+#define P_XI_2_GPIO GPIOC
+#define P_XI_2_IDR GPIO_IDR_IDR8
+#define P_XI_3_GPIO GPIOC
+#define P_XI_3_IDR GPIO_IDR_IDR6
+#define P_XI_4_GPIO GPIOG
+#define P_XI_4_IDR GPIO_IDR_IDR7
+#define P_XI_5_GPIO GPIOG
+#define P_XI_5_IDR GPIO_IDR_IDR6
+#define P_XI_6_GPIO GPIOG
+#define P_XI_6_IDR GPIO_IDR_IDR8
+#define P_XI_7_GPIO GPIOC
+#define P_XI_7_IDR GPIO_IDR_IDR7
+#define P_XI_8_GPIO GPIOC
+#define P_XI_8_IDR GPIO_IDR_IDR9
+
+// GRUPA XII
+#define P_XII_1_GPIO GPIOB
+#define P_XII_1_IDR GPIO_IDR_IDR7
+#define P_XII_2_GPIO GPIOB
+#define P_XII_2_IDR GPIO_IDR_IDR5
+#define P_XII_3_GPIO GPIOB
+#define P_XII_3_IDR GPIO_IDR_IDR3
+#define P_XII_4_GPIO GPIOG
+#define P_XII_4_IDR GPIO_IDR_IDR14
+#define P_XII_5_GPIO GPIOG
+#define P_XII_5_IDR GPIO_IDR_IDR13
+#define P_XII_6_GPIO GPIOG
+#define P_XII_6_IDR GPIO_IDR_IDR15
+#define P_XII_7_GPIO GPIOB
+#define P_XII_7_IDR GPIO_IDR_IDR4
+#define P_XII_8_GPIO GPIOB
+#define P_XII_8_IDR GPIO_IDR_IDR6
+
+// Connectors (Analog / GPIO)
+#define P_C_I_GPIO GPIOA
+#define P_C_I_IDR GPIO_IDR_IDR9
+#define P_C_II_GPIO GPIOA
+#define P_C_II_IDR GPIO_IDR_IDR10
+
+
+//SWITCHES
+unsigned long Delay = 100;
+#define P_I_1_SWITCH
+
+#ifdef P_I_1_SWITCH
+uint32_t _P_I_1_LastDebounceTime = 0;
+uint8_t _P_I_1_LastStateBtn = HIGH;
+
+READ_PORT(P_I_1_GPIO, P_I_1_IDR)
+#endif
+
+// // PORT A
+// #define PA0_GPIO  GPIOA
+// #define PA0_IDR   GPIO_IDR_IDR0
+// #define PA1_GPIO  GPIOA
+// #define PA1_IDR   GPIO_IDR_IDR1
+// #define PA2_GPIO  GPIOA
+// #define PA2_IDR   GPIO_IDR_IDR2
+// #define PA3_GPIO  GPIOA
+// #define PA3_IDR   GPIO_IDR_IDR3
+// #define PA4_GPIO  GPIOA
+// #define PA4_IDR   GPIO_IDR_IDR4
+// #define PA5_GPIO  GPIOA
+// #define PA5_IDR   GPIO_IDR_IDR5
+// #define PA6_GPIO  GPIOA
+// #define PA6_IDR   GPIO_IDR_IDR6
+// #define PA7_GPIO  GPIOA
+// #define PA7_IDR   GPIO_IDR_IDR7
+// #define PA8_GPIO  GPIOA
+// #define PA8_IDR   GPIO_IDR_IDR8
+// #define PA9_GPIO  GPIOA
+// #define PA9_IDR   GPIO_IDR_IDR9
+// #define PA10_GPIO GPIOA
+// #define PA10_IDR  GPIO_IDR_IDR10
+// #define PA11_GPIO GPIOA
+// #define PA11_IDR  GPIO_IDR_IDR11
+// #define PA12_GPIO GPIOA
+// #define PA12_IDR  GPIO_IDR_IDR12
+// #define PA13_GPIO GPIOA
+// #define PA13_IDR  GPIO_IDR_IDR13
+// #define PA14_GPIO GPIOA
+// #define PA14_IDR  GPIO_IDR_IDR14
+// #define PA15_GPIO GPIOA
+// #define PA15_IDR  GPIO_IDR_IDR15
+
+// // PORT B
+// #define PB0_GPIO  GPIOB
+// #define PB0_IDR   GPIO_IDR_IDR0
+// #define PB1_GPIO  GPIOB
+// #define PB1_IDR   GPIO_IDR_IDR1
+// #define PB2_GPIO  GPIOB
+// #define PB2_IDR   GPIO_IDR_IDR2
+// #define PB3_GPIO  GPIOB
+// #define PB3_IDR   GPIO_IDR_IDR3
+// #define PB4_GPIO  GPIOB
+// #define PB4_IDR   GPIO_IDR_IDR4
+// #define PB5_GPIO  GPIOB
+// #define PB5_IDR   GPIO_IDR_IDR5
+// #define PB6_GPIO  GPIOB
+// #define PB6_IDR   GPIO_IDR_IDR6
+// #define PB7_GPIO  GPIOB
+// #define PB7_IDR   GPIO_IDR_IDR7
+// #define PB8_GPIO  GPIOB
+// #define PB8_IDR   GPIO_IDR_IDR8
+// #define PB9_GPIO  GPIOB
+// #define PB9_IDR   GPIO_IDR_IDR9
+// #define PB10_GPIO GPIOB
+// #define PB10_IDR  GPIO_IDR_IDR10
+// #define PB11_GPIO GPIOB
+// #define PB11_IDR  GPIO_IDR_IDR11
+// #define PB12_GPIO GPIOB
+// #define PB12_IDR  GPIO_IDR_IDR12
+// #define PB13_GPIO GPIOB
+// #define PB13_IDR  GPIO_IDR_IDR13
+// #define PB14_GPIO GPIOB
+// #define PB14_IDR  GPIO_IDR_IDR14
+// #define PB15_GPIO GPIOB
+// #define PB15_IDR  GPIO_IDR_IDR15
+
+// // PORT C
+// #define PC0_GPIO  GPIOC
+// #define PC0_IDR   GPIO_IDR_IDR0
+// #define PC1_GPIO  GPIOC
+// #define PC1_IDR   GPIO_IDR_IDR1
+// #define PC2_GPIO  GPIOC
+// #define PC2_IDR   GPIO_IDR_IDR2
+// #define PC3_GPIO  GPIOC
+// #define PC3_IDR   GPIO_IDR_IDR3
+// #define PC4_GPIO  GPIOC
+// #define PC4_IDR   GPIO_IDR_IDR4
+// #define PC5_GPIO  GPIOC
+// #define PC5_IDR   GPIO_IDR_IDR5
+// #define PC6_GPIO  GPIOC
+// #define PC6_IDR   GPIO_IDR_IDR6
+// #define PC7_GPIO  GPIOC
+// #define PC7_IDR   GPIO_IDR_IDR7
+// #define PC8_GPIO  GPIOC
+// #define PC8_IDR   GPIO_IDR_IDR8
+// #define PC9_GPIO  GPIOC
+// #define PC9_IDR   GPIO_IDR_IDR9
+// #define PC10_GPIO GPIOC
+// #define PC10_IDR  GPIO_IDR_IDR10
+// #define PC11_GPIO GPIOC
+// #define PC11_IDR  GPIO_IDR_IDR11
+// #define PC12_GPIO GPIOC
+// #define PC12_IDR  GPIO_IDR_IDR12
+// #define PC13_GPIO GPIOC
+// #define PC13_IDR  GPIO_IDR_IDR13
+// #define PC14_GPIO GPIOC
+// #define PC14_IDR  GPIO_IDR_IDR14
+// #define PC15_GPIO GPIOC
+// #define PC15_IDR  GPIO_IDR_IDR15
+
+// // PORT D
+// #define PD0_GPIO  GPIOD
+// #define PD0_IDR   GPIO_IDR_IDR0
+// #define PD1_GPIO  GPIOD
+// #define PD1_IDR   GPIO_IDR_IDR1
+// #define PD2_GPIO  GPIOD
+// #define PD2_IDR   GPIO_IDR_IDR2
+// #define PD3_GPIO  GPIOD
+// #define PD3_IDR   GPIO_IDR_IDR3
+// #define PD4_GPIO  GPIOD
+// #define PD4_IDR   GPIO_IDR_IDR4
+// #define PD5_GPIO  GPIOD
+// #define PD5_IDR   GPIO_IDR_IDR5
+// #define PD6_GPIO  GPIOD
+// #define PD6_IDR   GPIO_IDR_IDR6
+// #define PD7_GPIO  GPIOD
+// #define PD7_IDR   GPIO_IDR_IDR7
+// #define PD8_GPIO  GPIOD
+// #define PD8_IDR   GPIO_IDR_IDR8
+// #define PD9_GPIO  GPIOD
+// #define PD9_IDR   GPIO_IDR_IDR9
+// #define PD10_GPIO GPIOD
+// #define PD10_IDR  GPIO_IDR_IDR10
+// #define PD11_GPIO GPIOD
+// #define PD11_IDR  GPIO_IDR_IDR11
+// #define PD12_GPIO GPIOD
+// #define PD12_IDR  GPIO_IDR_IDR12
+// #define PD13_GPIO GPIOD
+// #define PD13_IDR  GPIO_IDR_IDR13
+// #define PD14_GPIO GPIOD
+// #define PD14_IDR  GPIO_IDR_IDR14
+// #define PD15_GPIO GPIOD
+// #define PD15_IDR  GPIO_IDR_IDR15
+
+// // PORT E
+// #define PE0_GPIO  GPIOE
+// #define PE0_IDR   GPIO_IDR_IDR0
+// #define PE1_GPIO  GPIOE
+// #define PE1_IDR   GPIO_IDR_IDR1
+// #define PE2_GPIO  GPIOE
+// #define PE2_IDR   GPIO_IDR_IDR2
+// #define PE3_GPIO  GPIOE
+// #define PE3_IDR   GPIO_IDR_IDR3
+// #define PE4_GPIO  GPIOE
+// #define PE4_IDR   GPIO_IDR_IDR4
+// #define PE5_GPIO  GPIOE
+// #define PE5_IDR   GPIO_IDR_IDR5
+// #define PE6_GPIO  GPIOE
+// #define PE6_IDR   GPIO_IDR_IDR6
+// #define PE7_GPIO  GPIOE
+// #define PE7_IDR   GPIO_IDR_IDR7
+// #define PE8_GPIO  GPIOE
+// #define PE8_IDR   GPIO_IDR_IDR8
+// #define PE9_GPIO  GPIOE
+// #define PE9_IDR   GPIO_IDR_IDR9
+// #define PE10_GPIO GPIOE
+// #define PE10_IDR  GPIO_IDR_IDR10
+// #define PE11_GPIO GPIOE
+// #define PE11_IDR  GPIO_IDR_IDR11
+// #define PE12_GPIO GPIOE
+// #define PE12_IDR  GPIO_IDR_IDR12
+// #define PE13_GPIO GPIOE
+// #define PE13_IDR  GPIO_IDR_IDR13
+// #define PE14_GPIO GPIOE
+// #define PE14_IDR  GPIO_IDR_IDR14
+// #define PE15_GPIO GPIOE
+// #define PE15_IDR  GPIO_IDR_IDR15
+
+// // PORT F
+// #define PF0_GPIO  GPIOF
+// #define PF0_IDR   GPIO_IDR_IDR0
+// #define PF1_GPIO  GPIOF
+// #define PF1_IDR   GPIO_IDR_IDR1
+// #define PF2_GPIO  GPIOF
+// #define PF2_IDR   GPIO_IDR_IDR2
+// #define PF3_GPIO  GPIOF
+// #define PF3_IDR   GPIO_IDR_IDR3
+// #define PF4_GPIO  GPIOF
+// #define PF4_IDR   GPIO_IDR_IDR4
+// #define PF5_GPIO  GPIOF
+// #define PF5_IDR   GPIO_IDR_IDR5
+// #define PF6_GPIO  GPIOF
+// #define PF6_IDR   GPIO_IDR_IDR6
+// #define PF7_GPIO  GPIOF
+// #define PF7_IDR   GPIO_IDR_IDR7
+// #define PF8_GPIO  GPIOF
+// #define PF8_IDR   GPIO_IDR_IDR8
+// #define PF9_GPIO  GPIOF
+// #define PF9_IDR   GPIO_IDR_IDR9
+// #define PF10_GPIO GPIOF
+// #define PF10_IDR  GPIO_IDR_IDR10
+// #define PF11_GPIO GPIOF
+// #define PF11_IDR  GPIO_IDR_IDR11
+// #define PF12_GPIO GPIOF
+// #define PF12_IDR  GPIO_IDR_IDR12
+// #define PF13_GPIO GPIOF
+// #define PF13_IDR  GPIO_IDR_IDR13
+// #define PF14_GPIO GPIOF
+// #define PF14_IDR  GPIO_IDR_IDR14
+// #define PF15_GPIO GPIOF
+// #define PF15_IDR  GPIO_IDR_IDR15
+
+// // PORT G
+// #define PG0_GPIO  GPIOG
+// #define PG0_IDR   GPIO_IDR_IDR0
+// #define PG1_GPIO  GPIOG
+// #define PG1_IDR   GPIO_IDR_IDR1
+// #define PG2_GPIO  GPIOG
+// #define PG2_IDR   GPIO_IDR_IDR2
+// #define PG3_GPIO  GPIOG
+// #define PG3_IDR   GPIO_IDR_IDR3
+// #define PG4_GPIO  GPIOG
+// #define PG4_IDR   GPIO_IDR_IDR4
+// #define PG5_GPIO  GPIOG
+// #define PG5_IDR   GPIO_IDR_IDR5
+// #define PG6_GPIO  GPIOG
+// #define PG6_IDR   GPIO_IDR_IDR6
+// #define PG7_GPIO  GPIOG
+// #define PG7_IDR   GPIO_IDR_IDR7
+// #define PG8_GPIO  GPIOG
+// #define PG8_IDR   GPIO_IDR_IDR8
+// #define PG9_GPIO  GPIOG
+// #define PG9_IDR   GPIO_IDR_IDR9
+// #define PG10_GPIO GPIOG
+// #define PG10_IDR  GPIO_IDR_IDR10
+// #define PG11_GPIO GPIOG
+// #define PG11_IDR  GPIO_IDR_IDR11
+// #define PG12_GPIO GPIOG
+// #define PG12_IDR  GPIO_IDR_IDR12
+// #define PG13_GPIO GPIOG
+// #define PG13_IDR  GPIO_IDR_IDR13
+// #define PG14_GPIO GPIOG
+// #define PG14_IDR  GPIO_IDR_IDR14
+// #define PG15_GPIO GPIOG
+// #define PG15_IDR  GPIO_IDR_IDR15
 
 #define ARDUINO_ARCH_STM32F1
 
@@ -307,37 +779,12 @@ na ->
 
 /* #endregion */
 
-/* #region Imports */
-class StateChangeManager {
-private:
-  bool _states[10];
-
-public:
-  bool isStateChanged(bool state, int index) {
-    bool changed = _states[index] != state;
-    _states[index] = state;
-
-    return changed;
-  }
-};
-
 #include <MySensors.h>
 #include <24C32.h>
 #include <Wire.h>
 
 EE EEPROM24C32;
 
-//#include "C:\Programowanie\7.Projekty\5.Arduino\M_Library\RelayManager\RelayManager.h"
-/* #endregion */
-
-//RelayManager myRelayController = RelayManager( true); //controller
-
-#include "C:\Programowanie\7.Projekty\5.Arduino\M_Library\SwitchManager\SwitchManager.h"
-
-SwitchManager mySwitchManager = SwitchManager();
-bool isPresentedToController = false;
-
-StateChangeManager SCM;
 
 void inicjalizeI2C() {
   Wire.setSDA(SDA_24C32_PIN);
@@ -366,16 +813,15 @@ void inicjalizeI2C() {
   * @param  None
   * @retval None
   */
-extern "C" void SystemClock_Config(void)
-{
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
- 
+extern "C" void SystemClock_Config(void) {
+  RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = { 0 };
+
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV2;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
@@ -383,29 +829,26 @@ extern "C" void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL12;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
     Error_Handler();
   }
- 
+
   /** Initializes the CPU, AHB and APB buses clocks
   */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
+                                | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
- 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
-  {
+
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USB;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC | RCC_PERIPHCLK_USB;
   PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
   PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
-  {
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {
     Error_Handler();
   }
 }
@@ -416,8 +859,12 @@ void presentation() {
   // Send the sketch version information to the gateway and Controller
   sendSketchInfo("Switch Sensor Manager", "1.0");
 
-  mySwitchManager.presentAllToControler();  //M4_MS_SwitchSensorManager
-  SCM.isStateChanged(false, 0);
+#ifdef P_I_1_SWITCH
+  present(P_I_1, S_DOOR, "P_I_1");
+#endif
+
+
+
   isPresentedToController = true;
 }
 
@@ -425,127 +872,129 @@ void presentation() {
 void before() {
   /* M4_MS_SwitchSensorManager */
 
-  // I
-  mySwitchManager.addSwitch(P_I_1, NORMAL_CLOSE, "P_I_1");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_I_2, NORMAL_CLOSE, "P_I_2");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_I_3, NORMAL_CLOSE, "P_I_3");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_I_4, NORMAL_CLOSE, "P_I_4");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_I_5, NORMAL_CLOSE, "P_I_5");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_I_6, NORMAL_CLOSE, "P_I_6");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_I_7, NORMAL_CLOSE, "P_I_7");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_I_8, NORMAL_CLOSE, "P_I_8");  // M4_MS_SwitchSensorManager
+#ifdef P_I_1_SWITCH
+pinMode(P_I_1, INPUT_PULLDOWN);
+#endif
 
-  // II
-  mySwitchManager.addSwitch(P_II_1, NORMAL_CLOSE, "P_II_1");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_II_2, NORMAL_CLOSE, "P_II_2");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_II_3, NORMAL_CLOSE, "P_II_3");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_II_4, NORMAL_CLOSE, "P_II_4");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_II_5, NORMAL_CLOSE, "P_II_5");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_II_6, NORMAL_CLOSE, "P_II_6");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_II_7, NORMAL_CLOSE, "P_II_7");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_II_8, NORMAL_CLOSE, "P_II_8");  // M4_MS_SwitchSensorManager
+  // // I
+  // mySwitchManager.addSwitch(P_I_1, NORMAL_CLOSE, "P_I_1");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_I_2, NORMAL_CLOSE, "P_I_2");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_I_3, NORMAL_CLOSE, "P_I_3");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_I_4, NORMAL_CLOSE, "P_I_4");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_I_5, NORMAL_CLOSE, "P_I_5");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_I_6, NORMAL_CLOSE, "P_I_6");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_I_7, NORMAL_CLOSE, "P_I_7");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_I_8, NORMAL_CLOSE, "P_I_8");  // M4_MS_SwitchSensorManager
 
-  // III
-  mySwitchManager.addSwitch(P_III_1, NORMAL_CLOSE, "P_III_1");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_III_2, NORMAL_CLOSE, "P_III_2");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_III_3, NORMAL_CLOSE, "P_III_3");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_III_4, NORMAL_CLOSE, "P_III_4");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_III_5, NORMAL_CLOSE, "P_III_5");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_III_6, NORMAL_CLOSE, "P_III_6");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_III_7, NORMAL_CLOSE, "P_III_7");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_III_8, NORMAL_CLOSE, "P_III_8");  // M4_MS_SwitchSensorManager
+  // // II
+  // mySwitchManager.addSwitch(P_II_1, NORMAL_CLOSE, "P_II_1");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_II_2, NORMAL_CLOSE, "P_II_2");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_II_3, NORMAL_CLOSE, "P_II_3");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_II_4, NORMAL_CLOSE, "P_II_4");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_II_5, NORMAL_CLOSE, "P_II_5");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_II_6, NORMAL_CLOSE, "P_II_6");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_II_7, NORMAL_CLOSE, "P_II_7");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_II_8, NORMAL_CLOSE, "P_II_8");  // M4_MS_SwitchSensorManager
 
-  // IV
-  mySwitchManager.addSwitch(P_IV_1, NORMAL_CLOSE, "P_IV_1");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_IV_2, NORMAL_CLOSE, "P_IV_2");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_IV_3, NORMAL_CLOSE, "P_IV_3");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_IV_4, NORMAL_CLOSE, "P_IV_4");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_IV_5, NORMAL_CLOSE, "P_IV_5");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_IV_6, NORMAL_CLOSE, "P_IV_6");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_IV_7, NORMAL_CLOSE, "P_IV_7");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_IV_8, NORMAL_CLOSE, "P_IV_8");  // M4_MS_SwitchSensorManager
+  // // III
+  // mySwitchManager.addSwitch(P_III_1, NORMAL_CLOSE, "P_III_1");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_III_2, NORMAL_CLOSE, "P_III_2");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_III_3, NORMAL_CLOSE, "P_III_3");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_III_4, NORMAL_CLOSE, "P_III_4");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_III_5, NORMAL_CLOSE, "P_III_5");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_III_6, NORMAL_CLOSE, "P_III_6");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_III_7, NORMAL_CLOSE, "P_III_7");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_III_8, NORMAL_CLOSE, "P_III_8");  // M4_MS_SwitchSensorManager
 
-  // V
-  mySwitchManager.addSwitch(P_V_1, NORMAL_CLOSE, "P_V_1");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_V_2, NORMAL_CLOSE, "P_V_2");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_V_3, NORMAL_CLOSE, "P_V_3");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_V_4, NORMAL_CLOSE, "P_V_4");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_V_5, NORMAL_CLOSE, "P_V_5");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_V_6, NORMAL_CLOSE, "P_V_6");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_V_7, NORMAL_CLOSE, "P_V_7");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_V_8, NORMAL_CLOSE, "P_V_8");  // M4_MS_SwitchSensorManager
+  // // IV
+  // mySwitchManager.addSwitch(P_IV_1, NORMAL_CLOSE, "P_IV_1");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_IV_2, NORMAL_CLOSE, "P_IV_2");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_IV_3, NORMAL_CLOSE, "P_IV_3");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_IV_4, NORMAL_CLOSE, "P_IV_4");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_IV_5, NORMAL_CLOSE, "P_IV_5");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_IV_6, NORMAL_CLOSE, "P_IV_6");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_IV_7, NORMAL_CLOSE, "P_IV_7");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_IV_8, NORMAL_CLOSE, "P_IV_8");  // M4_MS_SwitchSensorManager
 
-  // VI
-  mySwitchManager.addSwitch(P_VI_1, NORMAL_CLOSE, "P_VI_1");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_VI_2, NORMAL_CLOSE, "P_VI_2");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_VI_3, NORMAL_CLOSE, "P_VI_3");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_VI_4, NORMAL_CLOSE, "P_VI_4");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_VI_5, NORMAL_CLOSE, "P_VI_5");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_VI_6, NORMAL_CLOSE, "P_VI_6");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_VI_7, NORMAL_CLOSE, "P_VI_7");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_VI_8, NORMAL_CLOSE, "P_VI_8");  // M4_MS_SwitchSensorManager
+  // // V
+  // mySwitchManager.addSwitch(P_V_1, NORMAL_CLOSE, "P_V_1");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_V_2, NORMAL_CLOSE, "P_V_2");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_V_3, NORMAL_CLOSE, "P_V_3");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_V_4, NORMAL_CLOSE, "P_V_4");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_V_5, NORMAL_CLOSE, "P_V_5");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_V_6, NORMAL_CLOSE, "P_V_6");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_V_7, NORMAL_CLOSE, "P_V_7");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_V_8, NORMAL_CLOSE, "P_V_8");  // M4_MS_SwitchSensorManager
 
-  // VII
-  mySwitchManager.addSwitch(P_VII_1, NORMAL_CLOSE, "P_VII_1");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_VII_2, NORMAL_CLOSE, "P_VII_2");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_VII_3, NORMAL_CLOSE, "P_VII_3");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_VII_4, NORMAL_CLOSE, "P_VII_4");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_VII_5, NORMAL_CLOSE, "P_VII_5");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_VII_6, NORMAL_CLOSE, "P_VII_6");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_VII_7, NORMAL_CLOSE, "P_VII_7");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_VII_8, NORMAL_CLOSE, "P_VII_8");  // M4_MS_SwitchSensorManager
+  // // VI
+  // mySwitchManager.addSwitch(P_VI_1, NORMAL_CLOSE, "P_VI_1");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_VI_2, NORMAL_CLOSE, "P_VI_2");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_VI_3, NORMAL_CLOSE, "P_VI_3");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_VI_4, NORMAL_CLOSE, "P_VI_4");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_VI_5, NORMAL_CLOSE, "P_VI_5");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_VI_6, NORMAL_CLOSE, "P_VI_6");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_VI_7, NORMAL_CLOSE, "P_VI_7");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_VI_8, NORMAL_CLOSE, "P_VI_8");  // M4_MS_SwitchSensorManager
 
-  // VIII
-  mySwitchManager.addSwitch(P_VIII_1, NORMAL_CLOSE, "P_VIII_1");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_VIII_2, NORMAL_CLOSE, "P_VIII_2");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_VIII_3, NORMAL_CLOSE, "P_VIII_3");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_VIII_4, NORMAL_CLOSE, "P_VIII_4");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_VIII_5, NORMAL_CLOSE, "P_VIII_5");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_VIII_6, NORMAL_CLOSE, "P_VIII_6");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_VIII_7, NORMAL_CLOSE, "P_VIII_7");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_VIII_8, NORMAL_CLOSE, "P_VIII_8");  // M4_MS_SwitchSensorManager
+  // // VII
+  // mySwitchManager.addSwitch(P_VII_1, NORMAL_CLOSE, "P_VII_1");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_VII_2, NORMAL_CLOSE, "P_VII_2");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_VII_3, NORMAL_CLOSE, "P_VII_3");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_VII_4, NORMAL_CLOSE, "P_VII_4");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_VII_5, NORMAL_CLOSE, "P_VII_5");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_VII_6, NORMAL_CLOSE, "P_VII_6");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_VII_7, NORMAL_CLOSE, "P_VII_7");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_VII_8, NORMAL_CLOSE, "P_VII_8");  // M4_MS_SwitchSensorManager
 
-  // IX
-  mySwitchManager.addSwitch(P_IX_1, NORMAL_CLOSE, "P_IX_1");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_IX_2, NORMAL_CLOSE, "P_IX_2");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_IX_3, NORMAL_CLOSE, "P_IX_3");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_IX_4, NORMAL_CLOSE, "P_IX_4");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_IX_5, NORMAL_CLOSE, "P_IX_5");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_IX_6, NORMAL_CLOSE, "P_IX_6");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_IX_7, NORMAL_CLOSE, "P_IX_7");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_IX_8, NORMAL_CLOSE, "P_IX_8");  // M4_MS_SwitchSensorManager
+  // // VIII
+  // mySwitchManager.addSwitch(P_VIII_1, NORMAL_CLOSE, "P_VIII_1");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_VIII_2, NORMAL_CLOSE, "P_VIII_2");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_VIII_3, NORMAL_CLOSE, "P_VIII_3");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_VIII_4, NORMAL_CLOSE, "P_VIII_4");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_VIII_5, NORMAL_CLOSE, "P_VIII_5");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_VIII_6, NORMAL_CLOSE, "P_VIII_6");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_VIII_7, NORMAL_CLOSE, "P_VIII_7");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_VIII_8, NORMAL_CLOSE, "P_VIII_8");  // M4_MS_SwitchSensorManager
 
-  // X
-  mySwitchManager.addSwitch(P_X_1, NORMAL_CLOSE, "P_X_1");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_X_2, NORMAL_CLOSE, "P_X_2");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_X_3, NORMAL_CLOSE, "P_X_3");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_X_4, NORMAL_CLOSE, "P_X_4");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_X_5, NORMAL_CLOSE, "P_X_5");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_X_6, NORMAL_CLOSE, "P_X_6");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_X_7, NORMAL_CLOSE, "P_X_7");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_X_8, NORMAL_CLOSE, "P_X_8");  // M4_MS_SwitchSensorManager
+  // // IX
+  // mySwitchManager.addSwitch(P_IX_1, NORMAL_CLOSE, "P_IX_1");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_IX_2, NORMAL_CLOSE, "P_IX_2");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_IX_3, NORMAL_CLOSE, "P_IX_3");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_IX_4, NORMAL_CLOSE, "P_IX_4");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_IX_5, NORMAL_CLOSE, "P_IX_5");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_IX_6, NORMAL_CLOSE, "P_IX_6");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_IX_7, NORMAL_CLOSE, "P_IX_7");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_IX_8, NORMAL_CLOSE, "P_IX_8");  // M4_MS_SwitchSensorManager
 
-  // XI
-  mySwitchManager.addSwitch(P_XI_1, NORMAL_CLOSE, "P_XI_1");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_XI_2, NORMAL_CLOSE, "P_XI_2");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_XI_3, NORMAL_CLOSE, "P_XI_3");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_XI_4, NORMAL_CLOSE, "P_XI_4");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_XI_5, NORMAL_CLOSE, "P_XI_5");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_XI_6, NORMAL_CLOSE, "P_XI_6");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_XI_7, NORMAL_CLOSE, "P_XI_7");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_XI_8, NORMAL_CLOSE, "P_XI_8");  // M4_MS_SwitchSensorManager
+  // // X
+  // mySwitchManager.addSwitch(P_X_1, NORMAL_CLOSE, "P_X_1");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_X_2, NORMAL_CLOSE, "P_X_2");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_X_3, NORMAL_CLOSE, "P_X_3");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_X_4, NORMAL_CLOSE, "P_X_4");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_X_5, NORMAL_CLOSE, "P_X_5");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_X_6, NORMAL_CLOSE, "P_X_6");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_X_7, NORMAL_CLOSE, "P_X_7");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_X_8, NORMAL_CLOSE, "P_X_8");  // M4_MS_SwitchSensorManager
 
-  // XIIc:\Programowanie\7.Projekty\5.Arduino\M1_MS_RelayManager\M1_MS_RelayManager.ino
-  mySwitchManager.addSwitch(P_XII_1, NORMAL_CLOSE, "P_XII_1");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_XII_2, NORMAL_CLOSE, "P_XII_2");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_XII_3, NORMAL_CLOSE, "P_XII_3");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_XII_4, NORMAL_CLOSE, "P_XII_4");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_XII_5, NORMAL_CLOSE, "P_XII_5");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_XII_6, NORMAL_CLOSE, "P_XII_6");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_XII_7, NORMAL_CLOSE, "P_XII_7");  // M4_MS_SwitchSensorManager
-  mySwitchManager.addSwitch(P_XII_8, NORMAL_CLOSE, "P_XII_8");  // M4_MS_SwitchSensorManager
+  // // XI
+  // mySwitchManager.addSwitch(P_XI_1, NORMAL_CLOSE, "P_XI_1");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_XI_2, NORMAL_CLOSE, "P_XI_2");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_XI_3, NORMAL_CLOSE, "P_XI_3");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_XI_4, NORMAL_CLOSE, "P_XI_4");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_XI_5, NORMAL_CLOSE, "P_XI_5");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_XI_6, NORMAL_CLOSE, "P_XI_6");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_XI_7, NORMAL_CLOSE, "P_XI_7");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_XI_8, NORMAL_CLOSE, "P_XI_8");  // M4_MS_SwitchSensorManager
 
-
+  // // XIIc:\Programowanie\7.Projekty\5.Arduino\M1_MS_RelayManager\M1_MS_RelayManager.ino
+  // mySwitchManager.addSwitch(P_XII_1, NORMAL_CLOSE, "P_XII_1");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_XII_2, NORMAL_CLOSE, "P_XII_2");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_XII_3, NORMAL_CLOSE, "P_XII_3");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_XII_4, NORMAL_CLOSE, "P_XII_4");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_XII_5, NORMAL_CLOSE, "P_XII_5");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_XII_6, NORMAL_CLOSE, "P_XII_6");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_XII_7, NORMAL_CLOSE, "P_XII_7");  // M4_MS_SwitchSensorManager
+  // mySwitchManager.addSwitch(P_XII_8, NORMAL_CLOSE, "P_XII_8");  // M4_MS_SwitchSensorManager
 }
 
 void setup() {
@@ -553,9 +1002,15 @@ void setup() {
   inicjalizeI2C();
 }
 
+#define READ_PORT(port, pin) ((port->IDR & pin) != 0)
+
 void loop() {
-    if (SCM.isStateChanged(isPresentedToController, 0)) {
-    mySwitchManager.sentAllState();
+  if (SCM.isStateChanged(isPresentedToController, 0)) {
+    wait(50);
+
+    #ifdef P_I_1_SWITCH
+pinMode(P_I_1, INPUT_PULLDOWN);
+#endif
   }
 
   // put your main code here, to run repeatedly:
