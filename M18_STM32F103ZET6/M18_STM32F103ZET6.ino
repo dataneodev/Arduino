@@ -873,7 +873,7 @@ void before() {
   /* M4_MS_SwitchSensorManager */
 
 #ifdef P_I_1_SWITCH
-pinMode(P_I_1, INPUT_PULLDOWN);
+  pinMode(P_I_1, INPUT_PULLDOWN);
 #endif
 
   // // I
@@ -997,6 +997,7 @@ pinMode(P_I_1, INPUT_PULLDOWN);
   // mySwitchManager.addSwitch(P_XII_8, NORMAL_CLOSE, "P_XII_8");  // M4_MS_SwitchSensorManager
 
 
+
   
 }
 
@@ -1008,14 +1009,13 @@ void setup() {
 #define READ_PORT(port, pin) ((port->IDR & pin) != 0)
 
 void loop() {
-  if (SCM.isStateChanged(isPresentedToController, 0)) {
+  if (!isPresentedToController) {
     wait(50);
 
-    #ifdef P_I_1_SWITCH
-pinMode(P_I_1, INPUT_PULLDOWN);
-#endif
+
   }
 
-  // put your main code here, to run repeatedly:
-  mySwitchManager.switchCheckState();  //M4_MS_SwitchSensorManager
+#ifdef P_I_1_SWITCH
+    pinMode(P_I_1, INPUT_PULLDOWN);
+#endif
 }
