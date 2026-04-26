@@ -995,6 +995,7 @@ pinMode(P_I_1, INPUT_PULLDOWN);
   // mySwitchManager.addSwitch(P_XII_6, NORMAL_CLOSE, "P_XII_6");  // M4_MS_SwitchSensorManager
   // mySwitchManager.addSwitch(P_XII_7, NORMAL_CLOSE, "P_XII_7");  // M4_MS_SwitchSensorManager
   // mySwitchManager.addSwitch(P_XII_8, NORMAL_CLOSE, "P_XII_8");  // M4_MS_SwitchSensorManager
+  
 }
 
 void setup() {
