@@ -776,7 +776,6 @@ READ_PORT(P_I_1_GPIO, P_I_1_IDR)
 #define SCL_24C32_PIN PB8
 #define SDA_24C32_PIN PB9
 
-
 /* #endregion */
 
 #include <MySensors.h>
@@ -997,7 +996,7 @@ pinMode(P_I_1, INPUT_PULLDOWN);
   // mySwitchManager.addSwitch(P_XII_8, NORMAL_CLOSE, "P_XII_8");  // M4_MS_SwitchSensorManager
 
 
-  
+
 }
 
 void setup() {

@@ -14,7 +14,6 @@ enum SWITCH_STATE {
   NORMAL_CLOSE,
 };
 
-
 // Switch Sensor Manager
 class SwitchSimple {
  public:
