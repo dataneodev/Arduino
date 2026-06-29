@@ -1184,24 +1184,31 @@ void presentation()  // MySensors
 
   sendHeartbeat();
 
-  wait(100);
+  wait(random(50, 550));
 
   sendSketchInfo(SKETCH_NAME, SOFTWARE_VERION);
 
+  wait(random(4, 15));
   present(MS_DOOR_STATUS_ID, S_DOOR, "Status otwarcia dzwi");
+  wait(random(4, 15));
   present(MS_OPEN_DOOR_COUNT_ID, S_INFO, "Liczba cykli otwarcia");
+  wait(random(4, 15));
   present(MS_OPEN_DOOR_ID, S_BINARY, "Drzwi zawsze otwarte");
+  wait(random(4, 15));
   present(MS_CLOSE_DOOR_ID, S_BINARY, "Drzwi zawsze zamknięte");
+  wait(random(4, 15));
   present(MS_AUTH_BLE_ID, S_BINARY, "Autoryzacja BLE");
+  wait(random(4, 15));
   present(MS_LIGHT_ID, S_BINARY, "Swiatło");
-
+  wait(random(4, 15));
   present(MS_OPEN_LOCK_ID, S_INFO, "Czas blokady");
 
   presentBleDevices();
 
+  wait(random(4, 15));
   present(MS_MIN_RSSI_ID, S_INFO, "Min RSSI");
 
-  wait(100);
+  wait(random(4, 15));
 
   sendHeartbeat();
 
@@ -1215,14 +1222,14 @@ void presentBleDevices() {
   for (int i = 0; i < EEStorage.getBleDevicesCount(); i++) {
     char buf[6];
     snprintf(buf, sizeof(buf), "%u", EEStorage.getBleId(i));
-
+    wait(random(4, 15));
     present(EEStorage.getBleId(i), S_DOOR, buf);
   }
 
   for (int i = 0; i < EEStorage.getBleDevicesCount(); i++) {
     char buf[6];
     snprintf(buf, sizeof(buf), "%u", EEStorage.getBleId(i));
-
+    wait(random(4, 15));
     present(EEStorage.getEditNoId(i), S_INFO, buf);
   }
 }
@@ -1235,7 +1242,7 @@ void sentMyDoorAlwaysOpenStatus() {
   Serial.print("sentMyDoorAlwaysOpenStatus");
   Serial.println(EEStorage.isDoorAlwaysOpen() ? "1" : "0");
 #endif
-
+ wait(random(4, 15));
   mMessage.setType(V_STATUS);
   mMessage.setSensor(MS_OPEN_DOOR_ID);
   send(mMessage.set(EEStorage.isDoorAlwaysOpen() ? "1" : "0"));
@@ -1251,7 +1258,7 @@ void sentMyDoorAlwaysCloseStatus() {
   Serial.print("sentMyDoorAlwaysCloseStatus");
   Serial.println(EEStorage.isDoorAlwaysClose() ? "1" : "0");
 #endif
-
+ wait(random(4, 15));
   mMessage.setType(V_STATUS);
   mMessage.setSensor(MS_CLOSE_DOOR_ID);
   send(mMessage.set(EEStorage.isDoorAlwaysClose() ? "1" : "0"));
@@ -1269,7 +1276,7 @@ void sentMyBleAuthStatus() {
   Serial.print("sentMyBleAuthStatus");
   Serial.println(useAuth ? "1" : "0");
 #endif
-
+ wait(random(4, 100));
   mMessage.setType(V_STATUS);
   mMessage.setSensor(MS_AUTH_BLE_ID);
   send(mMessage.set(useAuth ? "1" : "0"));
@@ -1287,7 +1294,7 @@ void sentLightStatus() {
   Serial.print("sentLightStatus");
   Serial.println(useLight ? "1" : "0");
 #endif
-
+ wait(random(4, 100));
   mMessage.setType(V_STATUS);
   mMessage.setSensor(MS_LIGHT_ID);
   send(mMessage.set(useLight ? "1" : "0"));
@@ -1330,7 +1337,7 @@ void sentMyDoorOpenCount() {
 #endif
 
   uint32_t openCount = EEStorage.getDoorOpenCount();
-
+ wait(random(4, 100));
   mMessage.setType(V_TEXT);
   mMessage.setSensor(MS_OPEN_DOOR_COUNT_ID);
   send(mMessage.set(openCount));
@@ -1373,6 +1380,7 @@ void sentMyClientOpenDoorStatusMy(int clientId, bool status) {
   Serial.println(status ? "1" : "0");
 #endif
 
+ wait(random(4, 100));
   mMessage.setType(V_TRIPPED);
   mMessage.setSensor(clientId);
   send(mMessage.set(status ? "1" : "0"));
@@ -1403,6 +1411,7 @@ void sentMyDoorAddress(int lp) {
   char *namech = (char *)malloc(size);
   snprintf(namech, size, "%02X:%02X:%02X:%02X:%02X:%02X", a[0], a[1], a[2], a[3], a[4], a[5]);
 
+ wait(random(4, 100));
   mMessage.setType(V_TEXT);
   mMessage.setSensor(EEStorage.getEditNoId(lp));
   send(mMessage.set(namech));
@@ -1439,7 +1448,7 @@ void sentMinRssi() {
 #endif
 
   uint8_t minRSSI = EEStorage.getMinRSSI();
-
+ wait(random(4, 100));
   mMessage.setType(V_TEXT);
   mMessage.setSensor(MS_MIN_RSSI_ID);
   send(mMessage.set(minRSSI));
@@ -1457,7 +1466,7 @@ void sentDoorLockTime() {
 #endif
 
   uint32_t doorLockTime = EEStorage.getDoorLockTime();
-
+ wait(random(4, 100));
   mMessage.setType(V_TEXT);
   mMessage.setSensor(MS_OPEN_LOCK_ID);
   send(mMessage.set(doorLockTime));
@@ -1466,7 +1475,6 @@ void sentDoorLockTime() {
 }
 
 void sendAllMySensorsStatus() {
-  wait(10);
   sentMyAllClientOpenDoorDefaultStatus();
   sentMyAllClientDoorAddress();
   sentMyDoorOpenCount();
@@ -1544,6 +1552,7 @@ void loop() {
   Out3.update();
 
   if (SCM.isStateChanged(isPresentedToController, 1)) {
+     wait(random(100, 1000));
     sendAllMySensorsStatus();
   }
 }

@@ -776,6 +776,7 @@ READ_PORT(P_I_1_GPIO, P_I_1_IDR)
 #define SCL_24C32_PIN PB8
 #define SDA_24C32_PIN PB9
 
+
 /* #endregion */
 
 #include <MySensors.h>

@@ -266,9 +266,8 @@ HardwareSerial RS485Serial(PA3, PA2);
 /* #region Imports */
 #include <GKButtonDebounce.h>
 #include <MySensors.h>
-#include <24C32.h>
+#include <I2C_eeprom.h>
 #include <Wire.h>
-#include <STM32LowPower.h>
 /* #endregion */
 
 /* #region Class definition */
@@ -326,7 +325,8 @@ GKButtonDebounce in5(IN_5);
 
 MyMessage mMessage;
 StateChangeManager SCM;
-EE EEPROM24C32;
+
+I2C_eeprom EEPROM24C32(0x50, 4096);
 
 #if defined NODE_1_SINGLE || defined NODE_1_RGBWW || defined NODE_1_RGBW || defined NODE_1_RGB
 bool node1Enabled = false;
@@ -433,7 +433,7 @@ void setAllPinsAnalog(void) {
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOE_CLK_ENABLE();
+  //__HAL_RCC_GPIOE_CLK_ENABLE();
 
   // DAC:
   /**DAC1 GPIO Configuration
@@ -450,7 +450,7 @@ void setAllPinsAnalog(void) {
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+  //  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 }
 
 void disableClocks() {
@@ -458,7 +458,7 @@ void disableClocks() {
   __HAL_RCC_GPIOB_CLK_DISABLE();
   __HAL_RCC_GPIOC_CLK_DISABLE();
   __HAL_RCC_GPIOD_CLK_DISABLE();
-  __HAL_RCC_GPIOE_CLK_DISABLE();
+  //  __HAL_RCC_GPIOE_CLK_DISABLE();
 
   __HAL_RCC_AFIO_CLK_DISABLE();
   // __HAL_RCC_TIM1_CLK_DISABLE();
@@ -525,7 +525,7 @@ void inicjalizeI2C() {
   Wire.setSCL(SCL_PIN);
   Wire.begin();
   Wire.setClock(400000);
-  EEPROM24C32.begin(0x50, false);
+  EEPROM24C32.begin();
 }
 /* #endregion */
 
@@ -602,8 +602,7 @@ void saveDefaultSettingToEPPROM() {
 #if defined(MY_DEBUG)
   Serial.println("Zapisuje domyslne ustawienia");
 #endif
-
-  EEPROM24C32.writeByte(50, EEPROM_RESET, false, false);
+  EEPROM24C32.writeByte(50, EEPROM_RESET);
 
 #if defined NODE_1_SINGLE || defined NODE_1_RGBWW || defined NODE_1_RGBW || defined NODE_1_RGB
   saveNode1EnableToEPPROM(node1Enabled);
@@ -652,7 +651,7 @@ void saveNode1EnableToEPPROM(bool enabled) {
   node1Enabled = enabled;
 
   if (NODE_1_STARTUP_OFF == 0) {
-    EEPROM24C32.writeByte(100, enabled ? TRUE_BYTE : 0x06, false, false);
+    EEPROM24C32.writeByte(100, enabled ? TRUE_BYTE : 0x06);
   }
 }
 
@@ -663,7 +662,7 @@ void setNode1LightLevelToEPPROM(uint8_t lightLevel) {
   }
 
   node1LightLevel = lightLevel;
-  EEPROM24C32.writeByte(101, lightLevel, false, false);
+  EEPROM24C32.writeByte(101, lightLevel);
 }
 #endif
 
@@ -674,7 +673,7 @@ void saveNode1WhiteChannelsBalanceToEPPROM(uint8_t value) {
   }
 
   node1WhiteChannelsBalance = value;
-  EEPROM24C32.writeByte(505, value, false, false);
+  EEPROM24C32.writeByte(505, value);
 }
 #endif
 
@@ -685,7 +684,7 @@ void saveNode1WhiteChannelToEPPROM(uint8_t value) {
   }
 
   node1WhiteChannel = value;
-  EEPROM24C32.writeByte(501, value, false, false);
+  EEPROM24C32.writeByte(501, value);
 }
 #endif
 
@@ -700,9 +699,9 @@ void saveNode1RGBValuesToEPPROM(uint8_t red, uint8_t green, uint8_t blue) {
   node1GreenChannel = green;
   node1BlueChannel = blue;
 
-  EEPROM24C32.writeByte(502, red, false, false);
-  EEPROM24C32.writeByte(503, green, false, false);
-  EEPROM24C32.writeByte(504, blue, false, false);
+  EEPROM24C32.writeByte(502, red);
+  EEPROM24C32.writeByte(503, green);
+  EEPROM24C32.writeByte(504, blue);
 }
 #endif
 
@@ -715,7 +714,7 @@ void saveNode2EnableToEPPROM(bool enabled) {
   node2Enabled = enabled;
 
   if (NODE_2_STARTUP_OFF == 0) {
-    EEPROM24C32.writeByte(200, enabled ? TRUE_BYTE : 0x07, false, false);
+    EEPROM24C32.writeByte(200, enabled ? TRUE_BYTE : 0x07);
   }
 }
 
@@ -725,7 +724,7 @@ void setNode2LightLevelToEPPROM(uint8_t lightLevel) {
   }
 
   node2LightLevel = lightLevel;
-  EEPROM24C32.writeByte(201, lightLevel, false, false);
+  EEPROM24C32.writeByte(201, lightLevel);
 }
 #endif
 
@@ -738,7 +737,7 @@ void saveNode3EnableToEPPROM(bool enabled) {
   node3Enabled = enabled;
 
   if (NODE_3_STARTUP_OFF == 0) {
-    EEPROM24C32.writeByte(300, enabled ? TRUE_BYTE : 0x08, false, false);
+    EEPROM24C32.writeByte(300, enabled ? TRUE_BYTE : 0x08);
   }
 }
 
@@ -748,7 +747,7 @@ void setNode3LightLevelToEPPROM(uint8_t lightLevel) {
   }
 
   node3LightLevel = lightLevel;
-  EEPROM24C32.writeByte(301, lightLevel, false, false);
+  EEPROM24C32.writeByte(301, lightLevel);
 }
 #endif
 
@@ -761,7 +760,7 @@ void saveNode4EnableToEPPROM(bool enabled) {
   node4Enabled = enabled;
 
   if (NODE_4_STARTUP_OFF == 0) {
-    EEPROM24C32.writeByte(400, enabled ? TRUE_BYTE : 0x09, false, false);
+    EEPROM24C32.writeByte(400, enabled ? TRUE_BYTE : 0x09);
   }
 }
 
@@ -772,7 +771,7 @@ void setNode4LightLevelToEPPROM(uint8_t lightLevel) {
 
   node4LightLevel = lightLevel;
 
-  EEPROM24C32.writeByte(401, lightLevel, false, false);
+  EEPROM24C32.writeByte(401, lightLevel);
 }
 #endif
 
@@ -785,7 +784,7 @@ void saveNode5EnableToEPPROM(bool enabled) {
   node5Enabled = enabled;
 
   if (NODE_5_STARTUP_OFF == 0) {
-    EEPROM24C32.writeByte(450, enabled ? TRUE_BYTE : 0x09, false, false);
+    EEPROM24C32.writeByte(450, enabled ? TRUE_BYTE : 0x09);
   }
 }
 
@@ -795,7 +794,7 @@ void setNode5LightLevelToEPPROM(uint8_t lightLevel) {
   }
 
   node5LightLevel = lightLevel;
-  EEPROM24C32.writeByte(451, lightLevel, false, false);
+  EEPROM24C32.writeByte(451, lightLevel);
 }
 #endif
 
@@ -856,9 +855,13 @@ void presentToControler() {
 void sendNode1WhiteChannelsBalance() {
   mMessage.setSensor(BALANCE_ID);
   mMessage.setType(V_PERCENTAGE);
+
+  wait(random(4, 100));
   send(mMessage.set(node1WhiteChannelsBalance));
 
   mMessage.setType(V_STATUS);
+
+  wait(random(4, 100));
   send(mMessage.set(node1WhiteChannelsBalance == 0 ? false : true));
 }
 #endif
@@ -867,12 +870,14 @@ void sendNode1WhiteChannelsBalance() {
 void sendNode1EnabledStatus() {
   mMessage.setSensor(NODE_ID_1);
   mMessage.setType(V_STATUS);
+  wait(random(4, 100));
   send(mMessage.set(node1Enabled));
 }
 
 void sendNode1LightLevel() {
   mMessage.setSensor(NODE_ID_1);
   mMessage.setType(V_PERCENTAGE);
+  wait(random(4, 100));
   send(mMessage.set(node1LightLevel));
 }
 #endif
@@ -881,12 +886,14 @@ void sendNode1LightLevel() {
 void sendNode2EnabledStatus() {
   mMessage.setSensor(NODE_ID_2);
   mMessage.setType(V_STATUS);
+  wait(random(4, 100));
   send(mMessage.set(node2Enabled));
 }
 
 void sendNode2LightLevel() {
   mMessage.setSensor(NODE_ID_2);
   mMessage.setType(V_PERCENTAGE);
+  wait(random(4, 100));
   send(mMessage.set(node2LightLevel));
 }
 #endif
@@ -895,12 +902,14 @@ void sendNode2LightLevel() {
 void sendNode3EnabledStatus() {
   mMessage.setSensor(NODE_ID_3);
   mMessage.setType(V_STATUS);
+  wait(random(4, 100));
   send(mMessage.set(node3Enabled));
 }
 
 void sendNode3LightLevel() {
   mMessage.setSensor(NODE_ID_3);
   mMessage.setType(V_PERCENTAGE);
+  wait(random(4, 100));
   send(mMessage.set(node3LightLevel));
 }
 #endif
@@ -909,12 +918,14 @@ void sendNode3LightLevel() {
 void sendNode4EnabledStatus() {
   mMessage.setSensor(NODE_ID_4);
   mMessage.setType(V_STATUS);
+  wait(random(4, 100));
   send(mMessage.set(node4Enabled));
 }
 
 void sendNode4LightLevel() {
   mMessage.setSensor(NODE_ID_4);
   mMessage.setType(V_PERCENTAGE);
+  wait(random(4, 100));
   send(mMessage.set(node4LightLevel));
 }
 #endif
@@ -923,12 +934,14 @@ void sendNode4LightLevel() {
 void sendNode5EnabledStatus() {
   mMessage.setSensor(NODE_ID_5);
   mMessage.setType(V_STATUS);
+  wait(random(4, 100));
   send(mMessage.set(node5Enabled));
 }
 
 void sendNode5LightLevel() {
   mMessage.setSensor(NODE_ID_5);
   mMessage.setType(V_PERCENTAGE);
+  wait(random(4, 100));
   send(mMessage.set(node5LightLevel));
 }
 #endif
@@ -943,6 +956,9 @@ void sendNode1RGBWColor() {
   sprintf(&str[2], "%02x", node1GreenChannel);
   sprintf(&str[4], "%02x", node1BlueChannel);
   sprintf(&str[6], "%02x", node1WhiteChannel);
+
+  wait(random(4, 100));
+
   send(mMessage.set(str));
 }
 #endif
@@ -956,11 +972,15 @@ void sendNode1RGBColor() {
   sprintf(&str[0], "%02x", node1RedChannel);
   sprintf(&str[2], "%02x", node1GreenChannel);
   sprintf(&str[4], "%02x", node1BlueChannel);
+
+  wait(random(4, 100));
   send(mMessage.set(str));
 }
 #endif
 
 void sendAllMySensorsStatus() {
+  wait(random(100, 600));
+
 #if defined NODE_1_SINGLE || defined NODE_1_RGBWW || defined NODE_1_RGBW || defined NODE_1_RGB
   sendNode1MySensorsAllStatus();
 #endif
@@ -1909,18 +1929,15 @@ void before() {
 void setup() {
   updateAllNodePWM();
 
-  LowPower.begin();
-
-  LowPower.attachInterruptWakeup(PA3, serialWakeup, RISING, SLEEP_MODE);
-
-  LowPower.attachInterruptWakeup(IN_1, buttonInterrupt, CHANGE, SLEEP_MODE);
-  LowPower.attachInterruptWakeup(IN_2, buttonInterrupt, CHANGE, SLEEP_MODE);
-  LowPower.attachInterruptWakeup(IN_3, buttonInterrupt, CHANGE, SLEEP_MODE);
-  LowPower.attachInterruptWakeup(IN_4, buttonInterrupt, CHANGE, SLEEP_MODE);
-
+  attachInterrupt(digitalPinToInterrupt(IN_1), buttonInterrupt, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(IN_2), buttonInterrupt, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(IN_3), buttonInterrupt, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(IN_4), buttonInterrupt, CHANGE);
 #if defined VERSION_5X
-  LowPower.attachInterruptWakeup(IN_5, buttonInterrupt, CHANGE, SLEEP_MODE);
+  attachInterrupt(digitalPinToInterrupt(IN_5), buttonInterrupt, CHANGE);
 #endif
+
+  attachInterrupt(digitalPinToInterrupt(PA3), serialWakeup, RISING);
 }
 
 void loop() {
@@ -1932,9 +1949,8 @@ void loop() {
 
   if (canSleep) {
     updateAllNodePWM();
-
     RS485Serial.flush();
-    LowPower.deepSleep();  // sleep
+    sleep(0);
     RS485Serial.flush();
   } else {
     compensateSleepDelay();
