@@ -31,8 +31,8 @@ public:
     return _alwaysOpen;
   }
 
-  bool isDoorAlwaysClose() {
-    return _alwaysClose;
+  bool isDoorAlwaysCloseLeft() {
+    return _alwaysCloseLeft;
   }
 
   bool useAthorizationBle() {
@@ -43,8 +43,8 @@ public:
     return _doorOpenCount;
   }
 
-  bool useLight() {
-    return _useLight;
+  bool isDoorAlwaysCloseRight() {
+    return _alwaysCloseRight;
   }
 
   void setDoorOpen(bool isOpen) {
@@ -62,9 +62,9 @@ public:
     EEPROM24C32->writeByte(114, isAlwaysOpen ? TRUE_VALUE : FALSE_VALUE, false, false);
   }
 
-  void setDoorAlwaysClose(bool isAlwaysClose) {
-    _alwaysClose = isAlwaysClose;
-    EEPROM24C32->writeByte(115, isAlwaysClose ? TRUE_VALUE : FALSE_VALUE, false, false);
+  void setDoorAlwaysCloseLeft(bool isAlwaysCloseLeft) {
+    _alwaysCloseLeft = isAlwaysCloseLeft;
+    EEPROM24C32->writeByte(115, isAlwaysCloseLeft ? TRUE_VALUE : FALSE_VALUE, false, false);
   }
 
   void setAthorizationBle(bool bleAuth) {
@@ -72,9 +72,9 @@ public:
     EEPROM24C32->writeByte(116, bleAuth ? TRUE_VALUE : FALSE_VALUE, false, false);
   }
 
-  void setLight(bool light) {
-    _useLight = light;
-    EEPROM24C32->writeByte(117, light ? TRUE_VALUE : FALSE_VALUE, false, false);
+  void setDoorAlwaysCloseRight(bool alwaysCloseRight) {
+    _alwaysCloseRight = alwaysCloseRight;
+    EEPROM24C32->writeByte(117, alwaysCloseRight ? TRUE_VALUE : FALSE_VALUE, false, false);
   }
 
   void setMinRSSI(uint8_t minRssi) {
@@ -137,7 +137,7 @@ public:
       return;
     }
 
-    esp_bd_addr_t* adr = address->getNative();
+    esp_bd_addr_t* adr = (esp_bd_addr_t*) address->getNative();
 
     uint8_t a[6];
     memcpy(&a, adr, 6);
@@ -208,10 +208,10 @@ private:
 
   uint32_t _doorOpenCount = 0;
   bool _isDoorOpen = false;
-  bool _alwaysClose = false;
+  bool _alwaysCloseLeft = false;
   bool _alwaysOpen = false;
   bool _useBleAuth = false;
-  bool _useLight = true;
+  bool _alwaysCloseRight = true;
   uint8_t _minRSSI = 60;
   uint32_t _doorLockTime = 0;
 
@@ -257,9 +257,9 @@ private:
     _isDoorOpen = EEPROM24C32->readByte(106) == TRUE_VALUE;
     _doorOpenCount = EEPROM24C32->readUInt32(110);
     _alwaysOpen = EEPROM24C32->readByte(114) == TRUE_VALUE;
-    _alwaysClose = EEPROM24C32->readByte(115) == TRUE_VALUE;
+    _alwaysCloseLeft = EEPROM24C32->readByte(115) == TRUE_VALUE;
     _useBleAuth = EEPROM24C32->readByte(116) == TRUE_VALUE;
-    _useLight = EEPROM24C32->readByte(117) == TRUE_VALUE;
+    _alwaysCloseRight = EEPROM24C32->readByte(117) == TRUE_VALUE;
     _minRSSI = EEPROM24C32->readByte(118);
     _doorLockTime = EEPROM24C32->readUInt32(122);
 
