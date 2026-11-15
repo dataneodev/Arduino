@@ -142,7 +142,9 @@ public:
     uint8_t a[6];
     memcpy(&a, adr, 6);
 
-    bool isDisabled = a[0] == 0 && a[1] == 0 && a[2] == 0 && a[3] == 0 && a[4] == 0 && a[5] == 0 || a[0] == 255 && a[1] == 255 && a[2] == 255 && a[3] == 255 && a[4] == 255 && a[5] == 255;
+    bool isAllZero = (a[0] == 0 && a[1] == 0 && a[2] == 0 && a[3] == 0 && a[4] == 0 && a[5] == 0);
+    bool isAllFF   = (a[0] == 255 && a[1] == 255 && a[2] == 255 && a[3] == 255 && a[4] == 255 && a[5] == 255);
+    bool isDisabled = isAllZero || isAllFF;
 
     _devices[deviceIndex].setNewAddress(a[0], a[1], a[2], a[3], a[4], a[5]);
     _devices[deviceIndex].setEnabled(!isDisabled);
@@ -161,7 +163,7 @@ public:
 
   uint8_t getBleId(uint8_t lp) {
     if (lp > _deviceCount) {
-      return false;
+      return _devices[0].getId();
     }
 
     return _devices[lp].getId();
@@ -169,7 +171,7 @@ public:
 
   uint8_t getEditNoId(uint8_t lp) {
     if (lp > _deviceCount) {
-      return false;
+      return _devices[0].getEditNoId();
     }
 
     return _devices[lp].getEditNoId();

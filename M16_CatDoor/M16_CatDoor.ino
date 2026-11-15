@@ -30,25 +30,25 @@ static __inline__ void __psRestore(const uint32_t *__s)
 #define USE_M1_M2_ON_DOOR_CLOSING  // czy wykrycie ruchy przez m1 i m2 także przerywa zamykanie drzwi
 #define USE_M3_ON_DOOR_CLOSING     // czy wykrycie ruchy przez czujnik na sterowniku przerywa zamykanie drzwi
 
-#define MOTION_1_DELAY 5 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a kolejnym wykryciem uruchamiajacym otwarcie drzwi dla sensoru 1,
-#define MOTION_1_DELAY_WAIT 4 * 1000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 1,
+#define MOTION_1_DELAY 5000       // czas pomiędzy pierwszym wykryciem ruchu a kolejnym wykryciem uruchamiajacym otwarcie drzwi dla sensoru 1,
+#define MOTION_1_DELAY_WAIT 4000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 1,
 
-#define MOTION_2_DELAY 5 * 1000       // czas pomiędzy pierwszym wykryciem ruchu a wykryciem uruchamiajacym otwarcie dla sensoru 2,
-#define MOTION_2_DELAY_WAIT 4 * 1000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 2,
+#define MOTION_2_DELAY 5000       // czas pomiędzy pierwszym wykryciem ruchu a wykryciem uruchamiajacym otwarcie dla sensoru 2,
+#define MOTION_2_DELAY_WAIT 4000  // czas oczekiwania na 2 wykrycie ruchu dla sensoru 2,
 
-#define OPENING_DOOR_TIME 11 * 1000               // czas otwierania drzwi
-#define OPEN_DOOR_TIME 10 * 1000                  // czas oczekiwania na zamknięcie drzwi od ostatnieo wykrycia ruchu
-#define TO_LONG_OPEN_DOOR_TIME 100 * 1000         // czas zbyt długiego otwarcia drzwi aby włączyc alarm
-#define TIME_SLEEP_AFTER_LAST_DETECTION 5 * 1000  // czas przejscia w light sleep od ostatniego wykrycia ruchu, nie moze byc mniejsze niż MOTION_1_DELAY + MOTION_1_DELAY_WAIT
-#define TIME_SLEEP_AFTER_START 40 * 1000          // czas przejscia w light sleep od startu
-#define DOOR_INTERRUPTED_WAITING 6 * 1000         // czas zatrzymania w przypadku wykrycia ruchy przy zamykaniu - po tym czasie następuje otwarcie
+#define OPENING_DOOR_TIME 11000               // czas otwierania drzwi
+#define OPEN_DOOR_TIME 10000                  // czas oczekiwania na zamknięcie drzwi od ostatnieo wykrycia ruchu
+#define TO_LONG_OPEN_DOOR_TIME 100000         // czas zbyt długiego otwarcia drzwi aby włączyc alarm
+#define TIME_SLEEP_AFTER_LAST_DETECTION 5000  // czas przejscia w light sleep od ostatniego wykrycia ruchu, nie moze byc mniejsze niż MOTION_1_DELAY + MOTION_1_DELAY_WAIT
+#define TIME_SLEEP_AFTER_START 40000          // czas przejscia w light sleep od startu
+#define DOOR_INTERRUPTED_WAITING 6000         // czas zatrzymania w przypadku wykrycia ruchy przy zamykaniu - po tym czasie następuje otwarcie
 
 #define TIME_SLEEP_AFTER_LAST_DETECTION_M1 MOTION_1_DELAY + MOTION_1_DELAY_WAIT + TIME_SLEEP_AFTER_LAST_DETECTION
 #define TIME_SLEEP_AFTER_LAST_DETECTION_M2 MOTION_2_DELAY + MOTION_2_DELAY_WAIT + TIME_SLEEP_AFTER_LAST_DETECTION
 
 #define CPU_SPEED 160
 
-#define CHECK_NUMBER 0x41  //zmienic aby zresetować ustawienia zapisane w pamięci
+#define CHECK_NUMBER 0x32  //zmienic aby zresetować ustawienia zapisane w pamięci
 #define FADE 2
 #define FADE_OFF 100000
 #pragma endregion CONFIGURATION
@@ -103,8 +103,9 @@ static __inline__ void __psRestore(const uint32_t *__s)
 
 #define MS_DOOR_EDIT_START_ID 38
 
-#define MS_SEND_TIMEOUT 10 * 1000
-#define WAIT_TIME_FOR_MS_MESSAGE_BEFORE_SLEEP 10 * 1000
+#define MS_SEND_TIMEOUT 10000
+#define WAIT_TIME_FOR_MS_MESSAGE_BEFORE_SLEEP 10000
+#define TIME_SLEEP_AFTER_MESSAGE_RECEIVE 2000 
 #pragma endregion MY_SENSORS_CONFIGURATION
 
 #pragma region TYPES
@@ -408,16 +409,16 @@ time_t getNow() {
   return now;
 }
 
-MotionDetectState getM1Ping() {
-  if (EEStorage.isDoorAlwaysCloseLeft()) {
+MotionDetectState getM1Ping(bool full = false) {
+  if (EEStorage.isDoorAlwaysCloseLeft() && full == false) {
     return NO_MOTION;
   }
 
   return M1.ping();
 }
 
-MotionDetectState getM2Ping() {
-  if (EEStorage.isDoorAlwaysCloseRight()) {
+MotionDetectState getM2Ping(bool full = false) {
+  if (EEStorage.isDoorAlwaysCloseRight() && full == false) {
     return NO_MOTION;
   }
 
@@ -799,7 +800,7 @@ void s_AUTH() {
     Out1.updateFadeSpeed(FADE_OFF);
     Out1.on();
 #endif
-    Out3.off();    
+    Out3.off();
   }
 }
 
@@ -936,7 +937,7 @@ bool T_S_MOTION_DETECTION_S_SLEEP() {
     return false;
   }
 
-  if (!MessageReceiveTime.isElapsed(TIME_SLEEP_AFTER_LAST_DETECTION)) {
+  if (!MessageReceiveTime.isElapsed(TIME_SLEEP_AFTER_MESSAGE_RECEIVE)) {
     return false;
   }
 
@@ -1060,10 +1061,9 @@ bool T_S_DOOR_OPEN_S_SLEEP() {
     return false;
   }
 
-  if (!MessageReceiveTime.isElapsed(TIME_SLEEP_AFTER_LAST_DETECTION)) {
+  if (!MessageReceiveTime.isElapsed(TIME_SLEEP_AFTER_MESSAGE_RECEIVE)) {
     return false;
   }
-
 
   if (getM1Ping() != NO_MOTION) {
     return false;
@@ -1126,10 +1126,10 @@ bool T_S_START_MOTION_DETECTION_S_MOTION_DETECTION() {
 
 bool T_S_CLOSING_DOOR_S_CLOSING_DOOR_INTERRUPTED() {
 #ifdef USE_M1_M2_ON_DOOR_CLOSING
-  if (getM1Ping() != NO_MOTION)
+  if (getM1Ping(true) != NO_MOTION)
     return true;
 
-  if (getM2Ping() != NO_MOTION)
+  if (getM2Ping(true) != NO_MOTION)
     return true;
 #endif
 
@@ -1617,14 +1617,17 @@ void receive(const MyMessage &message) {
 
     const char *mess = message.getString();
 
-    uint8_t data[6];
-    sscanf(mess, "%x:%x:%x:%x:%x:%x", &data[0], &data[1], &data[2], &data[3], &data[4], &data[5]);
+    unsigned int tmp[6] = { 255, 255, 255, 255, 255, 255 };
+    if (sscanf(mess, "%x:%x:%x:%x:%x:%x", &tmp[0], &tmp[1], &tmp[2], &tmp[3], &tmp[4], &tmp[5]) == 6) {
+      uint8_t data[6];
+      for (int i = 0; i < 6; i++) {
+        data[i] = (uint8_t)tmp[i];
+      }
 
-    BLEAddress bleAddress(data);
-
-    EEStorage.editBleAddress(message.sensor, &bleAddress);
-
-    sentMyDoorAddress(no);
+      BLEAddress bleAddress(data);
+      EEStorage.editBleAddress(message.sensor, &bleAddress);
+      sentMyDoorAddress(no);
+    }
   }
 }
 #pragma endregion MAIN
@@ -1659,15 +1662,19 @@ void inicjalizePins() {
   pinMode(CLOSE_DOOR_PIN, OUTPUT);
   digitalWrite(CLOSE_DOOR_PIN, LOW);
 
-  pinMode(MOTION_SENSOR_1_PIN, INPUT);
-  pinMode(MOTION_SENSOR_2_PIN, INPUT);
-  pinMode(MOTION_SENSOR_3_PIN, INPUT);
+  gpio_reset_pin(GPIO_NUM_19);
+  gpio_reset_pin(GPIO_NUM_20);
+
+  pinMode(MOTION_SENSOR_1_PIN, INPUT_PULLDOWN);
+  pinMode(MOTION_SENSOR_2_PIN, INPUT_PULLDOWN);
+  pinMode(MOTION_SENSOR_3_PIN, INPUT_PULLDOWN);
 
   gpio_sleep_set_direction(GPIO_NUM_21, GPIO_MODE_INPUT);
   gpio_sleep_set_pull_mode(GPIO_NUM_21, GPIO_PULLUP_ONLY);
   uart_set_wakeup_threshold(UART_NUM_1, 3);
   esp_sleep_enable_uart_wakeup(UART_NUM_1);
 
+  esp_sleep_pd_config(ESP_PD_DOMAIN_VDDSDIO, ESP_PD_OPTION_ON);
   gpio_wakeup_enable(GPIO_NUM_20, GPIO_INTR_HIGH_LEVEL);
   gpio_wakeup_enable(GPIO_NUM_19, GPIO_INTR_HIGH_LEVEL);
 

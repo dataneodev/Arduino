@@ -34,12 +34,12 @@ Dodatek do VS Code #region folding for VS Code
 */
 
 /* #region  user configuration */
-#define MY_NODE_ID 60  // id wezła dla my sensors
+#define MY_NODE_ID 61  // id wezła dla my sensors
 
 //przy zmianie typu sterownika obowiązkowo zmienic cyfre kontrolną dla zresetowania ustawień!
-#define EEPROM_RESET 0x50  // zmienić wartość aby zresetować ustawienia - przy każdej zmianie typu kontrolera
+#define EEPROM_RESET 0x55  // zmienić wartość aby zresetować ustawienia - przy każdej zmianie typu kontrolera
 
-//#define VERSION_5X
+#define VERSION_5X
 
 #if defined VERSION_5X
 //#define NODE_1_RGBWW
@@ -1911,6 +1911,7 @@ void buttonInterrupt() {
 
 /* #region main functions */
 void before() {
+
   delaySleep(DELAY_MAX_TIME);
 
   setAllPinsAnalog();
@@ -1923,6 +1924,16 @@ void before() {
   inicjalizeButtons();
   readSettingFromEPPROM();
   updateNodesFromButtons();
+
+  // Odczyt unikalnego ID z rejestrów CH32F103 / STM32F103
+  uint32_t uid0 = *(volatile uint32_t*)(0x1FFFF7E8);
+  uint32_t uid1 = *(volatile uint32_t*)(0x1FFFF7EC);
+  uint32_t uid2 = *(volatile uint32_t*)(0x1FFFF7F0);
+  
+  // Połączenie rejestrów w jedno unikalne ziarno startowe
+  uint32_t seed = uid0 ^ uid1 ^ uid2;
+  randomSeed(seed); 
+
   delaySleep(DELAY_MAX_TIME);
 }
 
